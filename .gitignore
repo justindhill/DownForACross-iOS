@@ -1,2 +1,4 @@
 DerivedData
 Pods
+*.xcworkspace
+*.xcodeproj/xcuserdata

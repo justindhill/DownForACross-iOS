@@ -6,44 +6,81 @@
 //
 
 import Foundation
+import SocketIO
+
+protocol GameClientDelegate: AnyObject {
+    func gameClient(_ client: GameClient, cursorsDidChange: [String: CellCoordinates])
+    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]])
+}
 
 class GameClient: NSObject, URLSessionDelegate {
     
-    var pingTimer: Timer?
+    weak var delegate: GameClientDelegate?
     
-    lazy var urlSession: URLSession = {
-        let session = URLSession(configuration: .default, delegate: self, delegateQueue: .main)
-        return session
+    let puzzleInfo: PuzzleInfo
+    private(set) var solution: [[CellEntry?]] {
+        didSet {
+            self.delegate?.gameClient(self, solutionDidChange: self.solution)
+        }
+    }
+    
+    var cursors: [String: CellCoordinates] = [:] {
+        didSet {
+            self.delegate?.gameClient(self, cursorsDidChange: self.cursors)
+        }
+    }
+    
+    lazy var socketManager: SocketManager = {
+        SocketManager(socketURL: URL(string: "https://api.foracross.com/socket.io")!,
+                      config: [
+                        .version(.two),
+                        .forceWebsockets(true), 
+                        .secure(true)])
     }()
     
-    lazy var task = URLSession.shared.webSocketTask(
-        with: URL(string: "wss://api.foracross.com/socket.io/?EIO=3&transport=websocket")!)
+    init(puzzle: Puzzle) {
+        self.puzzleInfo = puzzle.info
+        self.solution = Array(repeating: Array(repeating: nil,
+                                               count: puzzle.grid[0].count),
+                              count: puzzle.grid.count)
+    }
+    
+    
     
     func connect() {
-        task.resume()
-        task.receive(completionHandler: self.receiveMessage)
-        self.pingTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { _ in
-            self.ping()
-        })
-    }
-    
-    func ping() {
-        task.send(.string("2")) { error in
-            print(error)
-        }
-    }
-    
-    func receiveMessage(result: Result<URLSessionWebSocketTask.Message, Error>)  {
-        switch result {
-        case .success(let message):
-            print(message)
-        case .failure(let error):
-            print(error)
+        let socket = self.socketManager.defaultSocket
+        
+        socket.on("connect") { data, ack in
+            print("connected!")
+//            socket.emit("join_game", "4374382-nund")
+            socket.emit("join_game", "4374382-nund")
+            socket.emit("sync_all_game_events", "4374382-nund")
         }
         
-        self.task.receive(completionHandler: self.receiveMessage)
+        
+        socket.on(clientEvent: .disconnect) { data, ack in
+            print(data)
+        }
+        
+        socket.on("game_event") { data, ack in
+            guard let payload = data.first as? [String: Any],
+                  let type = payload["type"] as? String else {
+                print("Encountered invalid game event payload")
+                return
+            }
+            
+            if type == "updateCursor" {
+                let event = UpdateCursorEvent(payload: payload)
+                self.cursors[event.id] = event.cell
+            } else if type == "updateCell" {
+                let event = UpdateCellEvent(payload: payload)
+                self.solution[event.cell.row][event.cell.cell] = CellEntry(userId: event.id, value: event.value)
+            } else {
+                print("unknown game_event type: \(type)")
+            }
+        }
+        
+        socket.connect()
     }
-    
-    
     
 }

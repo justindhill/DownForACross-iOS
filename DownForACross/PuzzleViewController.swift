@@ -11,7 +11,11 @@ class PuzzleViewController: UIViewController {
     
     let puzzle: Puzzle
     var puzzleView: PuzzleView!
-    let gameClient = GameClient()
+    lazy var gameClient: GameClient = {
+        let client = GameClient(puzzle: self.puzzle)
+        client.delegate = self
+        return client
+    }()
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     init(puzzle: Puzzle) {
@@ -36,5 +40,16 @@ class PuzzleViewController: UIViewController {
         
     }
     
+}
+
+extension PuzzleViewController: GameClientDelegate {
+    
+    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]]) {
+        self.puzzleView.solution = solution
+    }
+    
+    func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: CellCoordinates]) {
+        self.puzzleView.cursors = cursors
+    }
     
 }

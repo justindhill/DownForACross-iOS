@@ -18,6 +18,9 @@
 		3B011DFF2B30C03500BDB732 /* Puzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFE2B30C03500BDB732 /* Puzzle.swift */; };
 		3B011E012B30C04C00BDB732 /* PuzzleStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011E002B30C04C00BDB732 /* PuzzleStats.swift */; };
 		3B9003382B34CDA20088729C /* GameClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9003372B34CDA20088729C /* GameClient.swift */; };
+		3B90033B2B34E9AF0088729C /* UpdateCursorEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B90033A2B34E9AF0088729C /* UpdateCursorEvent.swift */; };
+		3B90033D2B35D5960088729C /* UpdateCellEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B90033C2B35D5960088729C /* UpdateCellEvent.swift */; };
+		3B90033F2B35D5D90088729C /* SharedTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B90033E2B35D5D90088729C /* SharedTypes.swift */; };
 		3BF367302B313374005BB41E /* PuzzleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF3672F2B313374005BB41E /* PuzzleViewController.swift */; };
 		3BF367322B313675005BB41E /* PuzzleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF367312B313675005BB41E /* PuzzleView.swift */; };
 		3FBBB0BA39E20B71AA8BC150 /* Pods_DownForACross.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCAD19FE3621A683BFFFBB76 /* Pods_DownForACross.framework */; };
@@ -38,6 +41,9 @@
 		3B011DFE2B30C03500BDB732 /* Puzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Puzzle.swift; sourceTree = "<group>"; };
 		3B011E002B30C04C00BDB732 /* PuzzleStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleStats.swift; sourceTree = "<group>"; };
 		3B9003372B34CDA20088729C /* GameClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameClient.swift; sourceTree = "<group>"; };
+		3B90033A2B34E9AF0088729C /* UpdateCursorEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCursorEvent.swift; sourceTree = "<group>"; };
+		3B90033C2B35D5960088729C /* UpdateCellEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCellEvent.swift; sourceTree = "<group>"; };
+		3B90033E2B35D5D90088729C /* SharedTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedTypes.swift; sourceTree = "<group>"; };
 		3BF3672F2B313374005BB41E /* PuzzleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleViewController.swift; sourceTree = "<group>"; };
 		3BF367312B313675005BB41E /* PuzzleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleView.swift; sourceTree = "<group>"; };
 		BCAD19FE3621A683BFFFBB76 /* Pods_DownForACross.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownForACross.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -96,11 +102,22 @@
 		3B011DFB2B30C01F00BDB732 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				3B9003392B34E99B0088729C /* Game Events */,
 				3B011DFC2B30C02F00BDB732 /* ListPuzzle.swift */,
 				3B011DFE2B30C03500BDB732 /* Puzzle.swift */,
 				3B011E002B30C04C00BDB732 /* PuzzleStats.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		3B9003392B34E99B0088729C /* Game Events */ = {
+			isa = PBXGroup;
+			children = (
+				3B90033A2B34E9AF0088729C /* UpdateCursorEvent.swift */,
+				3B90033C2B35D5960088729C /* UpdateCellEvent.swift */,
+				3B90033E2B35D5D90088729C /* SharedTypes.swift */,
+			);
+			path = "Game Events";
 			sourceTree = "<group>";
 		};
 		53F62DDFE970C11E954F1973 /* Pods */ = {
@@ -236,8 +253,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				3B011DEA2B30BED400BDB732 /* PuzzleListViewController.swift in Sources */,
+				3B90033D2B35D5960088729C /* UpdateCellEvent.swift in Sources */,
 				3B011DE62B30BED400BDB732 /* AppDelegate.swift in Sources */,
 				3BF367322B313675005BB41E /* PuzzleView.swift in Sources */,
+				3B90033F2B35D5D90088729C /* SharedTypes.swift in Sources */,
 				3B011DFA2B30BFF000BDB732 /* API.swift in Sources */,
 				3B9003382B34CDA20088729C /* GameClient.swift in Sources */,
 				3B011DFF2B30C03500BDB732 /* Puzzle.swift in Sources */,
@@ -245,6 +264,7 @@
 				3B011DE82B30BED400BDB732 /* SceneDelegate.swift in Sources */,
 				3BF367302B313374005BB41E /* PuzzleViewController.swift in Sources */,
 				3B011DFD2B30C02F00BDB732 /* ListPuzzle.swift in Sources */,
+				3B90033B2B34E9AF0088729C /* UpdateCursorEvent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

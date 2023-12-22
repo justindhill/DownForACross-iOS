@@ -10,8 +10,12 @@ import UIKit
 class PuzzleView: UIControl {
     
     var puzzleGrid: [[String?]]
-    var solution: [[String?]]
+    var solution: [[CellEntry?]]
+    var cursors: [String: CellCoordinates] {
+        didSet { self.setNeedsLayout() }
+    }
     
+    var cursorIndicatorLayers: [CALayer] = []
     var numberTextLayers: [CATextLayer] = []
     var fillTextLayers: [CATextLayer] = []
     var separatorLayers: [CALayer] = []
@@ -41,6 +45,7 @@ class PuzzleView: UIControl {
         self.solution = Array(repeating: Array(repeating: nil,
                                                count: puzzleGrid[0].count),
                               count: puzzleGrid.count)
+        self.cursors = [:]
         super.init(frame: .zero)
         
         self.puzzleContainerView.layer.borderWidth = 0.5
@@ -120,7 +125,12 @@ class PuzzleView: UIControl {
                                              width: cellSideLength,
                                              height: fillFont.lineHeight)
                         layer.backgroundColor = UIColor.clear.cgColor
-                        layer.string = item
+                        
+                        if let solutionEntry = self.solution[rowIndex][itemIndex] {
+                            layer.string = solutionEntry.value
+                        } else {
+                            layer.string = nil
+                        }
                     }
                 } else {
                     layer.backgroundColor = UIColor.clear.cgColor
@@ -135,6 +145,7 @@ class PuzzleView: UIControl {
             }
         }
         
+        // separators
         for i in 0..<self.puzzleGrid.count - 1 {
             let splitCount = separatorCount / 2
             let horizontal = self.separatorLayers[i]
@@ -142,6 +153,17 @@ class PuzzleView: UIControl {
             let offset = CGFloat(i + 1) * cellSideLength
             horizontal.frame = CGRect(x: 0, y: offset, width: self.frame.size.width, height: 0.5)
             vertical.frame = CGRect(x: offset, y: 0, width: 0.5, height: self.frame.size.height)
+        }
+        
+        // cursors
+        self.syncCursorLayerCount()
+        for (index, (id, coordinates)) in self.cursors.enumerated() {
+            let layer = self.cursorIndicatorLayers[index]
+            layer.frame = CGRect(x: CGFloat(coordinates.cell) * cellSideLength,
+                                 y: CGFloat(coordinates.row) * cellSideLength,
+                                 width: cellSideLength,
+                                 height: cellSideLength)
+            print(id)
         }
     }
     
@@ -162,6 +184,19 @@ class PuzzleView: UIControl {
         self.numberTextLayers.append(layer)
         self.puzzleContainerView.layer.addSublayer(layer)
         return layer
+    }
+    
+    func syncCursorLayerCount() {
+        while self.cursorIndicatorLayers.count != self.cursors.count {
+            if self.cursorIndicatorLayers.count < self.cursors.count {
+                let layer = CALayer()
+                layer.backgroundColor = UIColor.systemPurple.cgColor
+                self.puzzleContainerView.layer.insertSublayer(layer, at: 0)
+                self.cursorIndicatorLayers.append(layer)
+            } else {
+                self.cursorIndicatorLayers.removeLast().removeFromSuperlayer()
+            }
+        }
     }
     
     func updateTextLayerCount(target: Int, font: UIFont) {
