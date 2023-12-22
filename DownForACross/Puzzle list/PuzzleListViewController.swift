@@ -6,10 +6,12 @@
 //
 
 import UIKit
+import WebKit
 
 class PuzzleListViewController: UIViewController, UITableViewDelegate {
     
     let reuseIdentifier: String = "ItemReuseIdentifier"
+    static let userIdUserDefaultsKey: String = "UserId"
     
     lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
@@ -29,6 +31,8 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
         }
     }()
     
+    var userId: String?
+    let siteInteractor = SiteInteractor()
     let api = API()
 
     override func viewDidLoad() {
@@ -39,6 +43,21 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
         self.view.addSubview(self.tableView)
         
         self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: self.reuseIdentifier)
+        
+        self.userId = UserDefaults.standard.string(forKey: Self.userIdUserDefaultsKey)
+        if self.userId == nil {
+            self.siteInteractor.getUserId { [weak self] userId in
+                if let userId {
+                    self?.userId = userId
+                    UserDefaults.standard.setValue(userId, forKey: Self.userIdUserDefaultsKey)
+                    print("got a user id!")
+                } else {
+                    print("failed to get a user id from the site")
+                }
+            }
+        } else {
+            print("got a user id from UserDefaults!")
+        }
         
         NSLayoutConstraint.activate([
             self.tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
@@ -61,8 +80,9 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let puzzle = self.dataSource.itemIdentifier(for: indexPath)?.content else { return }
-        let vc = PuzzleViewController(puzzle: puzzle)
+        guard let puzzle = self.dataSource.itemIdentifier(for: indexPath)?.content,
+              let userId = self.userId else { return }
+        let vc = PuzzleViewController(puzzle: puzzle, userId: userId)
         self.navigationController?.pushViewController(vc, animated: true)
     }
 

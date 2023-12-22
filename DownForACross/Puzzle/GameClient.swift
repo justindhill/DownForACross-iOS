@@ -18,6 +18,8 @@ class GameClient: NSObject, URLSessionDelegate {
     weak var delegate: GameClientDelegate?
     
     let puzzleInfo: PuzzleInfo
+    let userId: String
+    let gameId: String = "4374382-nund"
     private(set) var solution: [[CellEntry?]] {
         didSet {
             self.delegate?.gameClient(self, solutionDidChange: self.solution)
@@ -38,8 +40,9 @@ class GameClient: NSObject, URLSessionDelegate {
                         .secure(true)])
     }()
     
-    init(puzzle: Puzzle) {
+    init(puzzle: Puzzle, userId: String) {
         self.puzzleInfo = puzzle.info
+        self.userId = userId
         self.solution = Array(repeating: Array(repeating: nil,
                                                count: puzzle.grid[0].count),
                               count: puzzle.grid.count)
@@ -52,9 +55,11 @@ class GameClient: NSObject, URLSessionDelegate {
         
         socket.on("connect") { data, ack in
             print("connected!")
-//            socket.emit("join_game", "4374382-nund")
             socket.emit("join_game", "4374382-nund")
-            socket.emit("sync_all_game_events", "4374382-nund")
+            socket.emit("game_event", UpdateDisplayNameEvent(userId: self.userId, 
+                                                             gameId: self.gameId,
+                                                             displayName: "It me, Justin").dictionary())
+            socket.emit("sync_all_game_events", self.gameId)
         }
         
         
