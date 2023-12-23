@@ -33,6 +33,7 @@ class PuzzleViewController: UIViewController {
 
         self.puzzleView = PuzzleView(puzzleGrid: puzzle.grid)
         self.puzzleView.translatesAutoresizingMaskIntoConstraints = false
+        self.puzzleView.delegate = self
         self.view.addSubview(self.puzzleView)
 
         NSLayoutConstraint.activate([
@@ -41,7 +42,11 @@ class PuzzleViewController: UIViewController {
             self.puzzleView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             self.puzzleView.heightAnchor.constraint(equalTo: self.puzzleView.widthAnchor)
         ])
-        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.puzzleView.becomeFirstResponder()
     }
     
 }
@@ -54,6 +59,18 @@ extension PuzzleViewController: GameClientDelegate {
     
     func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: CellCoordinates]) {
         self.puzzleView.cursors = cursors
+    }
+    
+}
+
+extension PuzzleViewController: PuzzleViewDelegate {
+    
+    func puzzleView(_ puzzleView: PuzzleView, didEnterText text: String?, atCoordinates coordinates: CellCoordinates) {
+        self.gameClient.enter(value: text, atCoordinates: coordinates)
+    }
+    
+    func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToCoordinates coordinates: CellCoordinates) {
+        // tell the server
     }
     
 }

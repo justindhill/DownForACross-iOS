@@ -7,14 +7,46 @@
 
 import UIKit
 
-class PuzzleView: UIControl {
+protocol PuzzleViewDelegate: AnyObject {
+    func puzzleView(_ puzzleView: PuzzleView, didEnterText text: String?, atCoordinates coordinates: CellCoordinates)
+    func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToCoordinates coordinates: CellCoordinates)
+}
+
+class PuzzleView: UIView {
+
+    typealias UserCursor = (coordinates: CellCoordinates, direction: Direction)
+    
+    enum Direction {
+        case across
+        case down
+    }
+    
+    weak var delegate: PuzzleViewDelegate?
     
     var puzzleGrid: [[String?]]
-    var solution: [[CellEntry?]]
+    var solution: [[CellEntry?]] {
+        didSet { self.setNeedsLayout() }
+    }
+    
     var cursors: [String: CellCoordinates] {
         didSet { self.setNeedsLayout() }
     }
     
+    var userCursor: UserCursor = (CellCoordinates(row: 0, cell: 0), .down) {
+        didSet {
+            if oldValue.coordinates != userCursor.coordinates {
+                self.delegate?.puzzleView(self, userCursorDidMoveToCoordinates: userCursor.coordinates)
+            }
+            
+            self.setNeedsLayout()
+        }
+    }
+    
+    override var canBecomeFirstResponder: Bool {
+        return true
+    }
+    
+    var userCursorIndicatorLayer: CALayer = CALayer()
     var cursorIndicatorLayers: [CALayer] = []
     var numberTextLayers: [CATextLayer] = []
     var fillTextLayers: [CATextLayer] = []
@@ -53,7 +85,6 @@ class PuzzleView: UIControl {
         
         self.addSubview(self.scrollView)
         self.scrollView.addSubview(self.puzzleContainerView)
-        
     }
     
     override func layoutSubviews() {
@@ -165,6 +196,17 @@ class PuzzleView: UIControl {
                                  height: cellSideLength)
             print(id)
         }
+        
+        // user cursor
+        if self.userCursorIndicatorLayer.superlayer == nil {
+            self.puzzleContainerView.layer.addSublayer(self.userCursorIndicatorLayer)
+            self.userCursorIndicatorLayer.borderColor = UIColor.systemPink.cgColor
+            self.userCursorIndicatorLayer.borderWidth = 2
+        }
+        self.userCursorIndicatorLayer.frame = CGRect(x: CGFloat(self.userCursor.coordinates.cell) * cellSideLength,
+                                                     y: CGFloat(self.userCursor.coordinates.row) * cellSideLength,
+                                                     width: cellSideLength,
+                                                     height: cellSideLength)
     }
     
     func itemRequiresNumberLabel(_ item: String?, atRow row: Int, index: Int) -> Bool {
@@ -234,6 +276,75 @@ class PuzzleView: UIControl {
         }
     }
     
+    func advanceUserCursor() {
+        let current = self.userCursor.coordinates
+        func nextCandidate(after lastCandidate: CellCoordinates) -> CellCoordinates {
+            switch self.userCursor.direction {
+                case .across:
+                    if lastCandidate.cell + 1 >= self.puzzleGrid[0].count {
+                        return current
+                    } else {
+                        return CellCoordinates(row: lastCandidate.row, cell: lastCandidate.cell + 1)
+                    }
+                case .down:
+                    if lastCandidate.row + 1 >= self.puzzleGrid.count {
+                        return current
+                    } else {
+                        return CellCoordinates(row: lastCandidate.row + 1, cell: lastCandidate.cell)
+                    }
+            }
+        }
+        
+        var candidate = nextCandidate(after: current)
+        if candidate == current {
+            return
+        }
+        
+        while self.puzzleGrid[candidate.row][candidate.cell] == "." {
+            candidate = nextCandidate(after: candidate)
+            if candidate == current {
+                return
+            }
+        }
+        
+        self.userCursor = UserCursor(coordinates: candidate, direction: self.userCursor.direction)
+    }
+    
+    func retreatUserCursorIfNotAtNonemptyEdge() {
+        let current = self.userCursor.coordinates
+        var isAtEdge = false
+        func nextCandidate(after lastCandidate: CellCoordinates) -> CellCoordinates {
+            switch self.userCursor.direction {
+                case .across:
+                    if lastCandidate.cell - 1 < 0 ||
+                        lastCandidate.cell == self.solution[lastCandidate.row].count - 1 && self.solution[lastCandidate.row][lastCandidate.cell] != nil {
+                        return current
+                    } else {
+                        return CellCoordinates(row: lastCandidate.row, cell: lastCandidate.cell - 1)
+                    }
+                case .down:
+                    if lastCandidate.row - 1 < 0 ||
+                        lastCandidate.row == self.solution.count - 1 && self.solution[lastCandidate.row][lastCandidate.cell]?.value != nil {
+                        return current
+                    } else {
+                        return CellCoordinates(row: lastCandidate.row - 1, cell: lastCandidate.cell)
+                    }
+            }
+        }
+        
+        
+        var candidate = nextCandidate(after: current)
+        
+        while self.puzzleGrid[candidate.row][candidate.cell] == "." {
+            candidate = nextCandidate(after: candidate)
+            if candidate == current {
+                return
+            }
+        }
+        
+        self.userCursor = UserCursor(coordinates: candidate, direction: self.userCursor.direction)
+    }
+    
 }
 
 extension PuzzleView: UIScrollViewDelegate {
@@ -249,4 +360,35 @@ extension PuzzleView: UIScrollViewDelegate {
         self.numberTextLayers.forEach({ $0.contentsScale = window.screen.scale * scale })
         CATransaction.commit()
     }
+}
+
+extension PuzzleView: UIKeyInput {
+    
+    var hasText: Bool {
+        true
+    }
+    
+    func insertText(_ text: String) {
+        if text == " " {
+            let newDirection: Direction
+            switch self.userCursor.direction {
+                case .across: newDirection = .down
+                case .down: newDirection = .across
+            }
+            
+            self.userCursor = UserCursor(coordinates: self.userCursor.coordinates, direction: newDirection)
+            return
+        } else if text == "\n" {
+            self.advanceUserCursor()
+        } else {
+            self.delegate?.puzzleView(self, didEnterText: text, atCoordinates: self.userCursor.coordinates)
+            self.advanceUserCursor()
+        }
+    }
+    
+    func deleteBackward() {
+        self.retreatUserCursorIfNotAtNonemptyEdge()
+        self.delegate?.puzzleView(self, didEnterText: nil, atCoordinates: self.userCursor.coordinates)
+    }
+    
 }

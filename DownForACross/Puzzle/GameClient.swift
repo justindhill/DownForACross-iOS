@@ -88,4 +88,12 @@ class GameClient: NSObject, URLSessionDelegate {
         socket.connect()
     }
     
+    func enter(value: String?, atCoordinates coordinates: CellCoordinates) {
+        if let value {
+            self.solution[coordinates.row][coordinates.cell] = CellEntry(userId: self.userId, value: value)
+        } else {
+            self.solution[coordinates.row][coordinates.cell] = nil
+        }
+    }
+    
 }
