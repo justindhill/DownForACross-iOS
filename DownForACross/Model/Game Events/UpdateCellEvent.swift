@@ -7,25 +7,67 @@
 
 import Foundation
 
-struct UpdateCellEvent {
+protocol GameEvent {
+    var gameId: String { get }
+    var type: String { get }
+    var paramsDictionary: [String: Any?] { get }
+    func eventPayload() -> [String: Any]
+}
+
+extension GameEvent {
+    func eventPayload() -> [String: Any] {
+        [
+            "event": [
+                "id": UUID().uuidString,
+                "type": self.type,
+                "timestamp": [
+                    ".sv": "timestamp"
+                ],
+                "params": self.paramsDictionary
+            ],
+            "gid": self.gameId
+        ]
+    }
+}
+
+struct UpdateCellEvent: GameEvent {
     
-    let id: String
+    var type: String { "updateCell" }
+    
+    let userId: String
+    let gameId: String
     let cell: CellCoordinates
-    let value: String
+    let value: String?
     
     init(payload: [String: Any]) {
         guard let params = payload["params"] as? [String: Any],
               let id = params["id"] as? String,
-              let value = params["value"] as? String,
               let coords = params["cell"] as? [String: Any],
               let row = coords["r"] as? NSNumber,
               let cell = coords["c"] as? NSNumber else {
             fatalError()
         }
         
-        self.id = id
+        self.userId = id
         self.cell = CellCoordinates(row: row.intValue, cell: cell.intValue)
+        self.value = params["value"] as? String
+        self.gameId = ""
+    }
+    
+    init(userId: String, gameId: String, cell: CellCoordinates, value: String?) {
+        self.userId = userId
+        self.gameId = gameId
+        self.cell = cell
         self.value = value
     }
+    
+    var paramsDictionary: [String : Any?] {[
+        "id": self.userId,
+        "cell": [
+            "r": self.cell.row,
+            "c": self.cell.cell
+        ],
+        "value": self.value
+    ]}
     
 }

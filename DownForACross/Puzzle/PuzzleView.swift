@@ -19,6 +19,13 @@ class PuzzleView: UIView {
     enum Direction {
         case across
         case down
+        
+        var opposite: Direction {
+            switch self {
+                case .across: return .down
+                case .down: return .across
+            }
+        }
     }
     
     weak var delegate: PuzzleViewDelegate?
@@ -41,6 +48,8 @@ class PuzzleView: UIView {
             self.setNeedsLayout()
         }
     }
+    
+    lazy var tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapGestureRecognizerTriggered))
     
     override var canBecomeFirstResponder: Bool {
         return true
@@ -85,6 +94,21 @@ class PuzzleView: UIView {
         
         self.addSubview(self.scrollView)
         self.scrollView.addSubview(self.puzzleContainerView)
+        self.scrollView.addGestureRecognizer(self.tapGestureRecognizer)
+    }
+    
+    var cellCount: Int {
+        guard self.puzzleGrid.count > 0 && self.puzzleGrid[0].count > 0 else { return 0}
+        return self.puzzleGrid.count * self.puzzleGrid[0].count
+    }
+    
+    var cellSideLength: CGFloat {
+        guard self.cellCount > 0 else { return 0 }
+        return self.frame.size.width / CGFloat(self.puzzleGrid[0].count)
+    }
+    
+    override var intrinsicContentSize: CGSize {
+        return CGSize(width: self.frame.size.width, height: self.cellSideLength * CGFloat(self.puzzleGrid.count))
     }
     
     override func layoutSubviews() {
@@ -93,8 +117,8 @@ class PuzzleView: UIView {
         self.scrollView.frame = self.bounds
         self.puzzleContainerView.frame = self.bounds
         
-        let cellCount = self.puzzleGrid.count * self.puzzleGrid[0].count
-        let cellSideLength = self.frame.size.width / CGFloat(self.puzzleGrid[0].count)
+        let cellCount = self.cellCount
+        let cellSideLength = self.cellSideLength
         
         let sizingFont = UIFont.systemFont(ofSize: 12)
         let pointToCapHeight = sizingFont.pointSize / sizingFont.capHeight
@@ -178,11 +202,13 @@ class PuzzleView: UIView {
         
         // separators
         for i in 0..<self.puzzleGrid.count - 1 {
-            let splitCount = separatorCount / 2
             let horizontal = self.separatorLayers[i]
-            let vertical = self.separatorLayers[splitCount + i]
             let offset = CGFloat(i + 1) * cellSideLength
             horizontal.frame = CGRect(x: 0, y: offset, width: self.frame.size.width, height: 0.5)
+        }
+        for i in (self.puzzleGrid.count)..<self.puzzleGrid.count + self.puzzleGrid[0].count - 1 {
+            let vertical = self.separatorLayers[i]
+            let offset = CGFloat(i - self.puzzleGrid.count + 1) * cellSideLength
             vertical.frame = CGRect(x: offset, y: 0, width: 0.5, height: self.frame.size.height)
         }
         
@@ -207,6 +233,8 @@ class PuzzleView: UIView {
                                                      y: CGFloat(self.userCursor.coordinates.row) * cellSideLength,
                                                      width: cellSideLength,
                                                      height: cellSideLength)
+        
+        self.invalidateIntrinsicContentSize()
     }
     
     func itemRequiresNumberLabel(_ item: String?, atRow row: Int, index: Int) -> Bool {
@@ -312,7 +340,6 @@ class PuzzleView: UIView {
     
     func retreatUserCursorIfNotAtNonemptyEdge() {
         let current = self.userCursor.coordinates
-        var isAtEdge = false
         func nextCandidate(after lastCandidate: CellCoordinates) -> CellCoordinates {
             switch self.userCursor.direction {
                 case .across:
@@ -345,6 +372,24 @@ class PuzzleView: UIView {
         self.userCursor = UserCursor(coordinates: candidate, direction: self.userCursor.direction)
     }
     
+    @objc func tapGestureRecognizerTriggered(_ tap: UITapGestureRecognizer) {
+        let sideLength = Int(self.cellSideLength)
+
+        let pointCoords = tap.location(in: self.scrollView)
+        let cellCoords = CellCoordinates(row: Int(pointCoords.y) / sideLength,
+                                         cell: Int(pointCoords.x) / sideLength)
+        
+        let item = self.puzzleGrid[cellCoords.row][cellCoords.cell]
+
+        if item == nil || item == "." {
+            return
+        } else if cellCoords == self.userCursor.coordinates {
+            self.userCursor = UserCursor(coordinates: cellCoords, direction: self.userCursor.direction.opposite)
+        } else {
+            self.userCursor = UserCursor(coordinates: cellCoords, direction: self.userCursor.direction)
+        }
+    }
+    
 }
 
 extension PuzzleView: UIScrollViewDelegate {
@@ -370,18 +415,12 @@ extension PuzzleView: UIKeyInput {
     
     func insertText(_ text: String) {
         if text == " " {
-            let newDirection: Direction
-            switch self.userCursor.direction {
-                case .across: newDirection = .down
-                case .down: newDirection = .across
-            }
-            
-            self.userCursor = UserCursor(coordinates: self.userCursor.coordinates, direction: newDirection)
+            self.userCursor = UserCursor(coordinates: self.userCursor.coordinates, direction: self.userCursor.direction.opposite)
             return
         } else if text == "\n" {
             self.advanceUserCursor()
         } else {
-            self.delegate?.puzzleView(self, didEnterText: text, atCoordinates: self.userCursor.coordinates)
+            self.delegate?.puzzleView(self, didEnterText: text.uppercased(), atCoordinates: self.userCursor.coordinates)
             self.advanceUserCursor()
         }
     }

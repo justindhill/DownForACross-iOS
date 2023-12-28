@@ -7,9 +7,12 @@
 
 import Foundation
 
-struct UpdateCursorEvent {
+struct UpdateCursorEvent: GameEvent {
     
-    let id: String
+    var type: String { "updateCursor" }
+    
+    let userId: String
+    let gameId: String
     let timestamp: NSNumber
     let cell: CellCoordinates
     
@@ -23,9 +26,26 @@ struct UpdateCursorEvent {
             fatalError("Invalid coodinate update payload")
         }
         
-        self.id = id
+        self.userId = id
+        self.gameId = ""
         self.timestamp = timestamp
         self.cell = CellCoordinates(row: row.intValue, cell: cell.intValue)
     }
+    
+    init(userId: String, gameId: String, coordinates: CellCoordinates) {
+        self.userId = userId
+        self.gameId = gameId
+        self.cell = coordinates
+        self.timestamp = NSNumber(value: Date().timeIntervalSince1970)
+    }
+    
+    var paramsDictionary: [String : Any?] {[
+        "id": self.userId,
+        "timestamp": self.timestamp,
+        "cell": [
+            "r": self.cell.row,
+            "c": self.cell.cell
+        ]
+    ]}
     
 }

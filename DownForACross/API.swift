@@ -22,7 +22,7 @@ class API {
         urlComponents.queryItems = []
         urlComponents.queryItems?.append(URLQueryItem(name: "page", value: "\(page)"))
         urlComponents.queryItems?.append(URLQueryItem(name: "pageSize", value: "50"))
-        urlComponents.queryItems?.append(URLQueryItem(name: "filter[nameOrTitleFilter]", value: ""))
+        urlComponents.queryItems?.append(URLQueryItem(name: "filter[nameOrTitleFilter]", value: "LA times"))
         urlComponents.queryItems?.append(URLQueryItem(name: "filter[sizeFilter][Mini]", value: "true"))
         urlComponents.queryItems?.append(URLQueryItem(name: "filter[sizeFilter][Standard]", value: "true"))
         
@@ -33,8 +33,7 @@ class API {
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.timeoutInterval = 5
-        let (data, response) = try await session.data(for: request)
-        let str = String(data: data, encoding: .utf8)
+        let (data, _) = try await session.data(for: request)
         
         let decoded = try jsonDecoder.decode(PuzzleList.self, from: data)
         return decoded

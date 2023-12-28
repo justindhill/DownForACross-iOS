@@ -39,16 +39,14 @@ class PuzzleViewController: UIViewController {
         NSLayoutConstraint.activate([
             self.puzzleView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             self.puzzleView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-            self.puzzleView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-            self.puzzleView.heightAnchor.constraint(equalTo: self.puzzleView.widthAnchor)
+            self.puzzleView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor)
         ])
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         self.puzzleView.becomeFirstResponder()
     }
-    
 }
 
 extension PuzzleViewController: GameClientDelegate {
@@ -58,7 +56,7 @@ extension PuzzleViewController: GameClientDelegate {
     }
     
     func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: CellCoordinates]) {
-        self.puzzleView.cursors = cursors
+        self.puzzleView.cursors = cursors.filter({ $0.key != self.userId })
     }
     
 }
@@ -70,7 +68,7 @@ extension PuzzleViewController: PuzzleViewDelegate {
     }
     
     func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToCoordinates coordinates: CellCoordinates) {
-        // tell the server
+        self.gameClient.moveUserCursor(to: coordinates)
     }
     
 }

@@ -58,7 +58,7 @@ class GameClient: NSObject, URLSessionDelegate {
             socket.emit("join_game", "4374382-nund")
             socket.emit("game_event", UpdateDisplayNameEvent(userId: self.userId, 
                                                              gameId: self.gameId,
-                                                             displayName: "It me, Justin").dictionary())
+                                                             displayName: "It me, Justin").eventPayload())
             socket.emit("sync_all_game_events", self.gameId)
         }
         
@@ -76,10 +76,14 @@ class GameClient: NSObject, URLSessionDelegate {
             
             if type == "updateCursor" {
                 let event = UpdateCursorEvent(payload: payload)
-                self.cursors[event.id] = event.cell
+                self.cursors[event.userId] = event.cell
             } else if type == "updateCell" {
                 let event = UpdateCellEvent(payload: payload)
-                self.solution[event.cell.row][event.cell.cell] = CellEntry(userId: event.id, value: event.value)
+                if let value = event.value {
+                    self.solution[event.cell.row][event.cell.cell] = CellEntry(userId: event.userId, value: value)
+                } else {
+                    self.solution[event.cell.row][event.cell.cell] = nil
+                }
             } else {
                 print("unknown game_event type: \(type)")
             }
@@ -89,11 +93,28 @@ class GameClient: NSObject, URLSessionDelegate {
     }
     
     func enter(value: String?, atCoordinates coordinates: CellCoordinates) {
+        let resolvedValue: CellEntry?
         if let value {
-            self.solution[coordinates.row][coordinates.cell] = CellEntry(userId: self.userId, value: value)
+            resolvedValue = CellEntry(userId: self.userId, value: value)
         } else {
-            self.solution[coordinates.row][coordinates.cell] = nil
+            resolvedValue = nil
         }
+        
+        self.solution[coordinates.row][coordinates.cell] = resolvedValue
+        self.socketManager.defaultSocket.emit(
+            "game_event",
+            UpdateCellEvent(userId: self.userId, 
+                            gameId: self.gameId,
+                            cell: coordinates,
+                            value: value).eventPayload())
+    }
+    
+    func moveUserCursor(to coordinates: CellCoordinates) {
+        self.socketManager.defaultSocket.emit(
+            "game_event",
+            UpdateCursorEvent(userId: self.userId, 
+                              gameId: self.gameId,
+                              coordinates: coordinates).eventPayload())
     }
     
 }
