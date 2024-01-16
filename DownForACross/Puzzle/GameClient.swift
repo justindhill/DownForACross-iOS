@@ -19,7 +19,11 @@ class GameClient: NSObject, URLSessionDelegate {
     
     let puzzleInfo: PuzzleInfo
     let userId: String
-    let gameId: String = "4374382-nund"
+    private(set) var gameId: String = "" {
+        didSet {
+            print()
+        }
+    }
     private(set) var solution: [[CellEntry?]] {
         didSet {
             self.delegate?.gameClient(self, solutionDidChange: self.solution)
@@ -50,13 +54,14 @@ class GameClient: NSObject, URLSessionDelegate {
     
     
     
-    func connect() {
+    func connect(gameId: String) {
         let socket = self.socketManager.defaultSocket
+        self.gameId = gameId
         
         socket.on("connect") { data, ack in
             print("connected!")
-            socket.emit("join_game", "4374382-nund")
-            socket.emit("game_event", UpdateDisplayNameEvent(userId: self.userId, 
+            socket.emit("join_game", gameId)
+            socket.emit("game_event", UpdateDisplayNameEvent(userId: self.userId,
                                                              gameId: self.gameId,
                                                              displayName: "It me, Justin").eventPayload())
             socket.emit("sync_all_game_events", self.gameId)

@@ -38,6 +38,7 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.title = "Down For a Cross"
+        self.navigationItem.backButtonTitle = ""
         self.tableView.dataSource = self.dataSource
         
         self.view.addSubview(self.tableView)
@@ -80,9 +81,9 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let puzzle = self.dataSource.itemIdentifier(for: indexPath)?.content,
+        guard let puzzleListEntry = self.dataSource.itemIdentifier(for: indexPath),
               let userId = self.userId else { return }
-        let vc = PuzzleViewController(puzzle: puzzle, userId: userId)
+        let vc = PuzzleViewController(puzzleListEntry: puzzleListEntry, userId: userId, siteInteractor: self.siteInteractor, api: self.api)
         self.navigationController?.pushViewController(vc, animated: true)
     }
 

@@ -10,9 +10,13 @@ import WebKit
 
 class SiteInteractor: NSObject {
     
+    let timeout: TimeInterval = 30
+    
+    var session: URLSession = .shared
     var webViews: [WKWebView] = []
     var completionBlocks: [WKWebView: (WKWebView) -> Void] = [:]
     var loadCounts: [WKWebView: Int] = [:]
+    var timeoutTimers: [WKWebView: Timer] = [:]
     
     typealias GetUserCompletion = ((String?) -> Void)
     func getUserId(completion: @escaping GetUserCompletion) -> Void {
@@ -25,6 +29,36 @@ class SiteInteractor: NSObject {
         }
         self.loadCounts[webView] = 1
         webView.load(URLRequest(url: URL(string: "https://downforacross.com/beta/play/31894")!))
+    }
+    
+    func createGame(puzzleId: String, completion: @escaping (String) -> Void) {
+        let webView = WKWebView()
+        webView.navigationDelegate = self
+        
+        let timer = Timer.scheduledTimer(withTimeInterval: self.timeout, repeats: false) { _ in
+            completion("")
+            self.tearDownInteraction(webView: webView)
+        }
+        
+        self.timeoutTimers[webView] = timer
+        self.completionBlocks[webView] = { webView in
+            guard let url = webView.url,
+                    url.pathComponents.count >= 3 &&
+                    url.pathComponents[1] == "beta" &&
+                    url.pathComponents[2] == "game" else { return }
+            completion(url.lastPathComponent)
+            print(url.lastPathComponent)
+            self.tearDownInteraction(webView: webView)
+        }
+        self.loadCounts[webView] = 1
+        webView.load(URLRequest(url: URL(string: "https://downforacross.com/beta/play/\(puzzleId)")!))
+    }
+    
+    func tearDownInteraction(webView: WKWebView) {
+        self.completionBlocks[webView] = nil
+        self.timeoutTimers[webView]?.invalidate()
+        self.timeoutTimers[webView] = nil
+        self.loadCounts[webView] = nil
     }
     
 }

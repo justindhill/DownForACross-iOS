@@ -11,7 +11,10 @@ import WebKit
 class PuzzleViewController: UIViewController {
     
     let puzzle: Puzzle
+    let puzzleId: String
     let userId: String
+    let siteInteractor: SiteInteractor
+    let api: API
     
     var puzzleView: PuzzleView!
     lazy var gameClient: GameClient = {
@@ -21,19 +24,22 @@ class PuzzleViewController: UIViewController {
     }()
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    init(puzzle: Puzzle, userId: String) {
-        self.puzzle = puzzle
+    init(puzzleListEntry: PuzzleListEntry, userId: String, siteInteractor: SiteInteractor, api: API) {
+        self.puzzle = puzzleListEntry.content
+        self.puzzleId = puzzleListEntry.pid
         self.userId = userId
+        self.siteInteractor = siteInteractor
+        self.api = api
         super.init(nibName: nil, bundle: nil)
     }
     
     override func viewDidLoad() {
-        self.gameClient.connect()
         self.view.backgroundColor = .systemBackground
 
         self.puzzleView = PuzzleView(puzzleGrid: puzzle.grid)
         self.puzzleView.translatesAutoresizingMaskIntoConstraints = false
         self.puzzleView.delegate = self
+        self.navigationItem.title = self.puzzle.info.title
         self.view.addSubview(self.puzzleView)
 
         NSLayoutConstraint.activate([
@@ -41,11 +47,25 @@ class PuzzleViewController: UIViewController {
             self.puzzleView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
             self.puzzleView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor)
         ])
+        
+        self.interactable = false
+        self.siteInteractor.createGame(puzzleId: self.puzzleId) { gameId in
+            self.gameClient.connect(gameId: gameId)
+            self.interactable = true
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.puzzleView.becomeFirstResponder()
+    }
+    
+    var interactable: Bool {
+        get { self.puzzleView.isUserInteractionEnabled }
+        set {
+            self.puzzleView.isUserInteractionEnabled = newValue
+            self.puzzleView.alpha = newValue ? 1 : 0.5
+        }
     }
 }
 

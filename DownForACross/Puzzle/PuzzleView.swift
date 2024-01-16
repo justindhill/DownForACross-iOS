@@ -55,7 +55,8 @@ class PuzzleView: UIView {
         return true
     }
     
-    var userCursorIndicatorLayer: CALayer = CALayer()
+    var userCursorLetterIndicatorLayer: CALayer = CALayer()
+    var userCursorWordIndicatorLayer: CALayer = CALayer()
     var cursorIndicatorLayers: [CALayer] = []
     var numberTextLayers: [CATextLayer] = []
     var fillTextLayers: [CATextLayer] = []
@@ -115,7 +116,8 @@ class PuzzleView: UIView {
         guard self.puzzleGrid.count > 0 && self.puzzleGrid[0].count > 0 else { return }
         
         self.scrollView.frame = self.bounds
-        self.puzzleContainerView.frame = self.bounds
+        self.puzzleContainerView.frame = self.bounds.applying(CGAffineTransform(scaleX: self.scrollView.zoomScale, 
+                                                                                y: self.scrollView.zoomScale))
         
         let cellCount = self.cellCount
         let cellSideLength = self.cellSideLength
@@ -126,7 +128,36 @@ class PuzzleView: UIView {
         let numberFont = UIFont.systemFont(ofSize: ceil(baseFillFont.pointSize / 2.8))
         let numberPadding: CGFloat = cellSideLength / 20
         
-        let separatorCount = 2 * self.puzzleGrid.count - 2
+        // user cursor word indicator
+        if self.userCursorWordIndicatorLayer.superlayer == nil {
+            self.puzzleContainerView.layer.addSublayer(self.userCursorWordIndicatorLayer)
+            self.userCursorWordIndicatorLayer.backgroundColor = UIColor.systemPink.withAlphaComponent(0.1).cgColor
+            let transition = CATransition()
+            transition.duration = 0.05
+            self.userCursorWordIndicatorLayer.actions = [
+                "bounds": transition,
+                "position": transition,
+                "size": transition
+            ]
+        }
+        
+        let wordExtent = self.findCurrentWordExtent()
+        switch self.userCursor.direction {
+            case .across:
+                self.userCursorWordIndicatorLayer.frame = CGRect(
+                    x: cellSideLength * CGFloat(wordExtent.location),
+                    y: cellSideLength * CGFloat(self.userCursor.coordinates.row),
+                    width: cellSideLength * CGFloat(wordExtent.length),
+                    height: cellSideLength)
+            case .down:
+                self.userCursorWordIndicatorLayer.frame = CGRect(
+                    x: cellSideLength * CGFloat(self.userCursor.coordinates.cell),
+                    y: cellSideLength * CGFloat(wordExtent.location),
+                    width: cellSideLength,
+                    height: cellSideLength * CGFloat(wordExtent.length))
+        }
+        
+        let separatorCount = self.puzzleGrid.count * self.puzzleGrid[0].count - 2
         self.updateTextLayerCount(target: cellCount, font: baseFillFont)
         self.updateSeparatorCount(target: separatorCount)
         
@@ -223,16 +254,17 @@ class PuzzleView: UIView {
             print(id)
         }
         
-        // user cursor
-        if self.userCursorIndicatorLayer.superlayer == nil {
-            self.puzzleContainerView.layer.addSublayer(self.userCursorIndicatorLayer)
-            self.userCursorIndicatorLayer.borderColor = UIColor.systemPink.cgColor
-            self.userCursorIndicatorLayer.borderWidth = 2
+        // user cursor letter indicator
+        if self.userCursorLetterIndicatorLayer.superlayer == nil {
+            self.puzzleContainerView.layer.addSublayer(self.userCursorLetterIndicatorLayer)
+            self.userCursorLetterIndicatorLayer.borderColor = UIColor.systemPink.cgColor
+            self.userCursorLetterIndicatorLayer.borderWidth = 2
         }
-        self.userCursorIndicatorLayer.frame = CGRect(x: CGFloat(self.userCursor.coordinates.cell) * cellSideLength,
+        self.userCursorLetterIndicatorLayer.frame = CGRect(x: CGFloat(self.userCursor.coordinates.cell) * cellSideLength,
                                                      y: CGFloat(self.userCursor.coordinates.row) * cellSideLength,
                                                      width: cellSideLength,
                                                      height: cellSideLength)
+        
         
         self.invalidateIntrinsicContentSize()
     }
@@ -372,9 +404,68 @@ class PuzzleView: UIView {
         self.userCursor = UserCursor(coordinates: candidate, direction: self.userCursor.direction)
     }
     
+    func findCurrentWordExtent() -> NSRange {
+        var firstLetterIndex = self.userCursor.direction == .across ? self.userCursor.coordinates.cell : self.userCursor.coordinates.row
+        var lastLetterIndex = firstLetterIndex
+        var firstLetterFound = false
+        var lastLetterFound = false
+        
+        while !(firstLetterFound && lastLetterFound) {
+            if !firstLetterFound {
+                if firstLetterIndex - 1 < 0 {
+                    firstLetterFound = true
+                } else {
+                    switch self.userCursor.direction {
+                        case .across:
+                            let candidateCell = self.puzzleGrid[self.userCursor.coordinates.row][firstLetterIndex - 1]
+                            if candidateCell == "." {
+                                firstLetterFound = true
+                            } else {
+                                firstLetterIndex -= 1
+                            }
+                        case .down:
+                            let candidateCell = self.puzzleGrid[firstLetterIndex - 1][self.userCursor.coordinates.cell]
+                            if candidateCell == "." {
+                                firstLetterFound = true
+                            } else {
+                                firstLetterIndex -= 1
+                            }
+                    }
+                }
+            }
+            
+            if !lastLetterFound {
+                if self.userCursor.direction == .across && lastLetterIndex + 1 > self.puzzleGrid[0].count - 1 {
+                    lastLetterFound = true
+                } else if self.userCursor.direction == .down && lastLetterIndex + 1 > self.puzzleGrid.count - 1 {
+                    lastLetterFound = true
+                } else {
+                    switch self.userCursor.direction {
+                        case .across:
+                            let candidateCell = self.puzzleGrid[self.userCursor.coordinates.row][lastLetterIndex + 1]
+                            if candidateCell == "." {
+                                lastLetterFound = true
+                            } else {
+                                lastLetterIndex += 1
+                            }
+                        case .down:
+                            let candidateCell = self.puzzleGrid[lastLetterIndex + 1][self.userCursor.coordinates.cell]
+                            if candidateCell == "." {
+                                lastLetterFound = true
+                            } else {
+                                lastLetterIndex += 1
+                            }
+                    }
+                }
+            }
+        }
+        
+        let range = NSRange(location: firstLetterIndex, length: lastLetterIndex - firstLetterIndex + 1)
+        return range
+    }
+    
     @objc func tapGestureRecognizerTriggered(_ tap: UITapGestureRecognizer) {
-        let sideLength = Int(self.cellSideLength)
-
+        let sideLength = Int(self.cellSideLength * self.scrollView.zoomScale)
         let pointCoords = tap.location(in: self.scrollView)
         let cellCoords = CellCoordinates(row: Int(pointCoords.y) / sideLength,
                                          cell: Int(pointCoords.x) / sideLength)
@@ -388,6 +479,51 @@ class PuzzleView: UIView {
         } else {
             self.userCursor = UserCursor(coordinates: cellCoords, direction: self.userCursor.direction)
         }
+    }
+    
+    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        let keys = presses.compactMap({ $0.key?.keyCode })
+        if keys.count == 1 {
+            switch keys.first {
+                case .keyboardRightArrow:
+                    if self.userCursor.direction == .down {
+                        self.toggleDirection()
+                    } else {
+                        self.advanceUserCursor()
+                    }
+                case .keyboardLeftArrow:
+                    if self.userCursor.direction == .down {
+                        self.toggleDirection()
+                    } else {
+                        self.retreatUserCursorIfNotAtNonemptyEdge()
+                    }
+                case .keyboardDownArrow:
+                    if self.userCursor.direction == .across {
+                        self.toggleDirection()
+                    } else {
+                        self.advanceUserCursor()
+                    }
+                case .keyboardUpArrow:
+                    if self.userCursor.direction == .across {
+                        self.toggleDirection()
+                    } else {
+                        self.retreatUserCursorIfNotAtNonemptyEdge()
+                    }
+                default: break
+            }
+        } else if keys.count == 2 {
+            if keys.contains(.keyboardTab) {
+                if keys.contains(.keyboardLeftShift) || keys.contains(.keyboardRightShift) {
+                    // retreat to previous word
+                } else {
+                    // advance to next word
+                }
+            }
+        }
+    }
+    
+    func toggleDirection() {
+        self.userCursor = UserCursor(coordinates: self.userCursor.coordinates, direction: self.userCursor.direction.opposite)
     }
     
 }
@@ -415,7 +551,7 @@ extension PuzzleView: UIKeyInput {
     
     func insertText(_ text: String) {
         if text == " " {
-            self.userCursor = UserCursor(coordinates: self.userCursor.coordinates, direction: self.userCursor.direction.opposite)
+            self.toggleDirection()
             return
         } else if text == "\n" {
             self.advanceUserCursor()
