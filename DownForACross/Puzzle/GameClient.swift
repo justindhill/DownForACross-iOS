@@ -60,11 +60,15 @@ class GameClient: NSObject, URLSessionDelegate {
         
         socket.on("connect") { data, ack in
             print("connected!")
-            socket.emit("join_game", gameId)
-            socket.emit("game_event", UpdateDisplayNameEvent(userId: self.userId,
-                                                             gameId: self.gameId,
-                                                             displayName: "It me, Justin").eventPayload())
-            socket.emit("sync_all_game_events", self.gameId)
+            socket.emitWithAckNoOp("join_game", gameId)
+            socket.emitWithAckNoOp("game_event", UpdateDisplayNameEvent(userId: self.userId,
+                                                                        gameId: self.gameId,
+                                                                        displayName: "It me, Justin").eventPayload())
+            
+            socket.emitWithAck("sync_all_game_events", self.gameId).timingOut(after: 5) { data in
+                guard let events = data.first as? [[String: Any]] else { return }
+                self.handleGameEvents(events)
+            }
         }
         
         
@@ -73,8 +77,16 @@ class GameClient: NSObject, URLSessionDelegate {
         }
         
         socket.on("game_event") { data, ack in
-            guard let payload = data.first as? [String: Any],
-                  let type = payload["type"] as? String else {
+            guard let events = data as? [[String: Any]] else { return }
+            self.handleGameEvents(events)
+        }
+        
+        socket.connect()
+    }
+    
+    func handleGameEvents(_ data: [[String: Any]]) {
+        for payload in data {
+            guard let type = payload["type"] as? String else {
                 print("Encountered invalid game event payload")
                 return
             }
@@ -89,12 +101,12 @@ class GameClient: NSObject, URLSessionDelegate {
                 } else {
                     self.solution[event.cell.row][event.cell.cell] = nil
                 }
+            } else if type == "updateColor" {
+                let event = UpdateColorEvent(payload: payload)
             } else {
                 print("unknown game_event type: \(type)")
             }
         }
-        
-        socket.connect()
     }
     
     func enter(value: String?, atCoordinates coordinates: CellCoordinates) {
@@ -106,7 +118,7 @@ class GameClient: NSObject, URLSessionDelegate {
         }
         
         self.solution[coordinates.row][coordinates.cell] = resolvedValue
-        self.socketManager.defaultSocket.emit(
+        self.socketManager.defaultSocket.emitWithAckNoOp(
             "game_event",
             UpdateCellEvent(userId: self.userId, 
                             gameId: self.gameId,
@@ -115,7 +127,7 @@ class GameClient: NSObject, URLSessionDelegate {
     }
     
     func moveUserCursor(to coordinates: CellCoordinates) {
-        self.socketManager.defaultSocket.emit(
+        self.socketManager.defaultSocket.emitWithAckNoOp(
             "game_event",
             UpdateCursorEvent(userId: self.userId, 
                               gameId: self.gameId,

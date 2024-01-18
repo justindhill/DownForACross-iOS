@@ -509,7 +509,8 @@ class PuzzleView: UIView {
                     } else {
                         self.retreatUserCursorIfNotAtNonemptyEdge()
                     }
-                default: break
+                default:
+                    super.pressesBegan(presses, with: event)
             }
         } else if keys.count == 2 {
             if keys.contains(.keyboardTab) {
@@ -518,7 +519,11 @@ class PuzzleView: UIView {
                 } else {
                     // advance to next word
                 }
+            } else {
+                super.pressesBegan(presses, with: event)
             }
+        } else {
+            super.pressesBegan(presses, with: event)
         }
     }
     

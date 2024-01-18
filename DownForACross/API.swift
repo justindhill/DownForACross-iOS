@@ -39,22 +39,4 @@ class API {
         return decoded
     }
     
-    func createGame(puzzleId: String) async throws {
-        var urlComponents = self.baseURLComponents
-        urlComponents.path = "/api/game"
-        
-        guard let url = urlComponents.url else {
-            throw NSError(domain: "API", code: 1)
-        }
-        
-        var request = URLRequest(url: url)
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.timeoutInterval = 5
-        request.httpBody = "{\"pid\": \"\(puzzleId)\", \"gid\": \"1234\"}".data(using: .utf8)
-        request.httpMethod = "POST"
-        
-        let (data, _) = try await session.data(for: request)
-        print(String(data: data, encoding: .utf8))
-    }
-    
 }
