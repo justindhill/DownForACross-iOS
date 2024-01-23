@@ -31,6 +31,8 @@ class PuzzleView: UIView {
     weak var delegate: PuzzleViewDelegate?
     
     var puzzleGrid: [[String?]]
+    var acrossSequence: [CellCoordinates] = []
+    var downSequence: [CellCoordinates] = []
     var solution: [[CellEntry?]] {
         didSet { self.setNeedsLayout() }
     }
@@ -50,6 +52,8 @@ class PuzzleView: UIView {
     }
     
     lazy var tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapGestureRecognizerTriggered))
+    
+    var currentDepressedKeys = Set<UIKeyboardHIDUsage>()
     
     override var canBecomeFirstResponder: Bool {
         return true
@@ -96,6 +100,9 @@ class PuzzleView: UIView {
         self.addSubview(self.scrollView)
         self.scrollView.addSubview(self.puzzleContainerView)
         self.scrollView.addGestureRecognizer(self.tapGestureRecognizer)
+        
+        self.layer.shouldRasterize = true
+        self.layer.rasterizationScale = 5
     }
     
     var cellCount: Int {
@@ -163,6 +170,10 @@ class PuzzleView: UIView {
         
         var textLayerIndex = 0
         var cellNumber = 1
+        
+        var acrossSequence: [CellCoordinates] = []
+        var downSequence: [CellCoordinates] = []
+        
         for (rowIndex, row) in self.puzzleGrid.enumerated() {
             for (itemIndex, item) in row.enumerated() {
                 let layer = self.fillTextLayers[textLayerIndex]
@@ -181,6 +192,23 @@ class PuzzleView: UIView {
                                                    y: CGFloat(rowIndex) * cellSideLength + numberPadding,
                                                    width: cellSideLength,
                                                    height: numberFont.lineHeight)
+                    
+                    if  // at the beginning or the previous one is a word boundary
+                        (rowIndex == 0 || (self.puzzleGrid[rowIndex - 1][itemIndex] == ".")) &&
+                        // not at the end
+                        (rowIndex < self.puzzleGrid.count - 1 &&
+                        // next one isn't a word boundary
+                        self.puzzleGrid[rowIndex + 1][itemIndex] != ".") {
+                        downSequence.append(CellCoordinates(row: rowIndex, cell: itemIndex))
+                    }
+                    
+                    if  // previous one is a word boundary or the beginning of the row
+                        (itemIndex == 0 || self.puzzleGrid[rowIndex][itemIndex - 1] == ".") &&
+                        // current one isn't a word boundary
+                        self.puzzleGrid[rowIndex][itemIndex] != "." {
+                        acrossSequence.append(CellCoordinates(row: rowIndex, cell: itemIndex))
+                    }
+                    
                     cellNumber += 1
                 }
                 
@@ -230,6 +258,9 @@ class PuzzleView: UIView {
                 textLayerIndex += 1
             }
         }
+        
+        self.acrossSequence = acrossSequence
+        self.downSequence = downSequence
         
         // separators
         for i in 0..<self.puzzleGrid.count - 1 {
@@ -336,7 +367,7 @@ class PuzzleView: UIView {
         }
     }
     
-    func advanceUserCursor() {
+    func advanceUserCursorToNextLetter() {
         let current = self.userCursor.coordinates
         func nextCandidate(after lastCandidate: CellCoordinates) -> CellCoordinates {
             switch self.userCursor.direction {
@@ -370,7 +401,7 @@ class PuzzleView: UIView {
         self.userCursor = UserCursor(coordinates: candidate, direction: self.userCursor.direction)
     }
     
-    func retreatUserCursorIfNotAtNonemptyEdge() {
+    func retreatUserCursorToPreviousLetterIfNotAtNonemptyEdge() {
         let current = self.userCursor.coordinates
         func nextCandidate(after lastCandidate: CellCoordinates) -> CellCoordinates {
             switch self.userCursor.direction {
@@ -402,6 +433,40 @@ class PuzzleView: UIView {
         }
         
         self.userCursor = UserCursor(coordinates: candidate, direction: self.userCursor.direction)
+    }
+    
+    func advanceUserCursorToNextWord() {
+        let wordExtent = self.findCurrentWordExtent()
+        switch self.userCursor.direction {
+            case .across:
+                let firstLetterCoordinates = CellCoordinates(row: self.userCursor.coordinates.row, cell: wordExtent.location)
+                guard let currentIndex = self.acrossSequence.firstIndex(where: { $0 == firstLetterCoordinates }) else { return }
+                let newCoordinates = self.acrossSequence[(currentIndex + 1) % self.acrossSequence.count]
+                self.userCursor.coordinates = newCoordinates
+            case .down:
+                let firstLetterCoordinates = CellCoordinates(row: wordExtent.location, cell: self.userCursor.coordinates.cell)
+                guard let currentIndex = self.downSequence.firstIndex(where: { $0 == firstLetterCoordinates }) else { return }
+                let newCoordinates = self.downSequence[(currentIndex + 1) % self.downSequence.count]
+                self.userCursor.coordinates = newCoordinates
+        }
+    }
+    
+    func retreatUserCursorToPreviousWord() {
+        let wordExtent = self.findCurrentWordExtent()
+        switch self.userCursor.direction {
+            case .across:
+                let firstLetterCoordinates = CellCoordinates(row: self.userCursor.coordinates.row, cell: wordExtent.location)
+                guard let currentIndex = self.acrossSequence.firstIndex(where: { $0 == firstLetterCoordinates }) else { return }
+                let newIndex = (currentIndex == 0) ? self.acrossSequence.count - 1 : currentIndex - 1
+                let newCoordinates = self.acrossSequence[newIndex]
+                self.userCursor.coordinates = newCoordinates
+            case .down:
+                let firstLetterCoordinates = CellCoordinates(row: wordExtent.location, cell: self.userCursor.coordinates.cell)
+                guard let currentIndex = self.downSequence.firstIndex(where: { $0 == firstLetterCoordinates }) else { return }
+                let newIndex = (currentIndex == 0) ? self.downSequence.count - 1 : currentIndex - 1
+                let newCoordinates = self.downSequence[newIndex]
+                self.userCursor.coordinates = newCoordinates
+        }
     }
     
     func findCurrentWordExtent() -> NSRange {
@@ -482,42 +547,42 @@ class PuzzleView: UIView {
     }
     
     override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        let keys = presses.compactMap({ $0.key?.keyCode })
-        if keys.count == 1 {
-            switch keys.first {
+        self.currentDepressedKeys.formUnion(presses.compactMap({ $0.key?.keyCode }))
+        if self.currentDepressedKeys.count == 1 {
+            switch self.currentDepressedKeys.first {
                 case .keyboardRightArrow:
                     if self.userCursor.direction == .down {
                         self.toggleDirection()
                     } else {
-                        self.advanceUserCursor()
+                        self.advanceUserCursorToNextLetter()
                     }
                 case .keyboardLeftArrow:
                     if self.userCursor.direction == .down {
                         self.toggleDirection()
                     } else {
-                        self.retreatUserCursorIfNotAtNonemptyEdge()
+                        self.retreatUserCursorToPreviousLetterIfNotAtNonemptyEdge()
                     }
                 case .keyboardDownArrow:
                     if self.userCursor.direction == .across {
                         self.toggleDirection()
                     } else {
-                        self.advanceUserCursor()
+                        self.advanceUserCursorToNextLetter()
                     }
                 case .keyboardUpArrow:
                     if self.userCursor.direction == .across {
                         self.toggleDirection()
                     } else {
-                        self.retreatUserCursorIfNotAtNonemptyEdge()
+                        self.retreatUserCursorToPreviousLetterIfNotAtNonemptyEdge()
                     }
+                case .keyboardTab:
+                    self.advanceUserCursorToNextWord()
                 default:
                     super.pressesBegan(presses, with: event)
             }
-        } else if keys.count == 2 {
-            if keys.contains(.keyboardTab) {
-                if keys.contains(.keyboardLeftShift) || keys.contains(.keyboardRightShift) {
-                    // retreat to previous word
-                } else {
-                    // advance to next word
+        } else if self.currentDepressedKeys.count == 2 {
+            if self.currentDepressedKeys.contains(.keyboardTab) {
+                if self.currentDepressedKeys.contains(.keyboardLeftShift) || self.currentDepressedKeys.contains(.keyboardRightShift) {
+                    self.retreatUserCursorToPreviousWord()
                 }
             } else {
                 super.pressesBegan(presses, with: event)
@@ -525,6 +590,10 @@ class PuzzleView: UIView {
         } else {
             super.pressesBegan(presses, with: event)
         }
+    }
+    
+    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        presses.compactMap({ $0.key?.keyCode }).forEach({ self.currentDepressedKeys.remove($0) })
     }
     
     func toggleDirection() {
@@ -559,15 +628,15 @@ extension PuzzleView: UIKeyInput {
             self.toggleDirection()
             return
         } else if text == "\n" {
-            self.advanceUserCursor()
+            self.advanceUserCursorToNextLetter()
         } else {
             self.delegate?.puzzleView(self, didEnterText: text.uppercased(), atCoordinates: self.userCursor.coordinates)
-            self.advanceUserCursor()
+            self.advanceUserCursorToNextLetter()
         }
     }
     
     func deleteBackward() {
-        self.retreatUserCursorIfNotAtNonemptyEdge()
+        self.retreatUserCursorToPreviousLetterIfNotAtNonemptyEdge()
         self.delegate?.puzzleView(self, didEnterText: nil, atCoordinates: self.userCursor.coordinates)
     }
     
