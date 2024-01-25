@@ -5,7 +5,8 @@
 //  Created by Justin Hill on 1/18/24.
 //
 
-import Foundation
+import UIKit
+import RegexBuilder
 
 struct UpdateColorEvent: GameEvent {
     
@@ -13,12 +14,53 @@ struct UpdateColorEvent: GameEvent {
     var type: String = "updateColor"
     
     var gameId: String
+    var userId: String
+    var color: UIColor
+    
     var paramsDictionary: [String : Any?] {
         [:]
     }
     
-    init(payload: [String: Any]) {
+    init(payload: [String: Any]) throws {
         self.gameId = ""
+        guard let params = payload["params"] as? [String: Any],
+              let userId = params["id"] as? String,
+              let hslString = params["color"] as? String else {
+            throw NSError(domain: "UpdateColorEventErrorDomain", code: 0)
+        }
+        
+        self.userId = userId
+        self.color = try Self.parseHSL(string: hslString)
+    }
+    
+    static func parseHSL(string: String) throws -> UIColor {
+        let numberFormatter = NumberFormatter()
+        let hue = Reference(CGFloat.self)
+        let saturation = Reference(CGFloat.self)
+        let luminance = Reference(CGFloat.self)
+        
+        let floatTransformBlock: (Substring) -> CGFloat? = { match in
+            if let floatValue = numberFormatter.number(from: String(match))?.floatValue {
+                return CGFloat(floatValue)
+            }
+            return nil
+        }
+        
+        let hslRegex = Regex {
+            "hsl("
+            TryCapture(as: hue, { OneOrMore(.digit) }, transform: floatTransformBlock)
+            ","
+            TryCapture(as: saturation, { OneOrMore(.digit) }, transform: floatTransformBlock)
+            "%,"
+            TryCapture(as: luminance, { OneOrMore(.digit) }, transform: floatTransformBlock)
+            "%)"
+        }
+        
+        guard let result = try hslRegex.firstMatch(in: string) else {
+            throw NSError(domain: "UpdateColorEventErrorDomain", code: 1)
+        }
+        
+        return UIColor(UIColor.HSL(hue: result[hue], saturation: result[saturation], lightness: result[luminance]))
     }
     
 }

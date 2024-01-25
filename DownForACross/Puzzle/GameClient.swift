@@ -9,7 +9,7 @@ import Foundation
 import SocketIO
 
 protocol GameClientDelegate: AnyObject {
-    func gameClient(_ client: GameClient, cursorsDidChange: [String: CellCoordinates])
+    func gameClient(_ client: GameClient, cursorsDidChange: [String: CellCoordinates], colors: [String: UIColor])
     func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]])
 }
 
@@ -32,7 +32,13 @@ class GameClient: NSObject, URLSessionDelegate {
     
     var cursors: [String: CellCoordinates] = [:] {
         didSet {
-            self.delegate?.gameClient(self, cursorsDidChange: self.cursors)
+            self.delegate?.gameClient(self, cursorsDidChange: self.cursors, colors: self.cursorColors)
+        }
+    }
+    
+    var cursorColors: [String: UIColor] = [:] {
+        didSet {
+            self.delegate?.gameClient(self, cursorsDidChange: self.cursors, colors: self.cursorColors)
         }
     }
     
@@ -91,20 +97,26 @@ class GameClient: NSObject, URLSessionDelegate {
                 return
             }
             
-            if type == "updateCursor" {
-                let event = UpdateCursorEvent(payload: payload)
-                self.cursors[event.userId] = event.cell
-            } else if type == "updateCell" {
-                let event = UpdateCellEvent(payload: payload)
-                if let value = event.value {
-                    self.solution[event.cell.row][event.cell.cell] = CellEntry(userId: event.userId, value: value)
+            do {
+                if type == "updateCursor" {
+                    let event = UpdateCursorEvent(payload: payload)
+                    self.cursors[event.userId] = event.cell
+                } else if type == "updateCell" {
+                    let event = UpdateCellEvent(payload: payload)
+                    if let value = event.value {
+                        self.solution[event.cell.row][event.cell.cell] = CellEntry(userId: event.userId, value: value)
+                    } else {
+                        self.solution[event.cell.row][event.cell.cell] = nil
+                    }
+                } else if type == "updateColor" {
+                    let event = try UpdateColorEvent(payload: payload)
+                    self.cursorColors[event.userId] = event.color
                 } else {
-                    self.solution[event.cell.row][event.cell.cell] = nil
+                    print("unknown game_event type: \(type)")
                 }
-            } else if type == "updateColor" {
-                let event = UpdateColorEvent(payload: payload)
-            } else {
-                print("unknown game_event type: \(type)")
+            } catch {
+                print("Encountered an error while parsing \"\(type)\" event")
+                print(error)
             }
         }
     }

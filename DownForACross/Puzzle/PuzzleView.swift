@@ -18,6 +18,10 @@ class PuzzleView: UIView {
     typealias UserCursor = (coordinates: CellCoordinates, direction: Direction)
     typealias SequenceEntry = (cellNumber: Int, coordinates: CellCoordinates)
     
+    enum Constant {
+        static let otherPlayerCursorOpacity: CGFloat = 0.3
+    }
+    
     enum Direction {
         case across
         case down
@@ -40,6 +44,11 @@ class PuzzleView: UIView {
     var solution: [[CellEntry?]] {
         didSet { self.setNeedsLayout() }
     }
+    
+    var cursorColors: [String: UIColor] {
+        didSet { self.setNeedsLayout() }
+    }
+    
     
     var cursors: [String: CellCoordinates] {
         didSet { self.setNeedsLayout() }
@@ -65,7 +74,7 @@ class PuzzleView: UIView {
     
     var userCursorLetterIndicatorLayer: CALayer = CALayer()
     var userCursorWordIndicatorLayer: CALayer = CALayer()
-    var cursorIndicatorLayers: [CALayer] = []
+    var cursorIndicatorLayers: [String: CALayer] = [:]
     var numberTextLayers: [CATextLayer] = []
     var fillTextLayers: [CATextLayer] = []
     var separatorLayers: [CALayer] = []
@@ -97,6 +106,7 @@ class PuzzleView: UIView {
                                                count: puzzleGrid[0].count),
                               count: puzzleGrid.count)
         self.cursors = [:]
+        self.cursorColors = [:]
         super.init(frame: .zero)
         
         self.puzzleContainerView.layer.borderWidth = 0.5
@@ -284,13 +294,20 @@ class PuzzleView: UIView {
         
         // cursors
         self.syncCursorLayerCount()
-        for (index, (id, coordinates)) in self.cursors.enumerated() {
-            let layer = self.cursorIndicatorLayers[index]
+        for (index, (userId, coordinates)) in self.cursors.enumerated() {
+            guard let layer = self.cursorIndicatorLayers[userId] else { return }
+
+            let color: UIColor
+            if let userColor = self.cursorColors[userId] {
+                color = userColor
+            } else {
+                color = .lightGray
+            }
+            layer.backgroundColor = color.withAlphaComponent(Constant.otherPlayerCursorOpacity).cgColor
             layer.frame = CGRect(x: CGFloat(coordinates.cell) * cellSideLength,
                                  y: CGFloat(coordinates.row) * cellSideLength,
                                  width: cellSideLength,
                                  height: cellSideLength)
-            print(id)
         }
         
         // user cursor letter indicator
@@ -332,14 +349,11 @@ class PuzzleView: UIView {
     }
     
     func syncCursorLayerCount() {
-        while self.cursorIndicatorLayers.count != self.cursors.count {
-            if self.cursorIndicatorLayers.count < self.cursors.count {
+        for userId in self.cursors.keys {
+            if self.cursorIndicatorLayers[userId] == nil {
                 let layer = CALayer()
-                layer.backgroundColor = UIColor.systemPurple.cgColor
+                self.cursorIndicatorLayers[userId] = layer
                 self.puzzleContainerView.layer.insertSublayer(layer, at: 0)
-                self.cursorIndicatorLayers.append(layer)
-            } else {
-                self.cursorIndicatorLayers.removeLast().removeFromSuperlayer()
             }
         }
     }

@@ -49,6 +49,11 @@ class PuzzleViewController: UIViewController {
         NotificationCenter.default.addObserver(forName: UIControl.keyboardWillHideNotification, object: nil, queue: nil) { note in
             self.currentKeyboardHeight = 0
         }
+        
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "doc.on.doc"), 
+                                                                 style: .plain,
+                                                                 target: self,
+                                                                 action: #selector(copyGameURLToPasteboard))
     }
     
     override func viewDidLoad() {
@@ -121,6 +126,11 @@ class PuzzleViewController: UIViewController {
             self.puzzleView.alpha = newValue ? 1 : 0.5
         }
     }
+    
+    @objc func copyGameURLToPasteboard() {
+        let urlString = "https://downforacross.com/beta/game/\(self.gameClient.gameId)"
+        UIPasteboard.general.url = URL(string: urlString)!
+    }
 }
 
 extension PuzzleViewController: GameClientDelegate {
@@ -129,8 +139,9 @@ extension PuzzleViewController: GameClientDelegate {
         self.puzzleView.solution = solution
     }
     
-    func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: CellCoordinates]) {
+    func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: CellCoordinates], colors: [String: UIColor]) {
         self.puzzleView.cursors = cursors.filter({ $0.key != self.userId })
+        self.puzzleView.cursorColors = colors.filter({ $0.key != self.userId })
     }
     
 }
