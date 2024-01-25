@@ -1,1 +1,2 @@
-# Not affiliated with downforacross.com!
+# DownForACross iOS
+Not affiliated with downforacross.com!
