@@ -10,11 +10,13 @@ import UIKit
 protocol PuzzleViewDelegate: AnyObject {
     func puzzleView(_ puzzleView: PuzzleView, didEnterText text: String?, atCoordinates coordinates: CellCoordinates)
     func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToCoordinates coordinates: CellCoordinates)
+    func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToClueIndex clueIndex: Int, direction: PuzzleView.Direction)
 }
 
 class PuzzleView: UIView {
 
     typealias UserCursor = (coordinates: CellCoordinates, direction: Direction)
+    typealias SequenceEntry = (cellNumber: Int, coordinates: CellCoordinates)
     
     enum Direction {
         case across
@@ -31,8 +33,10 @@ class PuzzleView: UIView {
     weak var delegate: PuzzleViewDelegate?
     
     var puzzleGrid: [[String?]]
-    var acrossSequence: [CellCoordinates] = []
-    var downSequence: [CellCoordinates] = []
+    var acrossSequence: [SequenceEntry] = []
+    var downSequence: [SequenceEntry] = []
+    var acrossSequenceToCellNumberMap: [Int: Int] = [:]
+    var downSequenceToCellNumberMap: [Int: Int] = [:]
     var solution: [[CellEntry?]] {
         didSet { self.setNeedsLayout() }
     }
@@ -70,6 +74,7 @@ class PuzzleView: UIView {
         let scrollView = UIScrollView()
         scrollView.maximumZoomScale = 3.0
         scrollView.delegate = self
+        scrollView.contentInsetAdjustmentBehavior = .always
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.showsVerticalScrollIndicator = false
         return scrollView
@@ -123,8 +128,9 @@ class PuzzleView: UIView {
         guard self.puzzleGrid.count > 0 && self.puzzleGrid[0].count > 0 else { return }
         
         self.scrollView.frame = self.bounds
-        self.puzzleContainerView.frame = self.bounds.applying(CGAffineTransform(scaleX: self.scrollView.zoomScale, 
-                                                                                y: self.scrollView.zoomScale))
+        self.puzzleContainerView.frame = CGRect(origin: .zero, size: self.intrinsicContentSize)
+            .applying(CGAffineTransform(scaleX: self.scrollView.zoomScale,
+                                        y: self.scrollView.zoomScale))
         
         let cellCount = self.cellCount
         let cellSideLength = self.cellSideLength
@@ -149,6 +155,7 @@ class PuzzleView: UIView {
         }
         
         let wordExtent = self.findCurrentWordExtent()
+        let oldWordIndicatorFrame = self.userCursorWordIndicatorLayer.frame
         switch self.userCursor.direction {
             case .across:
                 self.userCursorWordIndicatorLayer.frame = CGRect(
@@ -171,8 +178,8 @@ class PuzzleView: UIView {
         var textLayerIndex = 0
         var cellNumber = 1
         
-        var acrossSequence: [CellCoordinates] = []
-        var downSequence: [CellCoordinates] = []
+        var acrossSequence: [SequenceEntry] = []
+        var downSequence: [SequenceEntry] = []
         
         for (rowIndex, row) in self.puzzleGrid.enumerated() {
             for (itemIndex, item) in row.enumerated() {
@@ -199,14 +206,14 @@ class PuzzleView: UIView {
                         (rowIndex < self.puzzleGrid.count - 1 &&
                         // next one isn't a word boundary
                         self.puzzleGrid[rowIndex + 1][itemIndex] != ".") {
-                        downSequence.append(CellCoordinates(row: rowIndex, cell: itemIndex))
+                        downSequence.append((cellNumber, CellCoordinates(row: rowIndex, cell: itemIndex)))
                     }
                     
                     if  // previous one is a word boundary or the beginning of the row
                         (itemIndex == 0 || self.puzzleGrid[rowIndex][itemIndex - 1] == ".") &&
                         // current one isn't a word boundary
                         self.puzzleGrid[rowIndex][itemIndex] != "." {
-                        acrossSequence.append(CellCoordinates(row: rowIndex, cell: itemIndex))
+                        acrossSequence.append((cellNumber, CellCoordinates(row: rowIndex, cell: itemIndex)))
                     }
                     
                     cellNumber += 1
@@ -271,7 +278,7 @@ class PuzzleView: UIView {
         for i in (self.puzzleGrid.count)..<self.puzzleGrid.count + self.puzzleGrid[0].count - 1 {
             let vertical = self.separatorLayers[i]
             let offset = CGFloat(i - self.puzzleGrid.count + 1) * cellSideLength
-            vertical.frame = CGRect(x: offset, y: 0, width: 0.5, height: self.frame.size.height)
+            vertical.frame = CGRect(x: offset, y: 0, width: 0.5, height: self.puzzleContainerView.frame.size.height)
         }
         
         // cursors
@@ -295,6 +302,10 @@ class PuzzleView: UIView {
                                                      y: CGFloat(self.userCursor.coordinates.row) * cellSideLength,
                                                      width: cellSideLength,
                                                      height: cellSideLength)
+        
+        if oldWordIndicatorFrame != self.userCursorWordIndicatorLayer.frame, let clueIndex = self.findCurrentClueCellNumber() {
+            self.delegate?.puzzleView(self, userCursorDidMoveToClueIndex: clueIndex.0, direction: clueIndex.1)
+        }
         
         
         self.invalidateIntrinsicContentSize()
@@ -440,14 +451,14 @@ class PuzzleView: UIView {
         switch self.userCursor.direction {
             case .across:
                 let firstLetterCoordinates = CellCoordinates(row: self.userCursor.coordinates.row, cell: wordExtent.location)
-                guard let currentIndex = self.acrossSequence.firstIndex(where: { $0 == firstLetterCoordinates }) else { return }
+                guard let currentIndex = self.acrossSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates }) else { return }
                 let newCoordinates = self.acrossSequence[(currentIndex + 1) % self.acrossSequence.count]
-                self.userCursor.coordinates = newCoordinates
+                self.userCursor.coordinates = newCoordinates.coordinates
             case .down:
                 let firstLetterCoordinates = CellCoordinates(row: wordExtent.location, cell: self.userCursor.coordinates.cell)
-                guard let currentIndex = self.downSequence.firstIndex(where: { $0 == firstLetterCoordinates }) else { return }
+                guard let currentIndex = self.downSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates }) else { return }
                 let newCoordinates = self.downSequence[(currentIndex + 1) % self.downSequence.count]
-                self.userCursor.coordinates = newCoordinates
+                self.userCursor.coordinates = newCoordinates.coordinates
         }
     }
     
@@ -456,16 +467,16 @@ class PuzzleView: UIView {
         switch self.userCursor.direction {
             case .across:
                 let firstLetterCoordinates = CellCoordinates(row: self.userCursor.coordinates.row, cell: wordExtent.location)
-                guard let currentIndex = self.acrossSequence.firstIndex(where: { $0 == firstLetterCoordinates }) else { return }
+                guard let currentIndex = self.acrossSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates }) else { return }
                 let newIndex = (currentIndex == 0) ? self.acrossSequence.count - 1 : currentIndex - 1
                 let newCoordinates = self.acrossSequence[newIndex]
-                self.userCursor.coordinates = newCoordinates
+                self.userCursor.coordinates = newCoordinates.coordinates
             case .down:
                 let firstLetterCoordinates = CellCoordinates(row: wordExtent.location, cell: self.userCursor.coordinates.cell)
-                guard let currentIndex = self.downSequence.firstIndex(where: { $0 == firstLetterCoordinates }) else { return }
+                guard let currentIndex = self.downSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates }) else { return }
                 let newIndex = (currentIndex == 0) ? self.downSequence.count - 1 : currentIndex - 1
                 let newCoordinates = self.downSequence[newIndex]
-                self.userCursor.coordinates = newCoordinates
+                self.userCursor.coordinates = newCoordinates.coordinates
         }
     }
     
@@ -532,6 +543,12 @@ class PuzzleView: UIView {
     @objc func tapGestureRecognizerTriggered(_ tap: UITapGestureRecognizer) {
         let sideLength = Int(self.cellSideLength * self.scrollView.zoomScale)
         let pointCoords = tap.location(in: self.scrollView)
+        
+        guard self.puzzleContainerView.frame.contains(pointCoords) else {
+            print("tapped outside puzzle")
+            return
+        }
+        
         let cellCoords = CellCoordinates(row: Int(pointCoords.y) / sideLength,
                                          cell: Int(pointCoords.x) / sideLength)
         
@@ -589,6 +606,26 @@ class PuzzleView: UIView {
             }
         } else {
             super.pressesBegan(presses, with: event)
+        }
+    }
+    
+    func findCurrentClueCellNumber() -> (Int, Direction)? {
+        let wordExtent = self.findCurrentWordExtent()
+        
+        let currentEntry: SequenceEntry?
+        switch self.userCursor.direction {
+            case .across:
+                let firstLetterCoordinates = CellCoordinates(row: self.userCursor.coordinates.row, cell: wordExtent.location)
+                currentEntry = self.acrossSequence.first(where: { $0.coordinates == firstLetterCoordinates })
+            case .down:
+                let firstLetterCoordinates = CellCoordinates(row: wordExtent.location, cell: self.userCursor.coordinates.cell)
+                currentEntry = self.downSequence.first(where: { $0.coordinates == firstLetterCoordinates })
+        }
+        
+        if let currentEntry {
+            return (currentEntry.cellNumber, self.userCursor.direction)
+        } else {
+            return nil
         }
     }
     

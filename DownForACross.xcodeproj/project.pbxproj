@@ -25,6 +25,7 @@
 		3B90033F2B35D5D90088729C /* SharedTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B90033E2B35D5D90088729C /* SharedTypes.swift */; };
 		3B9003412B3627CC0088729C /* SiteInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9003402B3627CC0088729C /* SiteInteractor.swift */; };
 		3B9003452B3630D70088729C /* UpdateDisplayNameEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9003442B3630D70088729C /* UpdateDisplayNameEvent.swift */; };
+		3BC12A3E2B613B730060C29F /* PuzzleToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */; };
 		3BF367302B313374005BB41E /* PuzzleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF3672F2B313374005BB41E /* PuzzleViewController.swift */; };
 		3BF367322B313675005BB41E /* PuzzleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF367312B313675005BB41E /* PuzzleView.swift */; };
 		3FBBB0BA39E20B71AA8BC150 /* Pods_DownForACross.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCAD19FE3621A683BFFFBB76 /* Pods_DownForACross.framework */; };
@@ -52,6 +53,7 @@
 		3B90033E2B35D5D90088729C /* SharedTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedTypes.swift; sourceTree = "<group>"; };
 		3B9003402B3627CC0088729C /* SiteInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteInteractor.swift; sourceTree = "<group>"; };
 		3B9003442B3630D70088729C /* UpdateDisplayNameEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateDisplayNameEvent.swift; sourceTree = "<group>"; };
+		3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleToolbarView.swift; sourceTree = "<group>"; };
 		3BF3672F2B313374005BB41E /* PuzzleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleViewController.swift; sourceTree = "<group>"; };
 		3BF367312B313675005BB41E /* PuzzleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleView.swift; sourceTree = "<group>"; };
 		BCAD19FE3621A683BFFFBB76 /* Pods_DownForACross.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownForACross.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -144,6 +146,7 @@
 				3B9003372B34CDA20088729C /* GameClient.swift */,
 				3BF3672F2B313374005BB41E /* PuzzleViewController.swift */,
 				3BF367312B313675005BB41E /* PuzzleView.swift */,
+				3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */,
 			);
 			path = Puzzle;
 			sourceTree = "<group>";
@@ -304,6 +307,7 @@
 				3B011DE82B30BED400BDB732 /* SceneDelegate.swift in Sources */,
 				3BF367302B313374005BB41E /* PuzzleViewController.swift in Sources */,
 				3B011DFD2B30C02F00BDB732 /* ListPuzzle.swift in Sources */,
+				3BC12A3E2B613B730060C29F /* PuzzleToolbarView.swift in Sources */,
 				3B90033B2B34E9AF0088729C /* UpdateCursorEvent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

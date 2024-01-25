@@ -17,6 +17,13 @@ class PuzzleViewController: UIViewController {
     let api: API
     
     var puzzleView: PuzzleView!
+    var keyboardToolbar: PuzzleToolbarView!
+    var currentKeyboardHeight: CGFloat = 0 {
+        didSet {
+            self.view.setNeedsLayout()
+        }
+    }
+    
     lazy var gameClient: GameClient = {
         let client = GameClient(puzzle: self.puzzle, userId: self.userId)
         client.delegate = self
@@ -31,6 +38,16 @@ class PuzzleViewController: UIViewController {
         self.siteInteractor = siteInteractor
         self.api = api
         super.init(nibName: nil, bundle: nil)
+        
+        NotificationCenter.default.addObserver(forName: UIControl.keyboardWillShowNotification, object: nil, queue: nil) { note in
+            guard let userInfo = note.userInfo else { return }
+            let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue.size
+            self.currentKeyboardHeight = keyboardSize.height
+        }
+        
+        NotificationCenter.default.addObserver(forName: UIControl.keyboardWillHideNotification, object: nil, queue: nil) { note in
+            self.currentKeyboardHeight = 0
+        }
     }
     
     override func viewDidLoad() {
@@ -39,14 +56,35 @@ class PuzzleViewController: UIViewController {
         self.puzzleView = PuzzleView(puzzleGrid: puzzle.grid)
         self.puzzleView.translatesAutoresizingMaskIntoConstraints = false
         self.puzzleView.delegate = self
+        
+        self.keyboardToolbar = PuzzleToolbarView()
+        self.keyboardToolbar.translatesAutoresizingMaskIntoConstraints = false
+        self.puzzleView(self.puzzleView, userCursorDidMoveToClueIndex: 1, direction: self.puzzleView.userCursor.direction)
+        
+        self.keyboardToolbar.leftButton.addAction(UIAction(handler: { [weak self] _ in
+            self?.puzzleView.retreatUserCursorToPreviousWord()
+        }), for: .primaryActionTriggered)
+        
+        self.keyboardToolbar.rightButton.addAction(UIAction(handler: { [weak self] _ in
+            self?.puzzleView.advanceUserCursorToNextWord()
+        }), for: .primaryActionTriggered)
+        
         self.navigationItem.title = self.puzzle.info.title
+        
         self.view.addSubview(self.puzzleView)
+        self.view.addSubview(self.keyboardToolbar)
 
         NSLayoutConstraint.activate([
             self.puzzleView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             self.puzzleView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-            self.puzzleView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor)
+            self.puzzleView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            self.puzzleView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            self.keyboardToolbar.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            self.keyboardToolbar.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            self.keyboardToolbar.bottomAnchor.constraint(equalTo: self.view.keyboardLayoutGuide.topAnchor)
         ])
+        
+//        safearea
         
         self.interactable = false
         self.siteInteractor.createGame(puzzleId: self.puzzleId) { gameId in
@@ -58,6 +96,12 @@ class PuzzleViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.puzzleView.becomeFirstResponder()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        self.additionalSafeAreaInsets.bottom = self.currentKeyboardHeight - self.view.safeAreaInsets.bottom
+        self.puzzleView.scrollView.contentInset.bottom = self.keyboardToolbar.frame.size.height
     }
     
     var interactable: Bool {
@@ -82,6 +126,16 @@ extension PuzzleViewController: GameClientDelegate {
 }
 
 extension PuzzleViewController: PuzzleViewDelegate {
+    
+    func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToClueIndex clueIndex: Int, direction: PuzzleView.Direction) {
+        print(self.puzzle.clues.down)
+        switch direction {
+            case .across:
+                self.keyboardToolbar.clueLabel.text = self.puzzle.clues.across[clueIndex]
+            case .down:
+                self.keyboardToolbar.clueLabel.text = self.puzzle.clues.down[clueIndex]
+        }
+    }
     
     func puzzleView(_ puzzleView: PuzzleView, didEnterText text: String?, atCoordinates coordinates: CellCoordinates) {
         self.gameClient.enter(value: text, atCoordinates: coordinates)
