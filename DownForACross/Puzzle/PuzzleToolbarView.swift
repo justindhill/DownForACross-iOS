@@ -28,18 +28,20 @@ class PuzzleToolbarView: UIVisualEffectView {
         self.contentView.addSubview(self.leftButton)
         self.contentView.addSubview(self.rightButton)
         self.contentView.addSubview(self.clueLabel)
+        self.contentView.preservesSuperviewLayoutMargins = false
+        self.contentView.layoutMargins = .zero
         
         NSLayoutConstraint.activate([
-            self.leftButton.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor),
-            self.leftButton.topAnchor.constraint(equalTo: self.contentView.topAnchor),
-            self.leftButton.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor),
+            self.leftButton.leadingAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.leadingAnchor),
+            self.leftButton.topAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.topAnchor),
+            self.leftButton.bottomAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.bottomAnchor),
             self.clueLabel.leadingAnchor.constraint(equalTo: self.leftButton.trailingAnchor),
-            self.clueLabel.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 8),
-            self.clueLabel.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -8),
+            self.clueLabel.topAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.topAnchor, constant: 8),
+            self.clueLabel.bottomAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.bottomAnchor, constant: -8),
             self.rightButton.leadingAnchor.constraint(equalTo: self.clueLabel.trailingAnchor),
-            self.rightButton.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor),
-            self.rightButton.topAnchor.constraint(equalTo: self.contentView.topAnchor),
-            self.rightButton.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor)
+            self.rightButton.trailingAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.trailingAnchor),
+            self.rightButton.topAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.topAnchor),
+            self.rightButton.bottomAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.bottomAnchor)
         ])
     }
     

@@ -18,6 +18,7 @@ class PuzzleViewController: UIViewController {
     
     var puzzleView: PuzzleView!
     var keyboardToolbar: PuzzleToolbarView!
+    var keyboardToolbarBottomConstraint: NSLayoutConstraint!
     var currentKeyboardHeight: CGFloat = 0 {
         didSet {
             self.view.setNeedsLayout()
@@ -73,6 +74,8 @@ class PuzzleViewController: UIViewController {
         
         self.view.addSubview(self.puzzleView)
         self.view.addSubview(self.keyboardToolbar)
+        
+        self.keyboardToolbarBottomConstraint = self.keyboardToolbar.bottomAnchor.constraint(equalTo: self.view.keyboardLayoutGuide.topAnchor)
 
         NSLayoutConstraint.activate([
             self.puzzleView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
@@ -81,11 +84,9 @@ class PuzzleViewController: UIViewController {
             self.puzzleView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
             self.keyboardToolbar.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             self.keyboardToolbar.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-            self.keyboardToolbar.bottomAnchor.constraint(equalTo: self.view.keyboardLayoutGuide.topAnchor)
+            self.keyboardToolbarBottomConstraint
         ])
-        
-//        safearea
-        
+                
         self.interactable = false
         self.siteInteractor.createGame(puzzleId: self.puzzleId) { gameId in
             self.gameClient.connect(gameId: gameId)
@@ -102,6 +103,14 @@ class PuzzleViewController: UIViewController {
         super.viewDidLayoutSubviews()
         self.additionalSafeAreaInsets.bottom = self.currentKeyboardHeight - self.view.safeAreaInsets.bottom
         self.puzzleView.scrollView.contentInset.bottom = self.keyboardToolbar.frame.size.height
+        
+        if self.currentKeyboardHeight == 0 {
+            self.keyboardToolbar.layoutMargins.bottom = self.view.safeAreaInsets.bottom
+            self.keyboardToolbarBottomConstraint.constant = self.view.safeAreaInsets.bottom
+        } else {
+            self.keyboardToolbar.layoutMargins.bottom = 0
+            self.keyboardToolbarBottomConstraint.constant = 0
+        }
     }
     
     var interactable: Bool {
