@@ -278,7 +278,8 @@ class PuzzleView: UIView {
         for i in (self.puzzleGrid.count)..<self.puzzleGrid.count + self.puzzleGrid[0].count - 1 {
             let vertical = self.separatorLayers[i]
             let offset = CGFloat(i - self.puzzleGrid.count + 1) * cellSideLength
-            vertical.frame = CGRect(x: offset, y: 0, width: 0.5, height: self.puzzleContainerView.frame.size.height)
+            let newHeight = self.puzzleContainerView.frame.size.height * (1 / self.scrollView.zoomScale)
+            vertical.frame = CGRect(x: offset, y: 0, width: 0.5, height: newHeight)
         }
         
         // cursors

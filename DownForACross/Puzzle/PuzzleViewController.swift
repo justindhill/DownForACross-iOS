@@ -102,7 +102,8 @@ class PuzzleViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         self.additionalSafeAreaInsets.bottom = self.currentKeyboardHeight - self.view.safeAreaInsets.bottom
-        self.puzzleView.scrollView.contentInset.bottom = self.keyboardToolbar.frame.size.height
+        self.puzzleView.scrollView.contentInset.bottom =
+            self.keyboardToolbar.frame.size.height - self.keyboardToolbar.contentView.layoutMargins.bottom
         
         if self.currentKeyboardHeight == 0 {
             self.keyboardToolbar.layoutMargins.bottom = self.view.safeAreaInsets.bottom
