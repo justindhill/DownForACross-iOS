@@ -7,5 +7,18 @@
 
 import Foundation
 
-typealias CellCoordinates = (row: Int, cell: Int)
-typealias CellEntry = (userId: String, value: String)
+struct CellCoordinates: Equatable {
+    var row: Int
+    var cell: Int
+}
+
+struct CellEntry: Equatable {
+    var userId: String
+    var value: String
+    var correctness: Correctness?
+}
+
+enum Correctness: Equatable {
+    case correct
+    case incorrect
+}

@@ -8,11 +8,11 @@
 import SocketIO
 
 extension SocketIOClient {
-    func emitWithAckNoOp(_ eventName: String, _ items: SocketData...) {
+    func emitWithAckNoOp(eventName: String = "game_event", _ items: SocketData...) {
         self.emitWithAck(eventName, items).timingOut(after: 5, callback: { _ in })
     }
     
-    func emitWithAckNoOp(_ eventName: String, _ items: [SocketData]) {
+    func emitWithAckNoOp(eventName: String = "game_event", items: [SocketData]) {
         self.emitWithAck(eventName, items).timingOut(after: 5, callback: { _ in })
     }
 }

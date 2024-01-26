@@ -54,7 +54,7 @@ class PuzzleView: UIView {
         didSet { self.setNeedsLayout() }
     }
     
-    var userCursor: UserCursor = (CellCoordinates(row: 0, cell: 0), .down) {
+    var userCursor: UserCursor = (CellCoordinates(row: 0, cell: 0), .across) {
         didSet {
             if oldValue.coordinates != userCursor.coordinates {
                 self.delegate?.puzzleView(self, userCursorDidMoveToCoordinates: userCursor.coordinates)
@@ -204,6 +204,7 @@ class PuzzleView: UIView {
                     }
                     numberTextLayer.font = numberFont
                     numberTextLayer.fontSize = numberFont.pointSize
+                    numberTextLayer.foregroundColor = UIColor.label.cgColor
                     numberTextLayer.string = "\(cellNumber)"
                     numberTextLayer.frame = CGRect(x: CGFloat(itemIndex) * cellSideLength + numberPadding,
                                                    y: CGFloat(rowIndex) * cellSideLength + numberPadding,
@@ -259,6 +260,16 @@ class PuzzleView: UIView {
                         
                         if let solutionEntry = self.solution[rowIndex][itemIndex] {
                             layer.string = solutionEntry.value
+                            if let correctness = solutionEntry.correctness {
+                                switch correctness {
+                                    case .correct:
+                                        layer.foregroundColor = UIColor.systemBlue.cgColor
+                                    case .incorrect:
+                                        layer.foregroundColor = UIColor.systemRed.cgColor
+                                }
+                            } else {
+                                layer.foregroundColor = UIColor.label.cgColor
+                            }
                         } else {
                             layer.string = nil
                         }
@@ -294,7 +305,7 @@ class PuzzleView: UIView {
         
         // cursors
         self.syncCursorLayerCount()
-        for (index, (userId, coordinates)) in self.cursors.enumerated() {
+        for (userId, coordinates) in self.cursors {
             guard let layer = self.cursorIndicatorLayers[userId] else { return }
 
             let color: UIColor
@@ -337,7 +348,7 @@ class PuzzleView: UIView {
     
     func createNumberTextLayer() -> CATextLayer {
         let layer = CATextLayer()
-        layer.foregroundColor = UIColor.darkText.cgColor
+        layer.foregroundColor = UIColor.label.cgColor
         layer.contentsScale = self.window?.screen.scale ?? 1
         layer.actions = [
             "contents": NSNull()
@@ -417,7 +428,7 @@ class PuzzleView: UIView {
             return
         }
         
-        while self.puzzleGrid[candidate.row][candidate.cell] == "." {
+        while self.puzzleGrid[candidate.row][candidate.cell] == "." || self.solution[candidate.row][candidate.cell]?.correctness == .correct  {
             candidate = nextCandidate(after: candidate)
             if candidate == current {
                 return
@@ -451,7 +462,7 @@ class PuzzleView: UIView {
         
         var candidate = nextCandidate(after: current)
         
-        while self.puzzleGrid[candidate.row][candidate.cell] == "." {
+        while self.puzzleGrid[candidate.row][candidate.cell] == "." || self.solution[candidate.row][candidate.cell]?.correctness == .correct {
             candidate = nextCandidate(after: candidate)
             if candidate == current {
                 return

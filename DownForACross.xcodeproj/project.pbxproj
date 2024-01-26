@@ -17,6 +17,7 @@
 		3B011DFD2B30C02F00BDB732 /* ListPuzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFC2B30C02F00BDB732 /* ListPuzzle.swift */; };
 		3B011DFF2B30C03500BDB732 /* Puzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFE2B30C03500BDB732 /* Puzzle.swift */; };
 		3B011E012B30C04C00BDB732 /* PuzzleStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011E002B30C04C00BDB732 /* PuzzleStats.swift */; };
+		3B4D818F2B63F01A0098A5DA /* CheckEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */; };
 		3B7AD2672B597AA4004DEC1A /* UpdateColorEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7AD2662B597AA4004DEC1A /* UpdateColorEvent.swift */; };
 		3B7AD26A2B597BF0004DEC1A /* SocketIOClient+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7AD2692B597BF0004DEC1A /* SocketIOClient+Utils.swift */; };
 		3B9003382B34CDA20088729C /* GameClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9003372B34CDA20088729C /* GameClient.swift */; };
@@ -46,6 +47,7 @@
 		3B011DFC2B30C02F00BDB732 /* ListPuzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPuzzle.swift; sourceTree = "<group>"; };
 		3B011DFE2B30C03500BDB732 /* Puzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Puzzle.swift; sourceTree = "<group>"; };
 		3B011E002B30C04C00BDB732 /* PuzzleStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleStats.swift; sourceTree = "<group>"; };
+		3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckEvent.swift; sourceTree = "<group>"; };
 		3B7AD2662B597AA4004DEC1A /* UpdateColorEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateColorEvent.swift; sourceTree = "<group>"; };
 		3B7AD2692B597BF0004DEC1A /* SocketIOClient+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SocketIOClient+Utils.swift"; sourceTree = "<group>"; };
 		3B9003372B34CDA20088729C /* GameClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameClient.swift; sourceTree = "<group>"; };
@@ -139,6 +141,7 @@
 				3B9003442B3630D70088729C /* UpdateDisplayNameEvent.swift */,
 				3B90033E2B35D5D90088729C /* SharedTypes.swift */,
 				3B7AD2662B597AA4004DEC1A /* UpdateColorEvent.swift */,
+				3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */,
 			);
 			path = "Game Events";
 			sourceTree = "<group>";
@@ -305,6 +308,7 @@
 				3B90033F2B35D5D90088729C /* SharedTypes.swift in Sources */,
 				3B7AD26A2B597BF0004DEC1A /* SocketIOClient+Utils.swift in Sources */,
 				3B011DFA2B30BFF000BDB732 /* API.swift in Sources */,
+				3B4D818F2B63F01A0098A5DA /* CheckEvent.swift in Sources */,
 				3B9003382B34CDA20088729C /* GameClient.swift in Sources */,
 				3B011DFF2B30C03500BDB732 /* Puzzle.swift in Sources */,
 				3B011E012B30C04C00BDB732 /* PuzzleStats.swift in Sources */,
