@@ -73,7 +73,7 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
                 var snapshot = NSDiffableDataSourceSnapshot<Int, PuzzleListEntry>()
                 snapshot.appendSections([0])
                 snapshot.appendItems(puzzleList.puzzles, toSection: 0)
-                await self.dataSource.apply(snapshot)                
+                await self.dataSource.apply(snapshot, animatingDifferences: false)                
             } catch {
                 print(error)
             }

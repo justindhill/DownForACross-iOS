@@ -6,11 +6,13 @@
 //
 
 import Foundation
+import UIKit
 import SocketIO
 
 protocol GameClientDelegate: AnyObject {
-    func gameClient(_ client: GameClient, cursorsDidChange: [String: CellCoordinates], colors: [String: UIColor])
+    func gameClient(_ client: GameClient, cursorsDidChange: [String: Cursor])
     func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]])
+    func gameClient(_ client: GameClient, didReceiveNewChatMessage: ChatEvent)
 }
 
 class GameClient: NSObject, URLSessionDelegate {
@@ -31,24 +33,37 @@ class GameClient: NSObject, URLSessionDelegate {
         }
     }
     
-    var cursors: [String: CellCoordinates] = [:] {
+    var cursors: [String: Cursor] = [:] {
         didSet {
-            self.delegate?.gameClient(self, cursorsDidChange: self.cursors, colors: self.cursorColors)
+            self.delegate?.gameClient(self, cursorsDidChange: self.cursors)
         }
     }
     
-    var cursorColors: [String: UIColor] = [:] {
+    var players: [String: Player] = [:] {
         didSet {
-            self.delegate?.gameClient(self, cursorsDidChange: self.cursors, colors: self.cursorColors)
+            var cursors = self.cursors
+            players.forEach { (playerId, player) in
+                if var cursor = cursors[playerId] {
+                    cursor.player = player
+                    cursors[playerId] = cursor
+                } else {
+                    cursors[playerId] = Cursor(player: player, coordinates: CellCoordinates(row: 0, cell: 0))
+                }
+            }
+            
+            self.cursors = cursors
         }
     }
+
     
     lazy var socketManager: SocketManager = {
-        SocketManager(socketURL: URL(string: "https://api.foracross.com/socket.io")!,
+//        SocketManager(socketURL: URL(string: "https://api.foracross.com/socket.io")!,
+        SocketManager(socketURL: URL(string: "ws://localhost:3021/socket.io")!,
                       config: [
                         .version(.two),
-                        .forceWebsockets(true), 
-                        .secure(true)])
+                        .forceWebsockets(true)
+//                        .secure(true)
+                      ])
     }()
     
     init(puzzle: Puzzle, userId: String) {
@@ -101,8 +116,13 @@ class GameClient: NSObject, URLSessionDelegate {
             do {
                 if type == "updateCursor" {
                     let event = UpdateCursorEvent(payload: payload)
-                    self.cursors[event.userId] = event.cell
-                } else if type == "updateCell" {
+                    if var cursor = self.cursors[event.userId] {
+                        cursor.coordinates = event.cell
+                        self.cursors[event.userId] = cursor
+                    } else {
+                        self.cursors[event.userId] = Cursor(player: Player(), coordinates: event.cell)
+                    }
+                } else if type == "updateCell"  {
                     let event = UpdateCellEvent(payload: payload)
                     if let value = event.value, value != "" {
                         var correctness: Correctness?
@@ -111,6 +131,8 @@ class GameClient: NSObject, URLSessionDelegate {
                                 return
                             }
                             correctness = playerEntry.correctness
+                        } else if let autocheck = event.autocheck, autocheck {
+                            correctness = self.correctness(forEntry: value, at: event.cell)
                         }
                         
                         self.solution[event.cell.row][event.cell.cell] = CellEntry(userId: event.userId, value: value, correctness: correctness)
@@ -119,13 +141,23 @@ class GameClient: NSObject, URLSessionDelegate {
                     }
                 } else if type == "updateColor" {
                     let event = try UpdateColorEvent(payload: payload)
-                    self.cursorColors[event.userId] = event.color
+                    var player = self.players[event.userId] ?? Player()
+                    player.color = event.color
+                    self.players[event.userId] = player
                 } else if type == "check" {
                     let event = try CheckEvent(payload: payload)
                     for cell in event.cells {
                         let correctness = self.correctness(forEntryAt: cell)
                         self.solution[cell.row][cell.cell]?.correctness = correctness
                     }
+                } else if type == "updateDisplayName" {
+                    let event = try UpdateDisplayNameEvent(payload: payload)
+                    var player = self.players[event.userId] ?? Player()
+                    player.displayName = event.displayName
+                    self.players[event.userId] = player
+                } else if type == "chat" {
+                    let event = try ChatEvent(payload: payload)
+                    print("CHAT: \(event.senderName) \(event.message)")
                 } else {
                     print("unknown game_event type: \(type)")
                 }
@@ -137,30 +169,25 @@ class GameClient: NSObject, URLSessionDelegate {
     }
     
     func enter(value: String?, atCoordinates coordinates: CellCoordinates) {
-        let resolvedValue: CellEntry?
+        var resolvedValue: CellEntry?
         if let value {
             resolvedValue = CellEntry(userId: self.userId, value: value, correctness: nil)
+            if self.autocheckEnabled {
+                let correctness: Correctness = self.puzzle.grid[coordinates.row][coordinates.cell] == value ? .correct : .incorrect
+                resolvedValue?.correctness = correctness
+            }
         } else {
             resolvedValue = nil
         }
         
         self.solution[coordinates.row][coordinates.cell] = resolvedValue
-        if self.autocheckEnabled {
-            let correctness = self.correctness(forEntryAt: coordinates)
-            self.solution[coordinates.row][coordinates.cell]?.correctness = correctness
-        }
+
         
-        self.socketManager.defaultSocket.emitWithAckNoOp(
-            UpdateCellEvent(userId: self.userId,
-                            gameId: self.gameId,
-                            cell: coordinates,
-                            value: value).eventPayload())
-        
-        if self.autocheckEnabled {
-            self.socketManager.defaultSocket.emitWithAckNoOp(
-                CheckEvent(gameId: self.gameId,
-                           cells: [coordinates]).eventPayload())
-        }
+        self.socketManager.defaultSocket.emitWithAckNoOp(UpdateCellEvent(userId: self.userId,
+                                                                         gameId: self.gameId,
+                                                                         cell: coordinates,
+                                                                         value: value,
+                                                                         autocheck: self.autocheckEnabled).eventPayload())
     }
     
     func moveUserCursor(to coordinates: CellCoordinates) {
@@ -174,8 +201,12 @@ class GameClient: NSObject, URLSessionDelegate {
         guard let playerEntry = self.solution[at.row][at.cell] else {
             return nil
         }
+        return correctness(forEntry: playerEntry.value, at: at)
+    }
+    
+    func correctness(forEntry entry: String, at: CellCoordinates) -> Correctness? {
         let correctValue = self.puzzle.grid[at.row][at.cell]
-        return playerEntry.value == correctValue ? .correct : .incorrect
+        return entry == correctValue ? .correct : .incorrect
     }
     
 }

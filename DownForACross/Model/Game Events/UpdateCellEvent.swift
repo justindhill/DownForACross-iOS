@@ -37,6 +37,7 @@ struct UpdateCellEvent: GameEvent {
     let userId: String
     let gameId: String
     let cell: CellCoordinates
+    let autocheck: Bool?
     let value: String?
     
     init(payload: [String: Any]) {
@@ -47,18 +48,19 @@ struct UpdateCellEvent: GameEvent {
               let cell = coords["c"] as? NSNumber else {
             fatalError()
         }
-        
         self.userId = id
         self.cell = CellCoordinates(row: row.intValue, cell: cell.intValue)
+        self.autocheck = params["autocheck"] as? Bool
         self.value = params["value"] as? String
         self.gameId = ""
     }
     
-    init(userId: String, gameId: String, cell: CellCoordinates, value: String?) {
+    init(userId: String, gameId: String, cell: CellCoordinates, value: String?, autocheck: Bool) {
         self.userId = userId
         self.gameId = gameId
         self.cell = cell
         self.value = value
+        self.autocheck = autocheck
     }
     
     var paramsDictionary: [String : Any?] {[
@@ -67,6 +69,7 @@ struct UpdateCellEvent: GameEvent {
             "r": self.cell.row,
             "c": self.cell.cell
         ],
+        "autocheck": self.autocheck,
         "value": self.value
     ]}
     

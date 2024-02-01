@@ -13,7 +13,9 @@ class API {
         case invalidUrl
     }
     
-    let baseURLComponents = URLComponents(string: "https://api.foracross.com")!
+//    let baseURLComponents = URLComponents(string: "https://api.foracross.com")!
+    let baseURLComponents = URLComponents(string: "http://localhost:3021")!
+
     let session = URLSession.shared
     
     func getPuzzleList(page: Int = 0) async throws -> PuzzleList {

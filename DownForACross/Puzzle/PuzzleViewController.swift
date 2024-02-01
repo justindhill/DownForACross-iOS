@@ -25,6 +25,16 @@ class PuzzleViewController: UIViewController {
         }
     }
     
+    lazy var swipeGestureRecognizer: UISwipeGestureRecognizer = {
+        let gesture = UISwipeGestureRecognizer(target: self, action: #selector(toggleSidebar))
+        gesture.delegate = self
+        gesture.direction = .left
+        return gesture
+    }()
+     
+    var sideBarViewController: PuzzleSideBarViewController!
+    var sideBarLeadingConstraint: NSLayoutConstraint!
+    
     lazy var gameClient: GameClient = {
         let client = GameClient(puzzle: self.puzzle, userId: self.userId)
         client.delegate = self
@@ -38,7 +48,10 @@ class PuzzleViewController: UIViewController {
         self.userId = userId
         self.siteInteractor = siteInteractor
         self.api = api
+        self.sideBarViewController = PuzzleSideBarViewController(puzzle: puzzleListEntry.content)
         super.init(nibName: nil, bundle: nil)
+        
+        self.sideBarViewController.clueListViewController.delegate = self
         
         NotificationCenter.default.addObserver(forName: UIControl.keyboardWillShowNotification, object: nil, queue: nil) { note in
             guard let userInfo = note.userInfo else { return }
@@ -50,14 +63,20 @@ class PuzzleViewController: UIViewController {
             self.currentKeyboardHeight = 0
         }
         
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "doc.on.doc"), 
-                                                                 style: .plain,
-                                                                 target: self,
-                                                                 action: #selector(copyGameURLToPasteboard))
+        let copyItem = UIBarButtonItem(image: UIImage(systemName: "doc.on.doc"),
+                                                      style: .plain,
+                                                      target: self,
+                                                      action: #selector(copyGameURLToPasteboard))
+        let sideBarToggleItem = UIBarButtonItem(image: UIImage(systemName: "sidebar.right"),
+                                                style: .plain,
+                                                target: self,
+                                                action: #selector(toggleSidebar))
+        self.navigationItem.rightBarButtonItems = [copyItem, sideBarToggleItem]
     }
     
     override func viewDidLoad() {
         self.view.backgroundColor = .systemBackground
+        self.view.addGestureRecognizer(self.swipeGestureRecognizer)
 
         self.puzzleView = PuzzleView(puzzleGrid: puzzle.grid)
         self.puzzleView.translatesAutoresizingMaskIntoConstraints = false
@@ -65,7 +84,7 @@ class PuzzleViewController: UIViewController {
         
         self.keyboardToolbar = PuzzleToolbarView()
         self.keyboardToolbar.translatesAutoresizingMaskIntoConstraints = false
-        self.puzzleView(self.puzzleView, userCursorDidMoveToClueIndex: 1, direction: self.puzzleView.userCursor.direction)
+        self.puzzleView(self.puzzleView, userCursorDidMoveToClueIndex: 1, sequenceIndex: 0, direction: self.puzzleView.userCursor.direction)
         
         self.keyboardToolbar.leftButton.addAction(UIAction(handler: { [weak self] _ in
             self?.puzzleView.retreatUserCursorToPreviousWord()
@@ -81,6 +100,14 @@ class PuzzleViewController: UIViewController {
         self.view.addSubview(self.keyboardToolbar)
         
         self.keyboardToolbarBottomConstraint = self.keyboardToolbar.bottomAnchor.constraint(equalTo: self.view.keyboardLayoutGuide.topAnchor)
+        
+        self.sideBarViewController.willMove(toParent: self)
+        self.addChild(self.sideBarViewController)
+        self.view.addSubview(self.sideBarViewController.view)
+        self.sideBarViewController.view.translatesAutoresizingMaskIntoConstraints = false
+        self.sideBarViewController.didMove(toParent: self)
+        
+        self.sideBarLeadingConstraint = self.sideBarViewController.view.leadingAnchor.constraint(equalTo: self.view.trailingAnchor)
 
         NSLayoutConstraint.activate([
             self.puzzleView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
@@ -89,7 +116,11 @@ class PuzzleViewController: UIViewController {
             self.puzzleView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
             self.keyboardToolbar.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             self.keyboardToolbar.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-            self.keyboardToolbarBottomConstraint
+            self.keyboardToolbarBottomConstraint,
+            self.sideBarViewController.view.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            self.sideBarViewController.view.bottomAnchor.constraint(equalTo: self.keyboardToolbar.topAnchor),
+            self.sideBarViewController.view.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.67),
+            self.sideBarLeadingConstraint
         ])
                 
         self.interactable = false
@@ -131,24 +162,40 @@ class PuzzleViewController: UIViewController {
         let urlString = "https://downforacross.com/beta/game/\(self.gameClient.gameId)"
         UIPasteboard.general.url = URL(string: urlString)!
     }
+    
+    @objc func toggleSidebar() {
+
+        if self.sideBarLeadingConstraint.constant == 0 {
+            self.sideBarLeadingConstraint.constant = -self.sideBarViewController.view.frame.size.width
+        } else {
+            self.sideBarLeadingConstraint.constant = 0
+        }
+        
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut, animations: {
+            self.view.layoutIfNeeded()
+        })
+    }
 }
 
 extension PuzzleViewController: GameClientDelegate {
+    
+    func gameClient(_ client: GameClient, didReceiveNewChatMessage: ChatEvent) {
+        
+    }
     
     func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]]) {
         self.puzzleView.solution = solution
     }
     
-    func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: CellCoordinates], colors: [String: UIColor]) {
+    func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: Cursor]) {
         self.puzzleView.cursors = cursors.filter({ $0.key != self.userId })
-        self.puzzleView.cursorColors = colors.filter({ $0.key != self.userId })
     }
     
 }
 
 extension PuzzleViewController: PuzzleViewDelegate {
     
-    func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToClueIndex clueIndex: Int, direction: PuzzleView.Direction) {
+    func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToClueIndex clueIndex: Int, sequenceIndex: Int, direction: Direction) {
         print(self.puzzle.clues.down)
         switch direction {
             case .across:
@@ -156,6 +203,8 @@ extension PuzzleViewController: PuzzleViewDelegate {
             case .down:
                 self.keyboardToolbar.clueLabel.text = self.puzzle.clues.down[clueIndex]
         }
+        
+        self.sideBarViewController.clueListViewController.selectClue(atSequenceIndex: sequenceIndex, direction: direction)
     }
     
     func puzzleView(_ puzzleView: PuzzleView, didEnterText text: String?, atCoordinates coordinates: CellCoordinates) {
@@ -164,6 +213,30 @@ extension PuzzleViewController: PuzzleViewDelegate {
     
     func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToCoordinates coordinates: CellCoordinates) {
         self.gameClient.moveUserCursor(to: coordinates)
+    }
+    
+}
+
+
+extension PuzzleViewController: PuzzleClueListViewControllerDelegate {
+    
+    func clueListViewController(_ clueListViewController: PuzzleClueListViewController, didSelectClueAtSequenceIndex sequenceIndex: Int, direction: Direction) {
+        self.puzzleView.moveUserCursorToWord(atSequenceIndex: sequenceIndex, direction: direction)
+    }
+    
+}
+
+extension PuzzleViewController: UIGestureRecognizerDelegate {
+    
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        let location = gestureRecognizer.location(in: self.view)
+        let width: CGFloat = 10
+        let activationArea = CGRect(x: self.view.frame.size.width - width,
+                                    y: 0,
+                                    width: width,
+                                    height: self.view.frame.size.height)
+        
+        return activationArea.contains(location)
     }
     
 }

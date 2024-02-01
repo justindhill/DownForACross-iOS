@@ -10,28 +10,17 @@ import UIKit
 protocol PuzzleViewDelegate: AnyObject {
     func puzzleView(_ puzzleView: PuzzleView, didEnterText text: String?, atCoordinates coordinates: CellCoordinates)
     func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToCoordinates coordinates: CellCoordinates)
-    func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToClueIndex clueIndex: Int, direction: PuzzleView.Direction)
+    func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToClueIndex clueIndex: Int, sequenceIndex: Int, direction: Direction)
 }
 
 class PuzzleView: UIView {
 
     typealias UserCursor = (coordinates: CellCoordinates, direction: Direction)
+    typealias ModelLocation = (clueIndex: Int, sequenceIndex: Int, direction: Direction)
     typealias SequenceEntry = (cellNumber: Int, coordinates: CellCoordinates)
     
     enum Constant {
         static let otherPlayerCursorOpacity: CGFloat = 0.3
-    }
-    
-    enum Direction {
-        case across
-        case down
-        
-        var opposite: Direction {
-            switch self {
-                case .across: return .down
-                case .down: return .across
-            }
-        }
     }
     
     weak var delegate: PuzzleViewDelegate?
@@ -39,18 +28,11 @@ class PuzzleView: UIView {
     var puzzleGrid: [[String?]]
     var acrossSequence: [SequenceEntry] = []
     var downSequence: [SequenceEntry] = []
-    var acrossSequenceToCellNumberMap: [Int: Int] = [:]
-    var downSequenceToCellNumberMap: [Int: Int] = [:]
     var solution: [[CellEntry?]] {
         didSet { self.setNeedsLayout() }
     }
     
-    var cursorColors: [String: UIColor] {
-        didSet { self.setNeedsLayout() }
-    }
-    
-    
-    var cursors: [String: CellCoordinates] {
+    var cursors: [String: Cursor] {
         didSet { self.setNeedsLayout() }
     }
     
@@ -106,7 +88,6 @@ class PuzzleView: UIView {
                                                count: puzzleGrid[0].count),
                               count: puzzleGrid.count)
         self.cursors = [:]
-        self.cursorColors = [:]
         super.init(frame: .zero)
         
         self.puzzleContainerView.layer.borderWidth = 0.5
@@ -305,18 +286,12 @@ class PuzzleView: UIView {
         
         // cursors
         self.syncCursorLayerCount()
-        for (userId, coordinates) in self.cursors {
+        for (userId, cursor) in self.cursors {
             guard let layer = self.cursorIndicatorLayers[userId] else { return }
 
-            let color: UIColor
-            if let userColor = self.cursorColors[userId] {
-                color = userColor
-            } else {
-                color = .lightGray
-            }
-            layer.backgroundColor = color.withAlphaComponent(Constant.otherPlayerCursorOpacity).cgColor
-            layer.frame = CGRect(x: CGFloat(coordinates.cell) * cellSideLength,
-                                 y: CGFloat(coordinates.row) * cellSideLength,
+            layer.backgroundColor = cursor.player.color.withAlphaComponent(Constant.otherPlayerCursorOpacity).cgColor
+            layer.frame = CGRect(x: CGFloat(cursor.coordinates.cell) * cellSideLength,
+                                 y: CGFloat(cursor.coordinates.row) * cellSideLength,
                                  width: cellSideLength,
                                  height: cellSideLength)
         }
@@ -332,8 +307,11 @@ class PuzzleView: UIView {
                                                      width: cellSideLength,
                                                      height: cellSideLength)
         
-        if oldWordIndicatorFrame != self.userCursorWordIndicatorLayer.frame, let clueIndex = self.findCurrentClueCellNumber() {
-            self.delegate?.puzzleView(self, userCursorDidMoveToClueIndex: clueIndex.0, direction: clueIndex.1)
+        if oldWordIndicatorFrame != self.userCursorWordIndicatorLayer.frame, let modelLocation = self.findCurrentClueCellNumber() {
+            self.delegate?.puzzleView(self, 
+                                      userCursorDidMoveToClueIndex: modelLocation.clueIndex,
+                                      sequenceIndex: modelLocation.sequenceIndex, 
+                                      direction: modelLocation.direction)
         }
         
         
@@ -380,7 +358,8 @@ class PuzzleView: UIView {
                 layer.alignmentMode = .center
                 layer.anchorPoint = CGPoint(x: 0.5, y: 0.5)
                 layer.actions = [
-                    "contents": NSNull()
+                    "contents": NSNull(),
+                    "foregroundColor": NSNull()
                 ]
                 
                 self.puzzleContainerView.layer.addSublayer(layer)
@@ -486,6 +465,18 @@ class PuzzleView: UIView {
                 let newCoordinates = self.downSequence[(currentIndex + 1) % self.downSequence.count]
                 self.userCursor.coordinates = newCoordinates.coordinates
         }
+    }
+    
+    func moveUserCursorToWord(atSequenceIndex sequenceIndex: Int, direction: Direction) {
+        let entry: SequenceEntry
+        switch direction {
+            case .across:
+                entry = self.acrossSequence[sequenceIndex]
+            case .down:
+                entry = self.downSequence[sequenceIndex]
+        }
+        
+        self.userCursor = UserCursor(coordinates: entry.coordinates, direction: direction)
     }
     
     func retreatUserCursorToPreviousWord() {
@@ -635,21 +626,28 @@ class PuzzleView: UIView {
         }
     }
     
-    func findCurrentClueCellNumber() -> (Int, Direction)? {
+    func findCurrentClueCellNumber() -> ModelLocation? {
         let wordExtent = self.findCurrentWordExtent()
         
-        let currentEntry: SequenceEntry?
+        let sequenceIndex: Int?
+        var currentEntry: SequenceEntry? = nil
         switch self.userCursor.direction {
             case .across:
                 let firstLetterCoordinates = CellCoordinates(row: self.userCursor.coordinates.row, cell: wordExtent.location)
-                currentEntry = self.acrossSequence.first(where: { $0.coordinates == firstLetterCoordinates })
+                sequenceIndex = self.acrossSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates })
+                if let sequenceIndex {
+                    currentEntry = self.acrossSequence[sequenceIndex]
+                }
             case .down:
                 let firstLetterCoordinates = CellCoordinates(row: wordExtent.location, cell: self.userCursor.coordinates.cell)
-                currentEntry = self.downSequence.first(where: { $0.coordinates == firstLetterCoordinates })
+                sequenceIndex = self.downSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates })
+                if let sequenceIndex {
+                    currentEntry = self.downSequence[sequenceIndex]
+                }
         }
         
-        if let currentEntry {
-            return (currentEntry.cellNumber, self.userCursor.direction)
+        if let sequenceIndex, let currentEntry {
+            return ModelLocation(clueIndex: currentEntry.cellNumber, sequenceIndex: sequenceIndex, direction: self.userCursor.direction)
         } else {
             return nil
         }

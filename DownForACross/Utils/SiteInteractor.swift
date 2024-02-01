@@ -28,7 +28,9 @@ class SiteInteractor: NSObject {
             }            
         }
         self.loadCounts[webView] = 1
-        webView.load(URLRequest(url: URL(string: "https://downforacross.com/beta/play/31894")!))
+//        webView.load(URLRequest(url: URL(string: "https://downforacross.com/beta/play/31894")!))
+        webView.load(URLRequest(url: URL(string: "http://localhost:3020/beta/play/390")!))
+
     }
     
     func createGame(puzzleId: String, completion: @escaping (String) -> Void) {
@@ -51,7 +53,8 @@ class SiteInteractor: NSObject {
             self.tearDownInteraction(webView: webView)
         }
         self.loadCounts[webView] = 1
-        webView.load(URLRequest(url: URL(string: "https://downforacross.com/beta/play/\(puzzleId)")!))
+//        webView.load(URLRequest(url: URL(string: "https://downforacross.com/beta/play/\(puzzleId)")!))
+        webView.load(URLRequest(url: URL(string: "http://localhost:3020/beta/play/\(puzzleId)")!))
     }
     
     func tearDownInteraction(webView: WKWebView) {
