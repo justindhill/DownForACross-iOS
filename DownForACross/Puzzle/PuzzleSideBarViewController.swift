@@ -119,6 +119,7 @@ class PuzzleSideBarViewController: UIViewController {
         CATransaction.begin()
         CATransaction.setCompletionBlock {
             view.layer.opacity = 1
+            view.layer.removeAllAnimations()
         }
         
         let alphaAnimation = CABasicAnimation(keyPath: "opacity")
@@ -137,8 +138,9 @@ class PuzzleSideBarViewController: UIViewController {
         group.animations = [alphaAnimation, scaleAnimation]
         group.duration = 0.15
         group.timingFunction = CAMediaTimingFunction(name: .easeOut)
-        group.isRemovedOnCompletion = true
-
+        group.fillMode = .forwards
+        group.isRemovedOnCompletion = false
+        
         view.layer.add(group, forKey: "inGroup")
         
         CATransaction.commit()

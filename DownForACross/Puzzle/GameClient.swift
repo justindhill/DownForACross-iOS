@@ -12,7 +12,7 @@ import SocketIO
 protocol GameClientDelegate: AnyObject {
     func gameClient(_ client: GameClient, cursorsDidChange: [String: Cursor])
     func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]])
-    func gameClient(_ client: GameClient, didReceiveNewChatMessage: ChatEvent)
+    func gameClient(_ client: GameClient, didReceiveNewChatMessage: ChatEvent, from: Player)
 }
 
 class GameClient: NSObject, URLSessionDelegate {
@@ -152,6 +152,11 @@ class GameClient: NSObject, URLSessionDelegate {
                     self.players[event.userId] = player
                 } else if type == "chat" {
                     let event = try ChatEvent(payload: payload)
+                    if let player = self.players[event.senderId] {
+                        self.delegate?.gameClient(self, didReceiveNewChatMessage: event, from: player)
+                    } else {
+                        print("Received a chat message from an unknown player")
+                    }
                     print("CHAT: \(event.senderName) \(event.message)")
                 } else {
                     print("unknown game_event type: \(type)")

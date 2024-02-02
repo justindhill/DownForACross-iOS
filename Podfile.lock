@@ -1,20 +1,24 @@
 PODS:
+  - lottie-ios (4.4.0)
   - Socket.IO-Client-Swift (16.1.0):
     - Starscream (~> 4.0.6)
   - Starscream (4.0.6)
 
 DEPENDENCIES:
+  - lottie-ios
   - Socket.IO-Client-Swift
 
 SPEC REPOS:
   trunk:
+    - lottie-ios
     - Socket.IO-Client-Swift
     - Starscream
 
 SPEC CHECKSUMS:
+  lottie-ios: ef1be1f90d54255f08e09d767950e43714661178
   Socket.IO-Client-Swift: ee4b8f80a3db18dd7f32b266ddf273310609443c
   Starscream: fb2c4510bebf908c62bd383bcf05e673720e91fd
 
-PODFILE CHECKSUM: e7e43f92c4ccd8004a0d80cd2744022caf24288f
+PODFILE CHECKSUM: b771faa16372823cdd86b04785da9ba67c3b856b
 
 COCOAPODS: 1.13.0

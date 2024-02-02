@@ -7,6 +7,7 @@
 
 import UIKit
 import WebKit
+import Lottie
 
 class PuzzleViewController: UIViewController {
     
@@ -39,6 +40,9 @@ class PuzzleViewController: UIViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(toggleSidebar))
         return tap
     }()
+    
+    var newMessageStackView: PuzzleNewMessageStackView = PuzzleNewMessageStackView()
+    var confettiView: LottieAnimationView?
     
     lazy var gameClient: GameClient = {
         let client = GameClient(puzzle: self.puzzle, userId: self.userId)
@@ -113,6 +117,9 @@ class PuzzleViewController: UIViewController {
         
         self.view.addSubview(self.sideBarTapToDismissView)
         
+        self.newMessageStackView.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(self.newMessageStackView)
+        
         self.sideBarViewController.willMove(toParent: self)
         self.addChild(self.sideBarViewController)
         self.view.addSubview(self.sideBarViewController.view)
@@ -136,7 +143,10 @@ class PuzzleViewController: UIViewController {
             self.sideBarTapToDismissView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             self.sideBarTapToDismissView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
             self.sideBarTapToDismissView.topAnchor.constraint(equalTo: self.view.topAnchor),
-            self.sideBarTapToDismissView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
+            self.sideBarTapToDismissView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            self.newMessageStackView.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.67),
+            self.newMessageStackView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -8),
+            self.newMessageStackView.bottomAnchor.constraint(equalTo: self.keyboardToolbar.topAnchor, constant: -8)
         ])
                 
         self.interactable = false
@@ -192,12 +202,38 @@ class PuzzleViewController: UIViewController {
             self.view.layoutIfNeeded()
         })
     }
+    
+    func playConfettiAnimation() {
+        if self.confettiView != nil {
+            return
+        }
+        
+        let lottieView = LottieAnimationView(name: "confetti")
+        lottieView.translatesAutoresizingMaskIntoConstraints = false
+        self.confettiView = lottieView
+        guard let puzzleViewIndex = self.view.subviews.firstIndex(of: self.puzzleView) else { return }
+        self.view.insertSubview(lottieView, at: puzzleViewIndex + 1)
+        
+        NSLayoutConstraint.activate([
+            lottieView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            lottieView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            lottieView.topAnchor.constraint(equalTo: self.view.topAnchor),
+            lottieView.bottomAnchor.constraint(equalTo: self.keyboardToolbar.topAnchor)
+        ])
+        
+        self.view.layoutIfNeeded()
+        
+        lottieView.play { [weak self] completed in
+            lottieView.removeFromSuperview()
+            self?.confettiView = nil
+        }
+    }
 }
 
 extension PuzzleViewController: GameClientDelegate {
     
-    func gameClient(_ client: GameClient, didReceiveNewChatMessage: ChatEvent) {
-        
+    func gameClient(_ client: GameClient, didReceiveNewChatMessage message: ChatEvent, from: Player) {
+        self.newMessageStackView.addChatMessage(message, from: from)
     }
     
     func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]]) {
