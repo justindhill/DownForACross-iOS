@@ -126,12 +126,7 @@ class GameClient: NSObject, URLSessionDelegate {
                     let event = UpdateCellEvent(payload: payload)
                     if let value = event.value, value != "" {
                         var correctness: Correctness?
-                        if let playerEntry = self.solution[event.cell.row][event.cell.cell] {
-                            if case .correct = playerEntry.correctness {
-                                return
-                            }
-                            correctness = playerEntry.correctness
-                        } else if let autocheck = event.autocheck, autocheck {
+                        if let autocheck = event.autocheck, autocheck {
                             correctness = self.correctness(forEntry: value, at: event.cell)
                         }
                         

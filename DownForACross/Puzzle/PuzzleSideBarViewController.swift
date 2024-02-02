@@ -93,16 +93,16 @@ class PuzzleSideBarViewController: UIViewController {
         let alphaAnimation = CABasicAnimation(keyPath: "opacity")
         alphaAnimation.fromValue = 1.0
         alphaAnimation.toValue = 0.0
-        alphaAnimation.duration = 0.2
+        alphaAnimation.duration = 0.1
         
         let scaleAnimation = CABasicAnimation(keyPath: "transform")
         scaleAnimation.fromValue = CATransform3DIdentity
         scaleAnimation.toValue = CATransform3DMakeAffineTransform(CGAffineTransform(scaleX: 0.8, y: 0.8))
-        scaleAnimation.duration = 0.2
+        scaleAnimation.duration = 0.1
         
         let group = CAAnimationGroup()
         group.animations = [alphaAnimation, scaleAnimation]
-        group.duration = 0.2
+        group.duration = 0.1
         group.timingFunction = CAMediaTimingFunction(name: .easeOut)
         group.fillMode = .forwards
         group.isRemovedOnCompletion = false
@@ -124,18 +124,18 @@ class PuzzleSideBarViewController: UIViewController {
         let alphaAnimation = CABasicAnimation(keyPath: "opacity")
         alphaAnimation.fromValue = 0.0
         alphaAnimation.toValue = 1.0
-        alphaAnimation.duration = 0.2
-        alphaAnimation.beginTime = 0.1
+        alphaAnimation.duration = 0.1
+        alphaAnimation.beginTime = 0.05
         
         let scaleAnimation = CABasicAnimation(keyPath: "transform")
         scaleAnimation.fromValue = CATransform3DMakeAffineTransform(CGAffineTransform(scaleX: 0.8, y: 0.8))
         scaleAnimation.toValue = CATransform3DIdentity
-        scaleAnimation.duration = 0.2
-        scaleAnimation.beginTime = 0.1
+        scaleAnimation.duration = 0.1
+        scaleAnimation.beginTime = 0.05
         
         let group = CAAnimationGroup()
         group.animations = [alphaAnimation, scaleAnimation]
-        group.duration = 0.3
+        group.duration = 0.15
         group.timingFunction = CAMediaTimingFunction(name: .easeOut)
         group.isRemovedOnCompletion = true
 

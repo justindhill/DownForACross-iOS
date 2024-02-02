@@ -33,7 +33,12 @@ class PuzzleViewController: UIViewController {
     }()
      
     var sideBarViewController: PuzzleSideBarViewController!
+    var sideBarTapToDismissView: UIView!
     var sideBarLeadingConstraint: NSLayoutConstraint!
+    lazy var sideBarTapToDismissGestureRecognizer: UITapGestureRecognizer = {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(toggleSidebar))
+        return tap
+    }()
     
     lazy var gameClient: GameClient = {
         let client = GameClient(puzzle: self.puzzle, userId: self.userId)
@@ -49,7 +54,12 @@ class PuzzleViewController: UIViewController {
         self.siteInteractor = siteInteractor
         self.api = api
         self.sideBarViewController = PuzzleSideBarViewController(puzzle: puzzleListEntry.content)
+        self.sideBarTapToDismissView = UIView()
+        self.sideBarTapToDismissView.translatesAutoresizingMaskIntoConstraints = false
+        self.sideBarTapToDismissView.isUserInteractionEnabled = false
         super.init(nibName: nil, bundle: nil)
+        
+        self.sideBarTapToDismissView.addGestureRecognizer(self.sideBarTapToDismissGestureRecognizer)
         
         self.sideBarViewController.clueListViewController.delegate = self
         
@@ -101,6 +111,8 @@ class PuzzleViewController: UIViewController {
         
         self.keyboardToolbarBottomConstraint = self.keyboardToolbar.bottomAnchor.constraint(equalTo: self.view.keyboardLayoutGuide.topAnchor)
         
+        self.view.addSubview(self.sideBarTapToDismissView)
+        
         self.sideBarViewController.willMove(toParent: self)
         self.addChild(self.sideBarViewController)
         self.view.addSubview(self.sideBarViewController.view)
@@ -120,7 +132,11 @@ class PuzzleViewController: UIViewController {
             self.sideBarViewController.view.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             self.sideBarViewController.view.bottomAnchor.constraint(equalTo: self.keyboardToolbar.topAnchor),
             self.sideBarViewController.view.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.67),
-            self.sideBarLeadingConstraint
+            self.sideBarLeadingConstraint,
+            self.sideBarTapToDismissView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            self.sideBarTapToDismissView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            self.sideBarTapToDismissView.topAnchor.constraint(equalTo: self.view.topAnchor),
+            self.sideBarTapToDismissView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
         ])
                 
         self.interactable = false
@@ -164,11 +180,12 @@ class PuzzleViewController: UIViewController {
     }
     
     @objc func toggleSidebar() {
-
         if self.sideBarLeadingConstraint.constant == 0 {
             self.sideBarLeadingConstraint.constant = -self.sideBarViewController.view.frame.size.width
+            self.sideBarTapToDismissView.isUserInteractionEnabled = true
         } else {
             self.sideBarLeadingConstraint.constant = 0
+            self.sideBarTapToDismissView.isUserInteractionEnabled = false
         }
         
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut, animations: {
