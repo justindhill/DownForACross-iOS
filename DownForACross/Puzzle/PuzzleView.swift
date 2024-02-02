@@ -453,17 +453,30 @@ class PuzzleView: UIView {
     
     func advanceUserCursorToNextWord() {
         let wordExtent = self.findCurrentWordExtent()
+        var rollover = false
         switch self.userCursor.direction {
             case .across:
                 let firstLetterCoordinates = CellCoordinates(row: self.userCursor.coordinates.row, cell: wordExtent.location)
                 guard let currentIndex = self.acrossSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates }) else { return }
-                let newCoordinates = self.acrossSequence[(currentIndex + 1) % self.acrossSequence.count]
+                let newIndex = (currentIndex + 1) % self.acrossSequence.count
+                let newCoordinates = self.acrossSequence[newIndex]
+                rollover = (newIndex == 0)
                 self.userCursor.coordinates = newCoordinates.coordinates
             case .down:
                 let firstLetterCoordinates = CellCoordinates(row: wordExtent.location, cell: self.userCursor.coordinates.cell)
                 guard let currentIndex = self.downSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates }) else { return }
-                let newCoordinates = self.downSequence[(currentIndex + 1) % self.downSequence.count]
+                let newIndex = (currentIndex + 1) % self.downSequence.count
+                let newCoordinates = self.downSequence[newIndex]
+                rollover = (newIndex == 0)
                 self.userCursor.coordinates = newCoordinates.coordinates
+        }
+        
+        if rollover {
+            self.toggleDirection()
+        }
+        
+        if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
+            self.advanceUserCursorToNextLetter()
         }
     }
     
@@ -481,19 +494,40 @@ class PuzzleView: UIView {
     
     func retreatUserCursorToPreviousWord() {
         let wordExtent = self.findCurrentWordExtent()
+        var rollover = false
         switch self.userCursor.direction {
             case .across:
                 let firstLetterCoordinates = CellCoordinates(row: self.userCursor.coordinates.row, cell: wordExtent.location)
                 guard let currentIndex = self.acrossSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates }) else { return }
                 let newIndex = (currentIndex == 0) ? self.acrossSequence.count - 1 : currentIndex - 1
-                let newCoordinates = self.acrossSequence[newIndex]
+                rollover = (newIndex == self.acrossSequence.count - 1)
+                let newCoordinates = rollover ? self.downSequence.last! : self.acrossSequence[newIndex]
                 self.userCursor.coordinates = newCoordinates.coordinates
             case .down:
                 let firstLetterCoordinates = CellCoordinates(row: wordExtent.location, cell: self.userCursor.coordinates.cell)
                 guard let currentIndex = self.downSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates }) else { return }
                 let newIndex = (currentIndex == 0) ? self.downSequence.count - 1 : currentIndex - 1
-                let newCoordinates = self.downSequence[newIndex]
+                rollover = (newIndex == self.downSequence.count - 1)
+                let newCoordinates = rollover ? self.acrossSequence.last! : self.downSequence[newIndex]
                 self.userCursor.coordinates = newCoordinates.coordinates
+        }
+        
+        if rollover {
+            self.toggleDirection()
+        }
+        
+        if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
+            self.advanceUserCursorToNextLetter()
+        }
+    }
+    
+    func isUserCursorAtTrailingWordBoundary() -> Bool {
+        var coordinates = self.userCursor.coordinates
+        switch self.userCursor.direction {
+            case .across:
+                return (coordinates.cell == self.solution[coordinates.row].count - 1 || self.puzzleGrid[coordinates.row][coordinates.cell + 1] == ".")
+            case .down:
+                return (coordinates.row == self.puzzleGrid.count - 1 || self.puzzleGrid[coordinates.row + 1][coordinates.cell] == ".")
         }
     }
     
@@ -558,7 +592,7 @@ class PuzzleView: UIView {
     }
     
     @objc func tapGestureRecognizerTriggered(_ tap: UITapGestureRecognizer) {
-        let sideLength = Int(self.cellSideLength * self.scrollView.zoomScale)
+        let sideLength = self.cellSideLength * self.scrollView.zoomScale
         let pointCoords = tap.location(in: self.scrollView)
         
         guard self.puzzleContainerView.frame.contains(pointCoords) else {
@@ -566,8 +600,8 @@ class PuzzleView: UIView {
             return
         }
         
-        let cellCoords = CellCoordinates(row: Int(pointCoords.y) / sideLength,
-                                         cell: Int(pointCoords.x) / sideLength)
+        let cellCoords = CellCoordinates(row: Int(pointCoords.y / sideLength),
+                                         cell: Int(pointCoords.x / sideLength))
         
         let item = self.puzzleGrid[cellCoords.row][cellCoords.cell]
 
@@ -685,14 +719,23 @@ extension PuzzleView: UIKeyInput {
     }
     
     func insertText(_ text: String) {
+        
+        func advance() {
+            if self.isUserCursorAtTrailingWordBoundary() {
+                self.advanceUserCursorToNextWord()
+            } else {
+                self.advanceUserCursorToNextLetter()
+            }
+        }
+        
         if text == " " {
             self.toggleDirection()
             return
-        } else if text == "\n" {
-            self.advanceUserCursorToNextLetter()
+        } else if text == "\n" || self.solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
+            advance()
         } else {
             self.delegate?.puzzleView(self, didEnterText: text.uppercased(), atCoordinates: self.userCursor.coordinates)
-            self.advanceUserCursorToNextLetter()
+            advance()
         }
     }
     
