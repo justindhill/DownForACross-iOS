@@ -61,6 +61,8 @@ class PuzzleView: UIView {
     var fillTextLayers: [CATextLayer] = []
     var separatorLayers: [CALayer] = []
     
+    private var isFirstLayout: Bool = true
+    
     lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.maximumZoomScale = 3.0
@@ -192,6 +194,10 @@ class PuzzleView: UIView {
                                                    width: cellSideLength,
                                                    height: numberFont.lineHeight)
                     
+                    if self.isFirstLayout && cellNumber == 1 {
+                        self.userCursor.coordinates = CellCoordinates(row: rowIndex, cell: itemIndex)
+                    }
+                    
                     if  // at the beginning or the previous one is a word boundary
                         (rowIndex == 0 || (self.puzzleGrid[rowIndex - 1][itemIndex] == ".")) &&
                         // not at the end
@@ -314,7 +320,7 @@ class PuzzleView: UIView {
                                       direction: modelLocation.direction)
         }
         
-        
+        self.isFirstLayout = false
         self.invalidateIntrinsicContentSize()
     }
     
