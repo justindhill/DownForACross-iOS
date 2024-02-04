@@ -10,6 +10,9 @@ import UIKit
 
 class PuzzleNewMessageStackView: UIView {
     
+    static let removedViewTag: Int = 999
+    let concurrentViewCap: Int = 3
+    
     var seenMessages: Set<String> = Set()
     
     lazy var stackView: UIStackView = {
@@ -42,6 +45,12 @@ class PuzzleNewMessageStackView: UIView {
     func addChatMessage(_ chatEvent: ChatEvent, from: Player) {
         if self.seenMessages.contains(chatEvent.messageId) {
             return
+        }
+        
+        if self.stackView.arrangedSubviews.filter({ $0.tag != Self.removedViewTag }).count == self.concurrentViewCap,
+            let firstView = self.stackView.arrangedSubviews.first(where: { $0.tag != Self.removedViewTag }) {
+            
+            self.remove(view: firstView, animated: true)
         }
         
         self.seenMessages.insert(chatEvent.messageId)
@@ -81,6 +90,9 @@ class PuzzleNewMessageStackView: UIView {
     }
     
     func remove(view: UIView, animated: Bool) {
+        guard view.tag != Self.removedViewTag else { return }
+        view.tag = Self.removedViewTag
+        
         if animated {
             UIView.animate(withDuration: 0.2) {
                 view.alpha = 0
