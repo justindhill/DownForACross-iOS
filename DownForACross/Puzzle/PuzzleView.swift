@@ -492,7 +492,7 @@ class PuzzleView: UIView {
         self.userCursor = UserCursor(coordinates: entry.coordinates, direction: direction)
     }
     
-    func retreatUserCursorToPreviousWord() {
+    func retreatUserCursorToPreviousWord(trailingEdge: Bool = false) {
         let wordExtent = self.findCurrentWordExtent()
         var rollover = false
         switch self.userCursor.direction {
@@ -516,18 +516,83 @@ class PuzzleView: UIView {
             self.toggleDirection()
         }
         
-        if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
+        if trailingEdge {
+            let newWordExtent = self.findCurrentWordCellCoordinates()
+            if let lastNonCorrectCell = newWordExtent.reversed().first(where: { self.solution[$0.row][$0.cell]?.correctness != .correct }) {
+                self.userCursor.coordinates = lastNonCorrectCell
+            }
+        } else if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
             self.advanceUserCursorToNextLetter()
         }
     }
     
     func isUserCursorAtTrailingWordBoundary() -> Bool {
-        var coordinates = self.userCursor.coordinates
+        let coordinates = self.userCursor.coordinates
         switch self.userCursor.direction {
             case .across:
-                return (coordinates.cell == self.solution[coordinates.row].count - 1 || self.puzzleGrid[coordinates.row][coordinates.cell + 1] == ".")
+                // cells in the word after the current cell
+                let wordExtent = self.findCurrentWordCellCoordinates().filter({ $0.cell > coordinates.cell })
+
+                return
+                    // at end of row
+                    coordinates.cell == self.solution[coordinates.row].count - 1 ||
+                    // at the end of the word
+                    self.puzzleGrid[coordinates.row][coordinates.cell + 1] == "." ||
+                    // remainder of the word is checked and correct
+                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness == .correct })
+                    
             case .down:
-                return (coordinates.row == self.puzzleGrid.count - 1 || self.puzzleGrid[coordinates.row + 1][coordinates.cell] == ".")
+                // cells in the word after the current cell
+                let wordExtent = self.findCurrentWordCellCoordinates().filter({ $0.row > coordinates.row })
+                
+                return
+                    // at end of column
+                    coordinates.row == self.puzzleGrid.count - 1 ||
+                    // at the end of the word
+                    self.puzzleGrid[coordinates.row + 1][coordinates.cell] == "." ||
+                    // remainder of the word is checked and correct
+                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness == .correct })
+        }
+    }
+    
+    func isUserCursorAtLeadingWordBoundary() -> Bool {
+        let coordinates = self.userCursor.coordinates
+        switch self.userCursor.direction {
+            case .across:
+                // cells in the word before the current cell
+                let wordExtent = self.findCurrentWordCellCoordinates().filter({ $0.cell < coordinates.cell })
+
+                return
+                    // at beginning of row
+                    coordinates.cell == 0 ||
+                    // at the beginning of the word
+                    self.puzzleGrid[coordinates.row][coordinates.cell - 1] == "." ||
+                    // cells of the word before this one are checked and correct
+                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness == .correct })
+                    
+            case .down:
+                // cells in the word after the current cell
+                let wordExtent = self.findCurrentWordCellCoordinates().filter({ $0.row < coordinates.row })
+                
+                return
+                    // at beginning of column
+                    coordinates.row == 0 ||
+                    // at the beginning of the word
+                    self.puzzleGrid[coordinates.row - 1][coordinates.cell] == "." ||
+                    // remainder of the word is checked and correct
+                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness == .correct })
+        }
+    }
+    
+    func findCurrentWordCellCoordinates() -> [CellCoordinates] {
+        let extent = self.findCurrentWordExtent()
+        return (extent.location..<(extent.location + extent.length)).map { index in
+            switch self.userCursor.direction {
+                case .across:
+                    CellCoordinates(row: self.userCursor.coordinates.row, cell: index)
+                case .down:
+                    CellCoordinates(row: index, cell: self.userCursor.coordinates.cell)
+            }
         }
     }
     
@@ -740,7 +805,19 @@ extension PuzzleView: UIKeyInput {
     }
     
     func deleteBackward() {
-        self.retreatUserCursorToPreviousLetterIfNotAtNonemptyEdge()
+        if let currentCellEntry = self.solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell],
+            currentCellEntry.correctness != .correct {
+            
+            self.delegate?.puzzleView(self, didEnterText: nil, atCoordinates: self.userCursor.coordinates)
+            return
+        }
+        
+        if self.isUserCursorAtLeadingWordBoundary() {
+            self.retreatUserCursorToPreviousWord(trailingEdge: true)
+        } else {
+            self.retreatUserCursorToPreviousLetterIfNotAtNonemptyEdge()
+        }
+        
         self.delegate?.puzzleView(self, didEnterText: nil, atCoordinates: self.userCursor.coordinates)
     }
     
