@@ -23,6 +23,7 @@ class GameClient: NSObject, URLSessionDelegate {
     let puzzle: Puzzle
     let userId: String
     let correctSolution: [[String?]]
+    private(set) var isPerformingBulkEventSync: Bool = false
     private(set) var gameId: String = ""
     
     private(set) var solution: [[CellEntry?]] {
@@ -89,9 +90,11 @@ class GameClient: NSObject, URLSessionDelegate {
                                                           gameId: self.gameId,
                                                           displayName: "It me, Justin").eventPayload())
             
-            socket.emitWithAck("sync_all_game_events", self.gameId).timingOut(after: 5) { data in
-                guard let events = data.first as? [[String: Any]] else { return }
+            socket.emitWithAck("sync_all_game_events", self.gameId).timingOut(after: 5) { [weak self] data in
+                guard let self, let events = data.first as? [[String: Any]] else { return }
+                self.isPerformingBulkEventSync = true
                 self.handleGameEvents(events)
+                self.isPerformingBulkEventSync = false
             }
         }
         

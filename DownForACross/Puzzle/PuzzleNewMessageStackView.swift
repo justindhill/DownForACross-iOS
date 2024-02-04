@@ -12,7 +12,7 @@ class PuzzleNewMessageStackView: UIView {
     
     var seenMessages: Set<String> = Set()
     
-    private lazy var stackView: UIStackView = {
+    lazy var stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.spacing = 4
@@ -20,18 +20,22 @@ class PuzzleNewMessageStackView: UIView {
         return stackView
     }()
     
+    var heightConstraint: NSLayoutConstraint!
+    
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     init() {
         super.init(frame: .zero)
         
+        self.clipsToBounds = true
         self.stackView.translatesAutoresizingMaskIntoConstraints = false
+        self.heightConstraint = self.heightAnchor.constraint(equalToConstant: 0)
         
         self.addSubview(self.stackView)
         NSLayoutConstraint.activate([
             self.stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             self.stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             self.stackView.topAnchor.constraint(equalTo: self.topAnchor),
-            self.stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
+            self.heightConstraint
         ])
     }
     
@@ -62,6 +66,8 @@ class PuzzleNewMessageStackView: UIView {
         ])
         
         self.stackView.addArrangedSubview(bubbleView)
+        self.layoutIfNeeded()
+        self.heightConstraint.constant = self.stackView.frame.size.height
         
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { _ in
             if bubbleView.superview != nil {
@@ -80,9 +86,13 @@ class PuzzleNewMessageStackView: UIView {
                 view.alpha = 0
             } completion: { _ in
                 self.stackView.removeArrangedSubview(view)
+                self.layoutIfNeeded()
+                self.heightConstraint.constant = self.stackView.frame.size.height
             }
         } else {
             self.stackView.removeArrangedSubview(view)
+            self.layoutIfNeeded()
+            self.heightConstraint.constant = self.stackView.frame.size.height
         }
     }
 }

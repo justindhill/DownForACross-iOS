@@ -234,7 +234,12 @@ class PuzzleViewController: UIViewController {
 extension PuzzleViewController: GameClientDelegate {
     
     func gameClient(_ client: GameClient, didReceiveNewChatMessage message: ChatEvent, from: Player) {
+        guard !gameClient.isPerformingBulkEventSync else { return }
+        
         self.newMessageStackView.addChatMessage(message, from: from)
+        UIView.animate(withDuration: 0.2, delay: 0, options: [.curveEaseOut]) {
+            self.view.layoutIfNeeded()
+        }
     }
     
     func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isSolved: Bool) {
