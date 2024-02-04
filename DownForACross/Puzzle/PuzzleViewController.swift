@@ -73,7 +73,7 @@ class PuzzleViewController: UIViewController {
             self.currentKeyboardHeight = keyboardSize.height
         }
         
-        NotificationCenter.default.addObserver(forName: UIControl.keyboardWillHideNotification, object: nil, queue: nil) { note in
+        NotificationCenter.default.addObserver(forName: UIControl.keyboardDidHideNotification, object: nil, queue: nil) { note in
             self.currentKeyboardHeight = 0
         }
         

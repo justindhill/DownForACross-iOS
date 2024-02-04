@@ -31,6 +31,12 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
         }
     }()
     
+    lazy var quickFilterBar: PuzzleListQuickFilterBarView = {
+        let view = PuzzleListQuickFilterBarView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     var userId: String?
     let siteInteractor = SiteInteractor()
     let api = API()
@@ -41,7 +47,10 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
         self.navigationItem.backButtonTitle = ""
         self.tableView.dataSource = self.dataSource
         
+        self.view.backgroundColor = .systemBackground
+                
         self.view.addSubview(self.tableView)
+        self.view.addSubview(self.quickFilterBar)
         
         self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: self.reuseIdentifier)
         
@@ -61,9 +70,12 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
         }
         
         NSLayoutConstraint.activate([
+            self.quickFilterBar.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            self.quickFilterBar.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            self.quickFilterBar.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
             self.tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             self.tableView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-            self.tableView.topAnchor.constraint(equalTo: self.view.topAnchor),
+            self.tableView.topAnchor.constraint(equalTo: self.quickFilterBar.bottomAnchor),
             self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
         ])
         

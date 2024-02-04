@@ -477,11 +477,18 @@ class PuzzleView: UIView {
                 self.userCursor.coordinates = newCoordinates.coordinates
         }
         
+        let isFullAndPotentiallyCorrect = self.findCurrentWordCellCoordinates().reduce(into: true) { partialResult, coords in
+            let value = self.solution[coords.row][coords.cell]
+            partialResult = partialResult && value != nil && value?.correctness != .incorrect
+        }
+        
         if rollover {
             self.toggleDirection()
         }
         
-        if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
+        if isFullAndPotentiallyCorrect {
+            self.advanceUserCursorToNextWord()
+        } else if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
             self.advanceUserCursorToNextLetter()
         }
     }
@@ -522,7 +529,14 @@ class PuzzleView: UIView {
             self.toggleDirection()
         }
         
-        if trailingEdge {
+        let isFullAndPotentiallyCorrect = self.findCurrentWordCellCoordinates().reduce(into: true) { partialResult, coords in
+            let value = self.solution[coords.row][coords.cell]
+            partialResult = partialResult && value != nil && value?.correctness != .incorrect
+        }
+        
+        if isFullAndPotentiallyCorrect {
+            self.retreatUserCursorToPreviousWord(trailingEdge: trailingEdge)
+        } else if trailingEdge {
             let newWordExtent = self.findCurrentWordCellCoordinates()
             if let lastNonCorrectCell = newWordExtent.reversed().first(where: { self.solution[$0.row][$0.cell]?.correctness != .correct }) {
                 self.userCursor.coordinates = lastNonCorrectCell
