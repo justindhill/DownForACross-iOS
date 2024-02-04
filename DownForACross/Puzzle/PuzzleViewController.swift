@@ -210,6 +210,7 @@ class PuzzleViewController: UIViewController {
         
         let lottieView = LottieAnimationView(name: "confetti")
         lottieView.translatesAutoresizingMaskIntoConstraints = false
+        lottieView.isUserInteractionEnabled = false
         self.confettiView = lottieView
         guard let puzzleViewIndex = self.view.subviews.firstIndex(of: self.puzzleView) else { return }
         self.view.insertSubview(lottieView, at: puzzleViewIndex + 1)
@@ -236,8 +237,12 @@ extension PuzzleViewController: GameClientDelegate {
         self.newMessageStackView.addChatMessage(message, from: from)
     }
     
-    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]]) {
+    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isSolved: Bool) {
         self.puzzleView.solution = solution
+        
+        if isSolved {
+            self.playConfettiAnimation()
+        }
     }
     
     func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: Cursor]) {
@@ -249,7 +254,6 @@ extension PuzzleViewController: GameClientDelegate {
 extension PuzzleViewController: PuzzleViewDelegate {
     
     func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToClueIndex clueIndex: Int, sequenceIndex: Int, direction: Direction) {
-        print(self.puzzle.clues.down)
         switch direction {
             case .across:
                 self.keyboardToolbar.clueLabel.text = self.puzzle.clues.across[clueIndex]

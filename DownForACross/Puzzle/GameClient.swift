@@ -11,7 +11,7 @@ import SocketIO
 
 protocol GameClientDelegate: AnyObject {
     func gameClient(_ client: GameClient, cursorsDidChange: [String: Cursor])
-    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]])
+    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isSolved: Bool)
     func gameClient(_ client: GameClient, didReceiveNewChatMessage: ChatEvent, from: Player)
 }
 
@@ -22,14 +22,14 @@ class GameClient: NSObject, URLSessionDelegate {
     var autocheckEnabled: Bool = true
     let puzzle: Puzzle
     let userId: String
-    private(set) var gameId: String = "" {
-        didSet {
-            print()
-        }
-    }
+    let correctSolution: [[String?]]
+    private(set) var gameId: String = ""
+    
     private(set) var solution: [[CellEntry?]] {
         didSet {
-            self.delegate?.gameClient(self, solutionDidChange: self.solution)
+            if oldValue != solution {
+                self.delegate?.gameClient(self, solutionDidChange: self.solution, isSolved: self.checkIfPuzzleIsSolved())
+            }
         }
     }
     
@@ -72,6 +72,8 @@ class GameClient: NSObject, URLSessionDelegate {
         self.solution = Array(repeating: Array(repeating: nil,
                                                count: puzzle.grid[0].count),
                               count: puzzle.grid.count)
+        
+        self.correctSolution = self.puzzle.grid.map({ $0.map({ $0 == "." ? nil : $0 }) })
     }
     
     
@@ -158,6 +160,8 @@ class GameClient: NSObject, URLSessionDelegate {
                         print("Received a chat message from an unknown player")
                     }
                     print("CHAT: \(event.senderName) \(event.message)")
+                } else if type == "sendChatMessage" {
+                    // no-op
                 } else {
                     print("unknown game_event type: \(type)")
                 }
@@ -207,6 +211,11 @@ class GameClient: NSObject, URLSessionDelegate {
     func correctness(forEntry entry: String, at: CellCoordinates) -> Correctness? {
         let correctValue = self.puzzle.grid[at.row][at.cell]
         return entry == correctValue ? .correct : .incorrect
+    }
+    
+    func checkIfPuzzleIsSolved() -> Bool {
+        let proposedSolution = self.solution.map({ $0.map({ $0 == nil ? nil : $0!.value }) })
+        return proposedSolution == self.correctSolution
     }
     
 }
