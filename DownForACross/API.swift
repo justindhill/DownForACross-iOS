@@ -13,20 +13,20 @@ class API {
         case invalidUrl
     }
     
-//    let baseURLComponents = URLComponents(string: "https://api.foracross.com")!
-    let baseURLComponents = URLComponents(string: "http://localhost:3021")!
+    let baseURLComponents = URLComponents(string: "https://api.foracross.com")!
+//    let baseURLComponents = URLComponents(string: "http://localhost:3021")!
 
     let session = URLSession.shared
     
-    func getPuzzleList(page: Int = 0) async throws -> PuzzleList {
+    func getPuzzleList(page: Int = 0, wordFilter: String, includeMinis: Bool, includeStandards: Bool) async throws -> PuzzleList {
         var urlComponents = self.baseURLComponents
         urlComponents.path = "/api/puzzle_list"
         urlComponents.queryItems = []
         urlComponents.queryItems?.append(URLQueryItem(name: "page", value: "\(page)"))
         urlComponents.queryItems?.append(URLQueryItem(name: "pageSize", value: "50"))
-        urlComponents.queryItems?.append(URLQueryItem(name: "filter[nameOrTitleFilter]", value: ""))
-        urlComponents.queryItems?.append(URLQueryItem(name: "filter[sizeFilter][Mini]", value: "true"))
-        urlComponents.queryItems?.append(URLQueryItem(name: "filter[sizeFilter][Standard]", value: "true"))
+        urlComponents.queryItems?.append(URLQueryItem(name: "filter[nameOrTitleFilter]", value: wordFilter))
+        urlComponents.queryItems?.append(URLQueryItem(name: "filter[sizeFilter][Mini]", value: String(includeMinis)))
+        urlComponents.queryItems?.append(URLQueryItem(name: "filter[sizeFilter][Standard]", value: String(includeStandards)))
         
         guard let url = urlComponents.url else {
             throw NSError(domain: "API", code: 1)

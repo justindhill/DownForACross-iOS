@@ -244,6 +244,7 @@ extension PuzzleViewController: GameClientDelegate {
     
     func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isSolved: Bool) {
         self.puzzleView.solution = solution
+        self.puzzleView.isSolved = isSolved
         
         if isSolved {
             self.playConfettiAnimation()

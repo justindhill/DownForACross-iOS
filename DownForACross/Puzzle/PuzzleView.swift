@@ -25,6 +25,7 @@ class PuzzleView: UIView {
     
     weak var delegate: PuzzleViewDelegate?
     
+    var isSolved: Bool = false
     var puzzleGrid: [[String?]]
     var acrossSequence: [SequenceEntry] = []
     var downSequence: [SequenceEntry] = []
@@ -486,11 +487,14 @@ class PuzzleView: UIView {
             self.toggleDirection()
         }
         
-        if isFullAndPotentiallyCorrect {
-            self.advanceUserCursorToNextWord()
-        } else if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
-            self.advanceUserCursorToNextLetter()
+        if !self.isSolved {
+            if isFullAndPotentiallyCorrect {
+                self.advanceUserCursorToNextWord()
+            } else if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
+                self.advanceUserCursorToNextLetter()
+            }
         }
+        
     }
     
     func moveUserCursorToWord(atSequenceIndex sequenceIndex: Int, direction: Direction) {
@@ -806,10 +810,12 @@ extension PuzzleView: UIKeyInput {
     func insertText(_ text: String) {
         
         func advance() {
-            if self.isUserCursorAtTrailingWordBoundary() {
-                self.advanceUserCursorToNextWord()
-            } else {
-                self.advanceUserCursorToNextLetter()
+            if !self.isSolved {
+                if self.isUserCursorAtTrailingWordBoundary() {
+                    self.advanceUserCursorToNextWord()
+                } else {
+                    self.advanceUserCursorToNextLetter()
+                }
             }
         }
         

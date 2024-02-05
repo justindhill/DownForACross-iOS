@@ -34,6 +34,7 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
     lazy var quickFilterBar: PuzzleListQuickFilterBarView = {
         let view = PuzzleListQuickFilterBarView()
         view.translatesAutoresizingMaskIntoConstraints = false
+        view.delegate = self
         return view
     }()
     
@@ -79,17 +80,7 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
             self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
         ])
         
-        Task {
-            do {
-                let puzzleList = try await api.getPuzzleList()
-                var snapshot = NSDiffableDataSourceSnapshot<Int, PuzzleListEntry>()
-                snapshot.appendSections([0])
-                snapshot.appendItems(puzzleList.puzzles, toSection: 0)
-                await self.dataSource.apply(snapshot, animatingDifferences: false)                
-            } catch {
-                print(error)
-            }
-        }
+        self.updatePuzzleList()
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -98,7 +89,38 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
         let vc = PuzzleViewController(puzzleListEntry: puzzleListEntry, userId: userId, siteInteractor: self.siteInteractor, api: self.api)
         self.navigationController?.pushViewController(vc, animated: true)
     }
+    
+    func updatePuzzleList() {
+        Task {
+            do {
+                self.quickFilterBar.isUserInteractionEnabled = false
+                let puzzleList = try await api.getPuzzleList(
+                    wordFilter: self.quickFilterBar.selectedWordFilter ?? "",
+                    includeMinis: self.quickFilterBar.selectedPuzzleSize.includeMinis,
+                    includeStandards: self.quickFilterBar.selectedPuzzleSize.includeStandards)
+                self.quickFilterBar.isUserInteractionEnabled = true
+                var snapshot = NSDiffableDataSourceSnapshot<Int, PuzzleListEntry>()
+                snapshot.appendSections([0])
+                snapshot.appendItems(puzzleList.puzzles, toSection: 0)
+                await self.dataSource.apply(snapshot, animatingDifferences: false)
+            } catch {
+                self.quickFilterBar.isUserInteractionEnabled = true
+                print(error)
+            }
+        }
+    }
 
+}
 
+extension PuzzleListViewController: PuzzleListQuickFilterBarViewDelegate {
+    
+    func filterBar(_ filterBar: PuzzleListQuickFilterBarView, selectedSizesDidChange: PuzzleListQuickFilterBarView.PuzzleSize) {
+        self.updatePuzzleList()
+    }
+    
+    func filterBar(_ filterBar: PuzzleListQuickFilterBarView, selectedWordFilterDidChange: String?) {
+        self.updatePuzzleList()
+    }
+    
 }
 

@@ -19,6 +19,7 @@ class GameClient: NSObject, URLSessionDelegate {
     
     weak var delegate: GameClientDelegate?
     
+    var isPuzzleSolved: Bool = false
     var autocheckEnabled: Bool = true
     let puzzle: Puzzle
     let userId: String
@@ -218,7 +219,10 @@ class GameClient: NSObject, URLSessionDelegate {
     
     func checkIfPuzzleIsSolved() -> Bool {
         let proposedSolution = self.solution.map({ $0.map({ $0 == nil ? nil : $0!.value }) })
-        return proposedSolution == self.correctSolution
+        let solved = proposedSolution == self.correctSolution
+        self.isPuzzleSolved = solved
+        
+        return solved
     }
     
 }
