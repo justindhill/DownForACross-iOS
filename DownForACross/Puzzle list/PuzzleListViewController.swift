@@ -83,6 +83,13 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
         self.updatePuzzleList()
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        if let selectedIndexPath = self.tableView.indexPathForSelectedRow {
+            self.tableView.deselectRow(at: selectedIndexPath, animated: animated)
+        }
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let puzzleListEntry = self.dataSource.itemIdentifier(for: indexPath),
               let userId = self.userId else { return }
