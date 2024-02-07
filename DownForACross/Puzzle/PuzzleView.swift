@@ -126,6 +126,10 @@ class PuzzleView: UIView {
             .applying(CGAffineTransform(scaleX: self.scrollView.zoomScale,
                                         y: self.scrollView.zoomScale))
         
+        if self.scrollView.contentSize == .zero {
+            self.scrollView.contentSize = self.intrinsicContentSize
+        }
+        
         let cellCount = self.cellCount
         let cellSideLength = self.cellSideLength
         
