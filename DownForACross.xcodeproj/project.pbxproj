@@ -33,6 +33,7 @@
 		3BB0FCDD2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCDC2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift */; };
 		3BB0FCE02B6C9A9A00CD907C /* confetti.json in Resources */ = {isa = PBXBuildFile; fileRef = 3BB0FCDF2B6C9A9A00CD907C /* confetti.json */; };
 		3BB0FCE22B6F33AF00CD907C /* PuzzleListQuickFilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCE12B6F33AF00CD907C /* PuzzleListQuickFilterBarView.swift */; };
+		3BB0FCE62B7661A200CD907C /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCE52B7661A200CD907C /* Config.swift */; };
 		3BC12A3E2B613B730060C29F /* PuzzleToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */; };
 		3BC12A402B62A9380060C29F /* UIColor+HSL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC12A3F2B62A9380060C29F /* UIColor+HSL.swift */; };
 		3BF367302B313374005BB41E /* PuzzleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF3672F2B313374005BB41E /* PuzzleViewController.swift */; };
@@ -70,10 +71,12 @@
 		3BB0FCDC2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleNewMessageStackView.swift; sourceTree = "<group>"; };
 		3BB0FCDF2B6C9A9A00CD907C /* confetti.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = confetti.json; sourceTree = "<group>"; };
 		3BB0FCE12B6F33AF00CD907C /* PuzzleListQuickFilterBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleListQuickFilterBarView.swift; sourceTree = "<group>"; };
+		3BB0FCE52B7661A200CD907C /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleToolbarView.swift; sourceTree = "<group>"; };
 		3BC12A3F2B62A9380060C29F /* UIColor+HSL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+HSL.swift"; sourceTree = "<group>"; };
 		3BF3672F2B313374005BB41E /* PuzzleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleViewController.swift; sourceTree = "<group>"; };
 		3BF367312B313675005BB41E /* PuzzleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleView.swift; sourceTree = "<group>"; };
+		4D7944475CB6938B17ECC264 /* Pods-DownForACross.debug (local).xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownForACross.debug (local).xcconfig"; path = "Target Support Files/Pods-DownForACross/Pods-DownForACross.debug (local).xcconfig"; sourceTree = "<group>"; };
 		BCAD19FE3621A683BFFFBB76 /* Pods_DownForACross.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownForACross.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C680CE75A27F372DF4D5A98A /* Pods-DownForACross.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownForACross.debug.xcconfig"; path = "Target Support Files/Pods-DownForACross/Pods-DownForACross.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -118,6 +121,7 @@
 				3B011DFB2B30C01F00BDB732 /* Model */,
 				3B011DE52B30BED400BDB732 /* AppDelegate.swift */,
 				3B011DE72B30BED400BDB732 /* SceneDelegate.swift */,
+				3BB0FCE52B7661A200CD907C /* Config.swift */,
 				3B011DEB2B30BED400BDB732 /* Main.storyboard */,
 				3B011DEE2B30BED500BDB732 /* Assets.xcassets */,
 				3B011DF02B30BED500BDB732 /* LaunchScreen.storyboard */,
@@ -199,6 +203,7 @@
 			children = (
 				C680CE75A27F372DF4D5A98A /* Pods-DownForACross.debug.xcconfig */,
 				2201460A45D1B9953767CD6D /* Pods-DownForACross.release.xcconfig */,
+				4D7944475CB6938B17ECC264 /* Pods-DownForACross.debug (local).xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -329,6 +334,7 @@
 			files = (
 				3B9003452B3630D70088729C /* UpdateDisplayNameEvent.swift in Sources */,
 				3B011DEA2B30BED400BDB732 /* PuzzleListViewController.swift in Sources */,
+				3BB0FCE62B7661A200CD907C /* Config.swift in Sources */,
 				3B90033D2B35D5960088729C /* UpdateCellEvent.swift in Sources */,
 				3BC12A402B62A9380060C29F /* UIColor+HSL.swift in Sources */,
 				3BB0FCD92B6C5CB300CD907C /* ChatEvent.swift in Sources */,
@@ -557,6 +563,101 @@
 			};
 			name = Release;
 		};
+		3BB0FCE32B765BC900CD907C /* Debug (local) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_SWIFT_FLAGS = "-DDFAC_LOCAL_SERVER";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = "Debug (local)";
+		};
+		3BB0FCE42B765BC900CD907C /* Debug (local) */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4D7944475CB6938B17ECC264 /* Pods-DownForACross.debug (local).xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = B4HG869SCZ;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DownForACross/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_SWIFT_FLAGS = "-D COCOAPODS $(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.justinhill.DownForACross;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Debug (local)";
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -564,6 +665,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3B011DF42B30BED500BDB732 /* Debug */,
+				3BB0FCE32B765BC900CD907C /* Debug (local) */,
 				3B011DF52B30BED500BDB732 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -573,6 +675,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3B011DF72B30BED500BDB732 /* Debug */,
+				3BB0FCE42B765BC900CD907C /* Debug (local) */,
 				3B011DF82B30BED500BDB732 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;

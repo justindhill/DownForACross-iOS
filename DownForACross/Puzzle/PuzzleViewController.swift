@@ -11,15 +11,23 @@ import Lottie
 
 class PuzzleViewController: UIViewController {
     
+    static let puzzleIdToGameIdMapUserDefaultsKey = "com.justinhill.DownForACross.puzzleIdToGameIdMap"
+    
     let puzzle: Puzzle
     let puzzleId: String
     let userId: String
     let siteInteractor: SiteInteractor
     let api: API
+    var puzzleIdToGameIdMap: [String: String] {
+        didSet {
+            UserDefaults.standard.setValue(puzzleIdToGameIdMap, forKey: Self.puzzleIdToGameIdMapUserDefaultsKey)
+        }
+    }
     
     var puzzleView: PuzzleView!
     var keyboardToolbar: PuzzleToolbarView!
     var keyboardToolbarBottomConstraint: NSLayoutConstraint!
+    
     var currentKeyboardHeight: CGFloat = 0 {
         didSet {
             self.view.setNeedsLayout()
@@ -45,7 +53,7 @@ class PuzzleViewController: UIViewController {
     var confettiView: LottieAnimationView?
     
     lazy var gameClient: GameClient = {
-        let client = GameClient(puzzle: self.puzzle, userId: self.userId)
+        let client = GameClient(puzzle: self.puzzle, userId: self.userId, gameId: self.puzzleIdToGameIdMap[self.puzzleId])
         client.delegate = self
         return client
     }()
@@ -61,6 +69,13 @@ class PuzzleViewController: UIViewController {
         self.sideBarTapToDismissView = UIView()
         self.sideBarTapToDismissView.translatesAutoresizingMaskIntoConstraints = false
         self.sideBarTapToDismissView.isUserInteractionEnabled = false
+        
+        if let gameIdMap = UserDefaults.standard.object(forKey: Self.puzzleIdToGameIdMapUserDefaultsKey) as? [String: String] {
+            self.puzzleIdToGameIdMap = gameIdMap
+        } else {
+            self.puzzleIdToGameIdMap = [:]
+        }
+        
         super.init(nibName: nil, bundle: nil)
         
         self.sideBarTapToDismissView.addGestureRecognizer(self.sideBarTapToDismissGestureRecognizer)
@@ -93,6 +108,8 @@ class PuzzleViewController: UIViewController {
         self.view.addGestureRecognizer(self.swipeGestureRecognizer)
 
         self.puzzleView = PuzzleView(puzzleGrid: puzzle.grid)
+        self.puzzleView.solution = self.gameClient.solution
+        self.puzzleView.isSolved = self.gameClient.isPuzzleSolved
         self.puzzleView.translatesAutoresizingMaskIntoConstraints = false
         self.puzzleView.delegate = self
         
@@ -150,9 +167,24 @@ class PuzzleViewController: UIViewController {
         ])
                 
         self.interactable = false
-        self.siteInteractor.createGame(puzzleId: self.puzzleId) { gameId in
+        
+        if let gameId = self.puzzleIdToGameIdMap[self.puzzleId], gameId != "" {
             self.gameClient.connect(gameId: gameId)
             self.interactable = true
+        } else {
+            self.siteInteractor.createGame(puzzleId: self.puzzleId) { gameId in
+                guard let gameId else {
+                    let alert = UIAlertController(title: "Couldn't create game", message: "We couldn't create the game on DownForACross. Try again later.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ok", style: .default) { [weak self] _ in
+                        self?.navigationController?.popViewController(animated: true)
+                    })
+                    self.present(alert, animated: true)
+                    return
+                }
+                self.puzzleIdToGameIdMap[self.puzzleId] = gameId
+                self.gameClient.connect(gameId: gameId)
+                self.interactable = true
+            }
         }
     }
     
@@ -185,8 +217,9 @@ class PuzzleViewController: UIViewController {
     }
     
     @objc func copyGameURLToPasteboard() {
-        let urlString = "https://downforacross.com/beta/game/\(self.gameClient.gameId)"
-        UIPasteboard.general.url = URL(string: urlString)!
+        var baseURLComponents = Config.siteBaseURLComponents
+        baseURLComponents.path = "/beta/game/\(self.gameClient.gameId)"
+        UIPasteboard.general.url = baseURLComponents.url!
     }
     
     @objc func toggleSidebar() {
@@ -242,12 +275,18 @@ extension PuzzleViewController: GameClientDelegate {
         }
     }
     
-    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isSolved: Bool) {
+    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isBulkUpdate: Bool, isSolved: Bool) {
         self.puzzleView.solution = solution
+        
+        if isSolved && !self.puzzleView.isSolved {
+            self.playConfettiAnimation()
+        }
+        
         self.puzzleView.isSolved = isSolved
         
-        if isSolved {
-            self.playConfettiAnimation()
+        if isBulkUpdate {
+            self.puzzleView.advanceToAppropriateCellIfNecessary(
+                isCurrentWordFullAndPotentiallyCorrect: self.puzzleView.currentWordIsFullAndPotentiallyCorrect())
         }
     }
     

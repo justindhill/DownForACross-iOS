@@ -482,23 +482,29 @@ class PuzzleView: UIView {
                 self.userCursor.coordinates = newCoordinates.coordinates
         }
         
-        let isFullAndPotentiallyCorrect = self.findCurrentWordCellCoordinates().reduce(into: true) { partialResult, coords in
-            let value = self.solution[coords.row][coords.cell]
-            partialResult = partialResult && value != nil && value?.correctness != .incorrect
-        }
-        
         if rollover {
             self.toggleDirection()
         }
         
+        let isFullAndPotentiallyCorrect = self.currentWordIsFullAndPotentiallyCorrect()
+        self.advanceToAppropriateCellIfNecessary(isCurrentWordFullAndPotentiallyCorrect: isFullAndPotentiallyCorrect)
+    }
+    
+    func advanceToAppropriateCellIfNecessary(isCurrentWordFullAndPotentiallyCorrect: Bool) {
         if !self.isSolved {
-            if isFullAndPotentiallyCorrect {
+            if isCurrentWordFullAndPotentiallyCorrect {
                 self.advanceUserCursorToNextWord()
             } else if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
                 self.advanceUserCursorToNextLetter()
             }
         }
-        
+    }
+    
+    func currentWordIsFullAndPotentiallyCorrect() -> Bool {
+        return self.findCurrentWordCellCoordinates().reduce(into: true) { partialResult, coords in
+            let value = self.solution[coords.row][coords.cell]
+            partialResult = partialResult && value != nil && value?.correctness != .incorrect
+        }
     }
     
     func moveUserCursorToWord(atSequenceIndex sequenceIndex: Int, direction: Direction) {
@@ -536,13 +542,8 @@ class PuzzleView: UIView {
         if rollover {
             self.toggleDirection()
         }
-        
-        let isFullAndPotentiallyCorrect = self.findCurrentWordCellCoordinates().reduce(into: true) { partialResult, coords in
-            let value = self.solution[coords.row][coords.cell]
-            partialResult = partialResult && value != nil && value?.correctness != .incorrect
-        }
-        
-        if isFullAndPotentiallyCorrect {
+                
+        if !self.isSolved && self.currentWordIsFullAndPotentiallyCorrect() {
             self.retreatUserCursorToPreviousWord(trailingEdge: trailingEdge)
         } else if trailingEdge {
             let newWordExtent = self.findCurrentWordCellCoordinates()

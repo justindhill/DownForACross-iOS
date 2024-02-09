@@ -11,7 +11,7 @@ import SocketIO
 
 protocol GameClientDelegate: AnyObject {
     func gameClient(_ client: GameClient, cursorsDidChange: [String: Cursor])
-    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isSolved: Bool)
+    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isBulkUpdate: Bool, isSolved: Bool)
     func gameClient(_ client: GameClient, didReceiveNewChatMessage: ChatEvent, from: Player)
 }
 
@@ -24,13 +24,15 @@ class GameClient: NSObject, URLSessionDelegate {
     let puzzle: Puzzle
     let userId: String
     let correctSolution: [[String?]]
+    
     private(set) var isPerformingBulkEventSync: Bool = false
-    private(set) var gameId: String = ""
+    private(set) var gameId: String
     
     private(set) var solution: [[CellEntry?]] {
         didSet {
-            if oldValue != solution {
-                self.delegate?.gameClient(self, solutionDidChange: self.solution, isSolved: self.checkIfPuzzleIsSolved())
+            if !self.isPerformingBulkEventSync && oldValue != solution {
+                self.writeCurrentSolutionToFile()
+                self.delegate?.gameClient(self, solutionDidChange: self.solution, isBulkUpdate: false, isSolved: self.checkIfPuzzleIsSolved())
             }
         }
     }
@@ -59,23 +61,41 @@ class GameClient: NSObject, URLSessionDelegate {
 
     
     lazy var socketManager: SocketManager = {
-//        SocketManager(socketURL: URL(string: "https://api.foracross.com/socket.io")!,
-        SocketManager(socketURL: URL(string: "ws://localhost:3021/socket.io")!,
-                      config: [
-                        .version(.two),
-                        .forceWebsockets(true)
-//                        .secure(true)
-                      ])
+        var components = Config.apiBaseURLComponents
+        components.path = "/socket.io"
+        var secure = true
+        #if DFAC_LOCAL_SERVER
+        components.scheme = "ws://"
+        secure = false
+        #endif
+        
+        return SocketManager(
+            socketURL: components.url!,
+            config: [
+                .version(.two),
+                .forceWebsockets(true),
+                .secure(secure)
+            ]
+        )
     }()
     
-    init(puzzle: Puzzle, userId: String) {
+    init(puzzle: Puzzle, userId: String, gameId: String?) {
         self.puzzle = puzzle
         self.userId = userId
-        self.solution = Array(repeating: Array(repeating: nil,
-                                               count: puzzle.grid[0].count),
-                              count: puzzle.grid.count)
+        self.gameId = gameId ?? ""
+        
+        if let loadedSolution = Self.loadSolution(forGameId: self.gameId) {
+            self.solution = loadedSolution
+        } else {
+            self.solution = Array(repeating: Array(repeating: nil,
+                                                   count: puzzle.grid[0].count),
+                                  count: puzzle.grid.count)
+        }
         
         self.correctSolution = self.puzzle.grid.map({ $0.map({ $0 == "." ? nil : $0 }) })
+        
+        super.init()
+        self.isPuzzleSolved = self.checkIfPuzzleIsSolved()
     }
     
     
@@ -96,6 +116,11 @@ class GameClient: NSObject, URLSessionDelegate {
                 self.isPerformingBulkEventSync = true
                 self.handleGameEvents(events)
                 self.isPerformingBulkEventSync = false
+                self.writeCurrentSolutionToFile()
+                self.delegate?.gameClient(self, 
+                                          solutionDidChange: self.solution,
+                                          isBulkUpdate: true, 
+                                          isSolved: self.checkIfPuzzleIsSolved())
             }
         }
         
@@ -223,6 +248,58 @@ class GameClient: NSObject, URLSessionDelegate {
         self.isPuzzleSolved = solved
         
         return solved
+    }
+    
+    func writeCurrentSolutionToFile() {
+        guard self.gameId != "" else { return }
+        
+        let filePath = Self.createFilePath(forGameId: self.gameId)
+        let jsonEncoder = JSONEncoder()
+        guard let encodedSolution = try? jsonEncoder.encode(self.solution) else {
+            print("Couldn't encode the solution")
+            return
+        }
+        
+        Self.createSolutionsPathIfNecessary()
+        
+        let success = FileManager.default.createFile(atPath: filePath, contents: encodedSolution, attributes: nil)
+        if !success {
+            print("Unable to write solution file for \(self.gameId)")
+        }
+    }
+    
+    static func loadSolution(forGameId gameId: String) -> [[CellEntry?]]? {
+        guard gameId != "" else { return nil }
+
+        let filePath = self.createFilePath(forGameId: gameId)
+        let jsonDecoder = JSONDecoder()
+        
+        guard let data = FileManager.default.contents(atPath: filePath) else { return nil }
+        guard let decodedSolution = try? jsonDecoder.decode([[CellEntry?]].self, from: data) else {
+            print("Couldn't decode the solution")
+            return nil
+        }
+        
+        return decodedSolution
+    }
+    
+    static func createSolutionsPathIfNecessary() {
+        let documentsDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+        var filePath: String = (documentsDirectory as NSString).appendingPathComponent("solutions")
+        var isDirectory: ObjCBool = false
+        if !(FileManager.default.fileExists(atPath: filePath, isDirectory: &isDirectory) && isDirectory.boolValue) {
+            var components = URLComponents(string: filePath)!
+            components.scheme = "file"
+            try? FileManager.default.createDirectory(at: components.url!, withIntermediateDirectories: true)
+        }
+    }
+    
+    static func createFilePath(forGameId gameId: String) -> String {
+        let documentsDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+        var filePath: String = (documentsDirectory as NSString).appendingPathComponent("solutions")
+        filePath = (filePath as NSString).appendingPathComponent("\(gameId).json")
+        
+        return filePath
     }
     
 }

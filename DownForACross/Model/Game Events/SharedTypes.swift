@@ -13,13 +13,13 @@ struct CellCoordinates: Equatable {
     var cell: Int
 }
 
-struct CellEntry: Equatable {
+struct CellEntry: Equatable, Codable {
     var userId: String
     var value: String
     var correctness: Correctness?
 }
 
-enum Correctness: Equatable {
+enum Correctness: Equatable, Codable {
     case correct
     case incorrect
 }
