@@ -18,10 +18,13 @@ class SettingsViewController: UIViewController {
         self.stackView = UIStackView()
         self.stackView.axis = .vertical
         self.scrollView = UIScrollView()
-        super.init()
+        super.init(nibName: nil, bundle: nil)
+        
+        self.navigationItem.title = "Settings"
     }
     
     override func viewDidLoad() {
+        self.view.backgroundColor = .systemBackground
         self.view.addSubview(self.scrollView)
         self.scrollView.addSubview(self.stackView)
         

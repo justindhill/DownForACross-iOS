@@ -78,6 +78,7 @@ class PuzzleViewController: UIViewController {
         
         super.init(nibName: nil, bundle: nil)
         
+        self.hidesBottomBarWhenPushed = true
         self.sideBarTapToDismissView.addGestureRecognizer(self.sideBarTapToDismissGestureRecognizer)
         
         self.sideBarViewController.clueListViewController.delegate = self

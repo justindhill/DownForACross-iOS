@@ -17,6 +17,7 @@
 		3B011DFF2B30C03500BDB732 /* Puzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFE2B30C03500BDB732 /* Puzzle.swift */; };
 		3B011E012B30C04C00BDB732 /* PuzzleStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011E002B30C04C00BDB732 /* PuzzleStats.swift */; };
 		3B4D818F2B63F01A0098A5DA /* CheckEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */; };
+		3B581B132B7E61880084EC9B /* TabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B581B122B7E61880084EC9B /* TabBarViewController.swift */; };
 		3B7AD2672B597AA4004DEC1A /* UpdateColorEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7AD2662B597AA4004DEC1A /* UpdateColorEvent.swift */; };
 		3B7AD26A2B597BF0004DEC1A /* SocketIOClient+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7AD2692B597BF0004DEC1A /* SocketIOClient+Utils.swift */; };
 		3B9003382B34CDA20088729C /* GameClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9003372B34CDA20088729C /* GameClient.swift */; };
@@ -57,6 +58,7 @@
 		3B011DFE2B30C03500BDB732 /* Puzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Puzzle.swift; sourceTree = "<group>"; };
 		3B011E002B30C04C00BDB732 /* PuzzleStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleStats.swift; sourceTree = "<group>"; };
 		3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckEvent.swift; sourceTree = "<group>"; };
+		3B581B122B7E61880084EC9B /* TabBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarViewController.swift; sourceTree = "<group>"; };
 		3B7AD2662B597AA4004DEC1A /* UpdateColorEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateColorEvent.swift; sourceTree = "<group>"; };
 		3B7AD2692B597BF0004DEC1A /* SocketIOClient+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SocketIOClient+Utils.swift"; sourceTree = "<group>"; };
 		3B9003372B34CDA20088729C /* GameClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameClient.swift; sourceTree = "<group>"; };
@@ -118,6 +120,7 @@
 		3B011DE42B30BED400BDB732 /* DownForACross */ = {
 			isa = PBXGroup;
 			children = (
+				3B581B112B7E61760084EC9B /* Tab bar */,
 				3BB0FCE72B76745400CD907C /* Settings */,
 				3BB0FCDE2B6C9A8E00CD907C /* Animations */,
 				3B7AD2682B597BD8004DEC1A /* Utils */,
@@ -144,6 +147,14 @@
 				3B011E002B30C04C00BDB732 /* PuzzleStats.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		3B581B112B7E61760084EC9B /* Tab bar */ = {
+			isa = PBXGroup;
+			children = (
+				3B581B122B7E61880084EC9B /* TabBarViewController.swift */,
+			);
+			path = "Tab bar";
 			sourceTree = "<group>";
 		};
 		3B7AD2682B597BD8004DEC1A /* Utils */ = {
@@ -375,6 +386,7 @@
 				3B9A93532B6AAF5B00013239 /* PuzzleClueListViewController.swift in Sources */,
 				3B90033B2B34E9AF0088729C /* UpdateCursorEvent.swift in Sources */,
 				3B9A93552B6AAF7B00013239 /* PuzzleMessagesViewController.swift in Sources */,
+				3B581B132B7E61880084EC9B /* TabBarViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
