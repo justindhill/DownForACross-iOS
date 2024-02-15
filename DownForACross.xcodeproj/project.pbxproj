@@ -34,6 +34,9 @@
 		3BB0FCE02B6C9A9A00CD907C /* confetti.json in Resources */ = {isa = PBXBuildFile; fileRef = 3BB0FCDF2B6C9A9A00CD907C /* confetti.json */; };
 		3BB0FCE22B6F33AF00CD907C /* PuzzleListQuickFilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCE12B6F33AF00CD907C /* PuzzleListQuickFilterBarView.swift */; };
 		3BB0FCE62B7661A200CD907C /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCE52B7661A200CD907C /* Config.swift */; };
+		3BB0FCEB2B76746900CD907C /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCEA2B76746900CD907C /* SettingsViewController.swift */; };
+		3BB0FCED2B7E5AEB00CD907C /* UserDefaultsEntryPropertyWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCEC2B7E5AEB00CD907C /* UserDefaultsEntryPropertyWrapper.swift */; };
+		3BB0FCEF2B7E5B6A00CD907C /* SettingsStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCEE2B7E5B6A00CD907C /* SettingsStorage.swift */; };
 		3BC12A3E2B613B730060C29F /* PuzzleToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */; };
 		3BC12A402B62A9380060C29F /* UIColor+HSL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC12A3F2B62A9380060C29F /* UIColor+HSL.swift */; };
 		3BF367302B313374005BB41E /* PuzzleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF3672F2B313374005BB41E /* PuzzleViewController.swift */; };
@@ -72,6 +75,9 @@
 		3BB0FCDF2B6C9A9A00CD907C /* confetti.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = confetti.json; sourceTree = "<group>"; };
 		3BB0FCE12B6F33AF00CD907C /* PuzzleListQuickFilterBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleListQuickFilterBarView.swift; sourceTree = "<group>"; };
 		3BB0FCE52B7661A200CD907C /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		3BB0FCEA2B76746900CD907C /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		3BB0FCEC2B7E5AEB00CD907C /* UserDefaultsEntryPropertyWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsEntryPropertyWrapper.swift; sourceTree = "<group>"; };
+		3BB0FCEE2B7E5B6A00CD907C /* SettingsStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStorage.swift; sourceTree = "<group>"; };
 		3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleToolbarView.swift; sourceTree = "<group>"; };
 		3BC12A3F2B62A9380060C29F /* UIColor+HSL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+HSL.swift"; sourceTree = "<group>"; };
 		3BF3672F2B313374005BB41E /* PuzzleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleViewController.swift; sourceTree = "<group>"; };
@@ -114,6 +120,7 @@
 		3B011DE42B30BED400BDB732 /* DownForACross */ = {
 			isa = PBXGroup;
 			children = (
+				3BB0FCE72B76745400CD907C /* Settings */,
 				3BB0FCDE2B6C9A8E00CD907C /* Animations */,
 				3B7AD2682B597BD8004DEC1A /* Utils */,
 				3B9003432B3628680088729C /* Puzzle list */,
@@ -148,6 +155,8 @@
 				3B9003402B3627CC0088729C /* SiteInteractor.swift */,
 				3B7AD2692B597BF0004DEC1A /* SocketIOClient+Utils.swift */,
 				3BC12A3F2B62A9380060C29F /* UIColor+HSL.swift */,
+				3BB0FCEC2B7E5AEB00CD907C /* UserDefaultsEntryPropertyWrapper.swift */,
+				3BB0FCEE2B7E5B6A00CD907C /* SettingsStorage.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -196,6 +205,14 @@
 				3BB0FCDF2B6C9A9A00CD907C /* confetti.json */,
 			);
 			path = Animations;
+			sourceTree = "<group>";
+		};
+		3BB0FCE72B76745400CD907C /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				3BB0FCEA2B76746900CD907C /* SettingsViewController.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 		53F62DDFE970C11E954F1973 /* Pods */ = {
@@ -340,6 +357,7 @@
 				3BB0FCD92B6C5CB300CD907C /* ChatEvent.swift in Sources */,
 				3B011DE62B30BED400BDB732 /* AppDelegate.swift in Sources */,
 				3B9003412B3627CC0088729C /* SiteInteractor.swift in Sources */,
+				3BB0FCEF2B7E5B6A00CD907C /* SettingsStorage.swift in Sources */,
 				3B7AD2672B597AA4004DEC1A /* UpdateColorEvent.swift in Sources */,
 				3BF367322B313675005BB41E /* PuzzleView.swift in Sources */,
 				3B90033F2B35D5D90088729C /* SharedTypes.swift in Sources */,
@@ -355,6 +373,8 @@
 				3BF367302B313374005BB41E /* PuzzleViewController.swift in Sources */,
 				3BB0FCE22B6F33AF00CD907C /* PuzzleListQuickFilterBarView.swift in Sources */,
 				3B011DFD2B30C02F00BDB732 /* ListPuzzle.swift in Sources */,
+				3BB0FCED2B7E5AEB00CD907C /* UserDefaultsEntryPropertyWrapper.swift in Sources */,
+				3BB0FCEB2B76746900CD907C /* SettingsViewController.swift in Sources */,
 				3BC12A3E2B613B730060C29F /* PuzzleToolbarView.swift in Sources */,
 				3B9A93532B6AAF5B00013239 /* PuzzleClueListViewController.swift in Sources */,
 				3B90033B2B34E9AF0088729C /* UpdateCursorEvent.swift in Sources */,
