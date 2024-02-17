@@ -32,7 +32,7 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
     }()
     
     lazy var quickFilterBar: PuzzleListQuickFilterBarView = {
-        let view = PuzzleListQuickFilterBarView()
+        let view = PuzzleListQuickFilterBarView(puzzleSize: self.settingsStorage.puzzleListSizeFilter, wordFilter: self.settingsStorage.puzzleTextFilter)
         view.translatesAutoresizingMaskIntoConstraints = false
         view.delegate = self
         return view
@@ -41,7 +41,14 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
     var userId: String?
     let siteInteractor = SiteInteractor()
     let api = API()
-
+    let settingsStorage: SettingsStorage
+    
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    init(settingsStorage: SettingsStorage) {
+        self.settingsStorage = settingsStorage
+        super.init(nibName: nil, bundle: nil)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.title = "Down For a Cross"
@@ -121,11 +128,13 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
 
 extension PuzzleListViewController: PuzzleListQuickFilterBarViewDelegate {
     
-    func filterBar(_ filterBar: PuzzleListQuickFilterBarView, selectedSizesDidChange: PuzzleListQuickFilterBarView.PuzzleSize) {
+    func filterBar(_ filterBar: PuzzleListQuickFilterBarView, selectedSizesDidChange size: PuzzleListQuickFilterBarView.PuzzleSize) {
+        self.settingsStorage.puzzleListSizeFilter = size
         self.updatePuzzleList()
     }
     
-    func filterBar(_ filterBar: PuzzleListQuickFilterBarView, selectedWordFilterDidChange: String?) {
+    func filterBar(_ filterBar: PuzzleListQuickFilterBarView, selectedWordFilterDidChange word: String?) {
+        self.settingsStorage.puzzleTextFilter = word ?? ""
         self.updatePuzzleList()
     }
     

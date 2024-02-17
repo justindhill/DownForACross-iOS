@@ -9,8 +9,9 @@ import UIKit
 
 class TabBarViewController: UITabBarController {
     
-    let puzzleListViewController: PuzzleListViewController = PuzzleListViewController()
-    let settingsViewController: SettingsViewController = SettingsViewController()
+    let settingsStorage: SettingsStorage = SettingsStorage()
+    lazy var puzzleListViewController: PuzzleListViewController = PuzzleListViewController(settingsStorage: self.settingsStorage)
+    lazy var settingsViewController: SettingsViewController = SettingsViewController(settingsStorage: self.settingsStorage)
     lazy var puzzleListNavigationController: UINavigationController = {
         let nav = UINavigationController(rootViewController: self.puzzleListViewController)
         nav.tabBarItem = UITabBarItem(title: "Puzzles", image: UIImage(systemName: "cross"), tag: 0)

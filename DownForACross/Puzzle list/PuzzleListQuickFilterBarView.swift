@@ -50,7 +50,7 @@ class PuzzleListQuickFilterBarView: UIView {
         return button
     })
     
-    enum PuzzleSize: Int, CaseIterable {
+    enum PuzzleSize: Int, CaseIterable, Codable {
         case all
         case standard
         case mini
@@ -82,7 +82,7 @@ class PuzzleListQuickFilterBarView: UIView {
     let scrollView: UIScrollView = UIScrollView()
     var filterStackView: UIStackView!
     
-    var selectedPuzzleSize: PuzzleSize = .all {
+    var selectedPuzzleSize: PuzzleSize {
         didSet {
             self.sizeSelectorButton.configuration = self.buttonConfigurationFor(puzzleSize: self.selectedPuzzleSize)
             self.delegate?.filterBar(self, selectedSizesDidChange: self.selectedPuzzleSize)
@@ -103,16 +103,18 @@ class PuzzleListQuickFilterBarView: UIView {
     }
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    init() {
+    init(puzzleSize: PuzzleSize, wordFilter: String) {
+        self.selectedPuzzleSize = puzzleSize
         super.init(frame: .zero)
         
         self.filterStackView = UIStackView(arrangedSubviews: self.wordFilterButtons)
         self.filterStackView.distribution = .fill
         
-//        let spacer = UIView()
-//        spacer.setContentHuggingPriority(.fittingSizeLevel, for: .horizontal)
-//        spacer.setContentCompressionResistancePriority(.fittingSizeLevel, for: .horizontal)
-//        self.filterStackView.addArrangedSubview(spacer)
+        if let wordFilterIndex = self.wordFilters.firstIndex(of: wordFilter) {
+            self.textFilterButtonTapped(self.wordFilterButtons[wordFilterIndex])
+        }
+        
+        self.sizeSelectorButton.configuration = self.buttonConfigurationFor(puzzleSize: self.selectedPuzzleSize)
         
         self.scrollView.showsHorizontalScrollIndicator = false
         self.preservesSuperviewLayoutMargins = true

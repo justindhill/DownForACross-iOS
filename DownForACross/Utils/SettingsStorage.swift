@@ -9,11 +9,16 @@ import UIKit
 
 class SettingsStorage {
     
-    @UserDefaultsEntry<String?>(key: "userDisplayName")
+    @UserDefaultsOptionalEntry<String>(key: "userDisplayName")
     var userDisplayName
     
-    @UserDefaultsEntry<UIColor?>(key: "userDisplayColor")
+    @UserDefaultsOptionalArchiveEntry<UIColor>(key: "userDisplayColor")
     var userDisplayColor
     
+    @UserDefaultsEntry<PuzzleListQuickFilterBarView.PuzzleSize>(key: "puzzleSizeFilter")
+    var puzzleListSizeFilter = .all
+    
+    @UserDefaultsEntry<String>(key: "puzzleTextFilter")
+    var puzzleTextFilter = ""
     
 }

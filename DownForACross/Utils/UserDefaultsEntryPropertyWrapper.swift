@@ -7,47 +7,34 @@
 
 import Foundation
 
-@propertyWrapper class UserDefaultsEntry<T> {
+fileprivate let jsonEncoder: JSONEncoder = JSONEncoder()
+fileprivate let jsonDecoder: JSONDecoder = JSONDecoder()
+
+@propertyWrapper class UserDefaultsEntry<T: Codable> {
     
     private let domainPrefix: String = "com.justinhill.DownForACross."
     
-    enum Value {
-        case uninitialized
-        case `nil`
-        case value(T)
-    }
-    
+    private var defaultValue: T
     var key: String
-    var backingValue: Value
-    var wrappedValue: Any? {
+    var wrappedValue: T {
         set {
-            UserDefaults.standard.setValue(newValue, forKeyPath: self.key)
-            if let newValue {
-                self.backingValue = .value(newValue as! T)
-            }
+            let encoded = try! jsonEncoder.encode(newValue)
+            UserDefaults.standard.setValue(encoded, forKey: self.key)
         }
         
         get {
-            switch backingValue {
-                case .uninitialized:
-                    if let value = UserDefaults.standard.value(forKeyPath: self.key) {
-                        self.backingValue = .value(value as! T)
-                        return value as! T
-                    } else {
-                        self.backingValue = .nil
-                        return nil
-                    }
-                case .nil:
-                    return nil
-                case .value(let value):
-                    return value
+            if let value = UserDefaults.standard.value(forKey: self.key) as? Data,
+               let decodedValue = try? jsonDecoder.decode(T.self, from: value) {
+                return decodedValue
+            } else {
+                return self.defaultValue
             }
         }
     }
     
-    init(key: String) {
-        self.backingValue = .uninitialized
+    init(wrappedValue: T, key: String) {
         self.key = self.domainPrefix + key
+        self.defaultValue = wrappedValue
     }
     
 }
