@@ -108,7 +108,7 @@ class PuzzleViewController: UIViewController {
         self.view.backgroundColor = .systemBackground
         self.view.addGestureRecognizer(self.swipeGestureRecognizer)
 
-        self.puzzleView = PuzzleView(puzzleGrid: puzzle.grid)
+        self.puzzleView = PuzzleView(puzzle: self.puzzle)
         self.puzzleView.solution = self.gameClient.solution
         self.puzzleView.isSolved = self.gameClient.isPuzzleSolved
         self.puzzleView.translatesAutoresizingMaskIntoConstraints = false
@@ -316,6 +316,20 @@ extension PuzzleViewController: PuzzleViewDelegate {
     
     func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToCoordinates coordinates: CellCoordinates) {
         self.gameClient.moveUserCursor(to: coordinates)
+    }
+    
+    func puzzleView(_ puzzleView: PuzzleView, referencesInClueAtClueIndex clueIndex: Int, direction: Direction) -> [PuzzleClues.ClueReference] {
+        var clue: String?
+        switch direction {
+            case .across:
+                clue = self.puzzle.clues.across[clueIndex]
+            case .down:
+                clue = self.puzzle.clues.down[clueIndex]
+        }
+        
+        guard let clue else { return [] }
+        
+        return PuzzleClues.findReferences(clue: clue)
     }
     
 }

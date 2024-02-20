@@ -11,7 +11,6 @@ struct Puzzle: Codable, Hashable {
     var grid: [[String]]
     let info: PuzzleInfo
 
-//    let solution: [[String]]
     let clues: PuzzleClues
     let shades: [Int]
 
@@ -41,7 +40,6 @@ struct PuzzleInfo: Codable, Hashable {
     let type: String?
     let title: String
     let author: String
-//    let copyright: String
     let description: String
 }
 
