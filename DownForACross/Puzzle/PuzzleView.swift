@@ -59,8 +59,8 @@ class PuzzleView: UIView {
         return true
     }
     
-    var userCursorLetterIndicatorLayer: CALayer = CALayer()
-    var userCursorWordIndicatorLayer: CALayer = CALayer()
+    lazy var userCursorLetterIndicatorLayer: CALayer = self.createActionlessLayer()
+    lazy var userCursorWordIndicatorLayer: CALayer = self.createActionlessLayer()
     var cursorIndicatorLayers: [String: CALayer] = [:]
     var numberTextLayers: [CATextLayer] = []
     var fillTextLayers: [CATextLayer] = []
@@ -152,13 +152,6 @@ class PuzzleView: UIView {
         if self.userCursorWordIndicatorLayer.superlayer == nil {
             self.puzzleContainerView.layer.addSublayer(self.userCursorWordIndicatorLayer)
             self.userCursorWordIndicatorLayer.backgroundColor = UIColor.systemPink.withAlphaComponent(0.1).cgColor
-            let transition = CATransition()
-            transition.duration = 0.05
-            self.userCursorWordIndicatorLayer.actions = [
-                "bounds": transition,
-                "position": transition,
-                "size": transition
-            ]
         }
         
         let wordExtent = self.findCurrentWordExtent()
@@ -448,16 +441,8 @@ class PuzzleView: UIView {
     func updateReferenceIndicatorCount(target: Int) {
         while self.referenceIndicatorLayers.count != target {
             if self.referenceIndicatorLayers.count < target {
-                let layer = CALayer()
+                let layer = self.createActionlessLayer()
                 layer.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.1).cgColor
-                
-                let transition = CATransition()
-                transition.duration = 0.05
-                layer.actions = [
-                    "bounds": transition,
-                    "position": transition,
-                    "size": transition
-                ]
                 
                 self.puzzleContainerView.layer.addSublayer(layer)
                 self.referenceIndicatorLayers.append(layer)
@@ -465,6 +450,17 @@ class PuzzleView: UIView {
                 self.referenceIndicatorLayers.removeLast().removeFromSuperlayer()
             }
         }
+    }
+    
+    func createActionlessLayer() -> CALayer {
+        let layer = CALayer()
+        layer.actions = [
+            "bounds": NSNull(),
+            "position": NSNull(),
+            "size": NSNull()
+        ]
+        
+        return layer
     }
     
     func advanceUserCursorToNextLetter() {

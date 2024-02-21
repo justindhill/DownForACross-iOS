@@ -21,22 +21,35 @@ extension PuzzleClues {
                 return numberFormatter.number(from: String(match))?.intValue
             })
             "-"
-            Capture {
-                ChoiceOf {
-                    "Down"
-                    "Across"
+            Optionally {
+                Capture {
+                    ChoiceOf {
+                        "Down"
+                        "Across"
+                    }
                 }
+            }
+            Optionally {
+                ","
+            }
+            ChoiceOf {
+                " "
+                "."
             }
         }
         
-        for match in clue.matches(of: clueReferenceRegex) {
+        var mostRecentDirection: Direction = .down
+        for match in clue.matches(of: clueReferenceRegex).reversed() {
             let (_, number, direction) = match.output
             var directionEnum: Direction
             if direction == "Down" {
                 directionEnum = .down
-            } else {
+            } else if direction == "Across" {
                 directionEnum = .across
+            } else {
+                directionEnum = mostRecentDirection
             }
+            mostRecentDirection = directionEnum
             
             references.append(ClueReference(number: number, direction: directionEnum))
         }
