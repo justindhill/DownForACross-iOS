@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol PuzzleSideBarViewControllerDelegate: AnyObject {
+    func sideBarViewController(_ sideBarViewController: PuzzleSideBarViewController, didSwitchToTab: PuzzleSideBarViewController.Tab)
+}
+
 class PuzzleSideBarViewController: UIViewController {
     
     enum Tab: Int {
@@ -14,6 +18,21 @@ class PuzzleSideBarViewController: UIViewController {
         case messages
     }
     
+    var currentTab: Tab {
+        get {
+            if self.segmentedControl.selectedSegmentIndex == Tab.clues.rawValue {
+                return .clues
+            } else {
+                return .messages
+            }
+        }
+        
+        set {
+            self.segmentedControl.selectedSegmentIndex = newValue.rawValue
+        }
+    }
+    
+    weak var delegate: PuzzleSideBarViewControllerDelegate?
     let clueListViewController: PuzzleClueListViewController
     let messagesViewController: PuzzleMessagesViewController
     
@@ -74,12 +93,15 @@ class PuzzleSideBarViewController: UIViewController {
     }
     
     @objc func selectedSegmentDidChange(_ sender: UISegmentedControl) {
-        if sender.selectedSegmentIndex == Tab.clues.rawValue {
-            self.show(view: self.clueListViewController.view)
-            self.hide(view: self.messagesViewController.view)
-        } else {
-            self.show(view: self.messagesViewController.view)
-            self.hide(view: self.clueListViewController.view)
+        switch self.currentTab {
+            case .clues:
+                self.show(view: self.clueListViewController.view)
+                self.hide(view: self.messagesViewController.view)
+                self.delegate?.sideBarViewController(self, didSwitchToTab: .clues)
+            case .messages:
+                self.show(view: self.messagesViewController.view)
+                self.hide(view: self.clueListViewController.view)
+                self.delegate?.sideBarViewController(self, didSwitchToTab: .messages)
         }
     }
     

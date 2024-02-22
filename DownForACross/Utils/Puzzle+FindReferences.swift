@@ -22,6 +22,9 @@ extension PuzzleClues {
             })
             "-"
             Optionally {
+                Optionally {
+                    " "
+                }
                 Capture {
                     ChoiceOf {
                         "Down"

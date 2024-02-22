@@ -41,8 +41,8 @@ class PuzzleViewController: UIViewController {
         return gesture
     }()
      
-    var sideBarViewController: PuzzleSideBarViewController!
-    var sideBarTapToDismissView: UIView!
+    var sideBarViewController: PuzzleSideBarViewController
+    var sideBarTapToDismissView: UIView
     var sideBarLeadingConstraint: NSLayoutConstraint!
     lazy var sideBarTapToDismissGestureRecognizer: UITapGestureRecognizer = {
         let tap = UITapGestureRecognizer(target: self, action: #selector(toggleSidebar))
@@ -78,19 +78,23 @@ class PuzzleViewController: UIViewController {
         
         super.init(nibName: nil, bundle: nil)
         
+        self.sideBarViewController.delegate = self
         self.hidesBottomBarWhenPushed = true
         self.sideBarTapToDismissView.addGestureRecognizer(self.sideBarTapToDismissGestureRecognizer)
         
         self.sideBarViewController.clueListViewController.delegate = self
         
-        NotificationCenter.default.addObserver(forName: UIControl.keyboardWillShowNotification, object: nil, queue: nil) { note in
-            guard let userInfo = note.userInfo else { return }
+        NotificationCenter.default.addObserver(forName: UIControl.keyboardWillShowNotification, object: nil, queue: nil) { [weak self] note in
+            guard let self, let userInfo = note.userInfo else { return }
             let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue.size
             self.currentKeyboardHeight = keyboardSize.height
+            self.updateContentInsets()
         }
         
-        NotificationCenter.default.addObserver(forName: UIControl.keyboardDidHideNotification, object: nil, queue: nil) { note in
+        NotificationCenter.default.addObserver(forName: UIControl.keyboardDidHideNotification, object: nil, queue: nil) { [weak self] note in
+            guard let self else { return }
             self.currentKeyboardHeight = 0
+            self.updateContentInsets()
         }
         
         let copyItem = UIBarButtonItem(image: UIImage(systemName: "doc.on.doc"),
@@ -161,7 +165,7 @@ class PuzzleViewController: UIViewController {
             self.sideBarTapToDismissView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             self.sideBarTapToDismissView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
             self.sideBarTapToDismissView.topAnchor.constraint(equalTo: self.view.topAnchor),
-            self.sideBarTapToDismissView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            self.sideBarTapToDismissView.bottomAnchor.constraint(equalTo: self.keyboardToolbar.topAnchor),
             self.newMessageStackView.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.67),
             self.newMessageStackView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -8),
             self.newMessageStackView.bottomAnchor.constraint(equalTo: self.keyboardToolbar.topAnchor, constant: -8)
@@ -194,8 +198,7 @@ class PuzzleViewController: UIViewController {
         self.puzzleView.becomeFirstResponder()
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
+    func updateContentInsets() {
         self.additionalSafeAreaInsets.bottom = self.currentKeyboardHeight - self.view.safeAreaInsets.bottom
         self.puzzleView.scrollView.contentInset.bottom =
             self.keyboardToolbar.frame.size.height - self.keyboardToolbar.contentView.layoutMargins.bottom
@@ -227,7 +230,12 @@ class PuzzleViewController: UIViewController {
         if self.sideBarLeadingConstraint.constant == 0 {
             self.sideBarLeadingConstraint.constant = -self.sideBarViewController.view.frame.size.width
             self.sideBarTapToDismissView.isUserInteractionEnabled = true
+            if self.sideBarViewController.currentTab == .messages {
+                self.keyboardToolbar.mode = .messages
+            }
         } else {
+            self.puzzleView.becomeFirstResponder()
+            self.keyboardToolbar.mode = .clues
             self.sideBarLeadingConstraint.constant = 0
             self.sideBarTapToDismissView.isUserInteractionEnabled = false
         }
@@ -339,6 +347,20 @@ extension PuzzleViewController: PuzzleClueListViewControllerDelegate {
     
     func clueListViewController(_ clueListViewController: PuzzleClueListViewController, didSelectClueAtSequenceIndex sequenceIndex: Int, direction: Direction) {
         self.puzzleView.moveUserCursorToWord(atSequenceIndex: sequenceIndex, direction: direction)
+    }
+    
+}
+
+extension PuzzleViewController: PuzzleSideBarViewControllerDelegate {
+    
+    func sideBarViewController(_ sideBarViewController: PuzzleSideBarViewController, didSwitchToTab tab: PuzzleSideBarViewController.Tab) {
+        switch tab {
+            case .clues:
+                self.keyboardToolbar.mode = .clues
+                self.puzzleView.becomeFirstResponder()
+            case .messages:
+                self.keyboardToolbar.mode = .messages
+        }
     }
     
 }

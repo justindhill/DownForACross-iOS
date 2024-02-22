@@ -126,7 +126,7 @@ class PuzzleView: UIView {
     
     override func layoutSubviews() {
         self.puzzleContainerView.layer.borderColor = self.isDarkMode ? UIColor.black.cgColor : UIColor.systemGray2.cgColor
-        self.puzzleContainerView.backgroundColor = self.isDarkMode ? .systemGray5 : .white
+        self.puzzleContainerView.backgroundColor = self.isDarkMode ? .systemGray4 : .white
         
         guard self.grid.count > 0 && self.grid[0].count > 0 else { return }
         
@@ -154,7 +154,6 @@ class PuzzleView: UIView {
             self.userCursorWordIndicatorLayer.backgroundColor = UIColor.systemPink.withAlphaComponent(0.1).cgColor
         }
         
-        let wordExtent = self.findCurrentWordExtent()
         let oldWordIndicatorFrame = self.userCursorWordIndicatorLayer.frame
         self.userCursorWordIndicatorLayer.frame = self.boundingBoxOfCurrentWord(cellSideLength: cellSideLength)
         
