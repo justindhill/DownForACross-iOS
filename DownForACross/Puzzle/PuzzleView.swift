@@ -380,7 +380,7 @@ class PuzzleView: UIView {
     func syncCursorLayerCount() {
         for userId in self.cursors.keys {
             if self.cursorIndicatorLayers[userId] == nil {
-                let layer = CALayer()
+                let layer = self.createActionlessLayer()
                 self.cursorIndicatorLayers[userId] = layer
                 self.puzzleContainerView.layer.insertSublayer(layer, at: 0)
             }
