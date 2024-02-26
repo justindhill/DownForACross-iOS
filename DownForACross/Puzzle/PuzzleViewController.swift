@@ -120,6 +120,7 @@ class PuzzleViewController: UIViewController {
         
         self.keyboardToolbar = PuzzleToolbarView()
         self.keyboardToolbar.translatesAutoresizingMaskIntoConstraints = false
+        self.keyboardToolbar.delegate = self
         self.puzzleView(self.puzzleView, userCursorDidMoveToClueIndex: 1, sequenceIndex: 0, direction: self.puzzleView.userCursor.direction)
         
         self.keyboardToolbar.leftButton.addAction(UIAction(handler: { [weak self] _ in
@@ -376,6 +377,14 @@ extension PuzzleViewController: UIGestureRecognizerDelegate {
                                     height: self.view.frame.size.height)
         
         return activationArea.contains(location)
+    }
+    
+}
+
+extension PuzzleViewController: PuzzleToolbarViewDelegate {
+    
+    func toolbarView(_ toolbarView: PuzzleToolbarView, didSendMessage message: String) {
+        self.gameClient.sendMessage(message)
     }
     
 }

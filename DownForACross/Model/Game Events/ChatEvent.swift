@@ -35,8 +35,20 @@ class ChatEvent: GameEvent {
         self.messageId = messageId
     }
     
+    init(gameId: String, senderId: String, senderName: String, message: String) {
+        self.senderId = senderId
+        self.senderName = senderName
+        self.message = message
+        self.gameId = gameId
+        self.messageId = ""
+    }
+    
     var paramsDictionary: [String : Any?] {
-        return [:]
+        return [
+            "senderId": self.senderId,
+            "sender": self.senderName,
+            "text": self.message
+        ]
     }
     
 }

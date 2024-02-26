@@ -21,7 +21,7 @@ class SiteInteractor: NSObject {
     func getUserId(completion: @escaping GetUserCompletion) -> Void {
         var baseUrlComponents = Config.siteBaseURLComponents
         #if DFAC_LOCAL_SERVER
-        baseUrlComponents.path = "/beta/play/390"
+        baseUrlComponents.path = "/beta/play/397"
         #else
         baseUrlComponents.path = "/beta/play/31894"
         #endif

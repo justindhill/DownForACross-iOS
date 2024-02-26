@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol PuzzleToolbarViewDelegate: AnyObject {
+    func toolbarView(_ toolbarView: PuzzleToolbarView, didSendMessage message: String)
+}
+
 class PuzzleToolbarView: UIVisualEffectView {
     
     enum Mode {
@@ -17,6 +21,8 @@ class PuzzleToolbarView: UIVisualEffectView {
     var mode: Mode = .clues {
         didSet { self.updateVisibleViews() }
     }
+    
+    weak var delegate: PuzzleToolbarViewDelegate?
     
     let clueModeContainer: UIView = UIView()
     lazy var leftButton: UIButton = self.createDirectionButton(isLeft: true)
@@ -57,12 +63,13 @@ class PuzzleToolbarView: UIVisualEffectView {
         textView.font = UIFont.preferredFont(forTextStyle: .body)
         return textView
     }()
-    let sendButton: UIButton = {
+    lazy var sendButton: UIButton = {
         let button = UIButton(configuration: .plain())
         button.translatesAutoresizingMaskIntoConstraints = false
         button.configuration?.image = UIImage(systemName: "arrow.up.circle.fill",
                                               withConfiguration: UIImage.SymbolConfiguration(pointSize: 22))
         button.isEnabled = false
+        button.addTarget(self, action: #selector(sendButtonTapped), for: .primaryActionTriggered)
         NSLayoutConstraint.activate([
             button.heightAnchor.constraint(greaterThanOrEqualToConstant: 50),
             button.widthAnchor.constraint(equalToConstant: 50)
@@ -188,6 +195,12 @@ class PuzzleToolbarView: UIVisualEffectView {
     func updateTextViewAppearance() {
         self.messageTextView.layer.borderColor = self.traitCollection.userInterfaceStyle == .dark ? UIColor.systemGray3.cgColor : UIColor.systemGray5.cgColor
         self.messageTextView.backgroundColor = self.traitCollection.userInterfaceStyle == .dark ? .systemGray4 : .white
+    }
+    
+    @objc func sendButtonTapped() {
+        self.delegate?.toolbarView(self, didSendMessage: self.messageTextView.text)
+        self.messageTextView.text = ""
+        self.textViewDidChange(self.messageTextView)
     }
     
 }

@@ -65,7 +65,7 @@ class GameClient: NSObject, URLSessionDelegate {
         components.path = "/socket.io"
         var secure = true
         #if DFAC_LOCAL_SERVER
-        components.scheme = "ws://"
+        components.scheme = "ws"
         secure = false
         #endif
         
@@ -230,6 +230,13 @@ class GameClient: NSObject, URLSessionDelegate {
                               coordinates: coordinates).eventPayload())
     }
     
+    func sendMessage(_ message: String) {
+        self.socketManager.defaultSocket.emitWithAckNoOp(ChatEvent(gameId: self.gameId,
+                                                                   senderId: self.userId,
+                                                                   senderName: "It me, Justin",
+                                                                   message: message).eventPayload())
+    }
+    
     func correctness(forEntryAt at: CellCoordinates) -> Correctness? {
         guard let playerEntry = self.solution[at.row][at.cell] else {
             return nil
@@ -285,7 +292,7 @@ class GameClient: NSObject, URLSessionDelegate {
     
     static func createSolutionsPathIfNecessary() {
         let documentsDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
-        var filePath: String = (documentsDirectory as NSString).appendingPathComponent("solutions")
+        let filePath: String = (documentsDirectory as NSString).appendingPathComponent("solutions")
         var isDirectory: ObjCBool = false
         if !(FileManager.default.fileExists(atPath: filePath, isDirectory: &isDirectory) && isDirectory.boolValue) {
             var components = URLComponents(string: filePath)!
