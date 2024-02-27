@@ -230,11 +230,13 @@ class GameClient: NSObject, URLSessionDelegate {
                               coordinates: coordinates).eventPayload())
     }
     
-    func sendMessage(_ message: String) {
-        self.socketManager.defaultSocket.emitWithAckNoOp(ChatEvent(gameId: self.gameId,
-                                                                   senderId: self.userId,
-                                                                   senderName: "It me, Justin",
-                                                                   message: message).eventPayload())
+    func sendMessage(_ message: String) -> ChatEvent {
+        let event = ChatEvent(gameId: self.gameId,
+                              senderId: self.userId,
+                              senderName: "It me, Justin",
+                              message: message)
+        self.socketManager.defaultSocket.emitWithAckNoOp(event.eventPayload())
+        return event
     }
     
     func correctness(forEntryAt at: CellCoordinates) -> Correctness? {

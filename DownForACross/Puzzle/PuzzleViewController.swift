@@ -66,6 +66,7 @@ class PuzzleViewController: UIViewController {
         self.siteInteractor = siteInteractor
         self.api = api
         self.sideBarViewController = PuzzleSideBarViewController(puzzle: puzzleListEntry.content)
+        self.sideBarViewController.messagesViewController.selfUserId = userId
         self.sideBarTapToDismissView = UIView()
         self.sideBarTapToDismissView.translatesAutoresizingMaskIntoConstraints = false
         self.sideBarTapToDismissView.isUserInteractionEnabled = false
@@ -277,9 +278,13 @@ class PuzzleViewController: UIViewController {
 extension PuzzleViewController: GameClientDelegate {
     
     func gameClient(_ client: GameClient, didReceiveNewChatMessage message: ChatEvent, from: Player) {
+        self.sideBarViewController.messagesViewController.addMessage(
+            MessageAndPlayer(message: message, player: from))
+        
         guard !gameClient.isPerformingBulkEventSync else { return }
         
         self.newMessageStackView.addChatMessage(message, from: from)
+
         UIView.animate(withDuration: 0.2, delay: 0, options: [.curveEaseOut]) {
             self.view.layoutIfNeeded()
         }
@@ -384,7 +389,13 @@ extension PuzzleViewController: UIGestureRecognizerDelegate {
 extension PuzzleViewController: PuzzleToolbarViewDelegate {
     
     func toolbarView(_ toolbarView: PuzzleToolbarView, didSendMessage message: String) {
-        self.gameClient.sendMessage(message)
+        let sentEvent = self.gameClient.sendMessage(message)
+        
+        // player object doesn't matter because it's not used for messages sent by the user, only for messages
+        // sent by others
+        let messageAndPlayer = MessageAndPlayer(message: sentEvent,
+                                                player: Player(displayName: "", color: .black))
+        self.sideBarViewController.messagesViewController.addMessage(messageAndPlayer)
     }
     
 }

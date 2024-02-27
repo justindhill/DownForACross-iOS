@@ -16,7 +16,7 @@ class ChatEvent: GameEvent {
     var senderId: String
     var senderName: String
     var message: String
-    
+    var clientSideMessageId: String?
     
     init(payload: [String: Any]) throws {
         self.gameId = ""
@@ -33,6 +33,7 @@ class ChatEvent: GameEvent {
         self.senderName = senderName
         self.message = message
         self.messageId = messageId
+        self.clientSideMessageId = params["clientSideMessageId"] as? String
     }
     
     init(gameId: String, senderId: String, senderName: String, message: String) {
@@ -41,13 +42,15 @@ class ChatEvent: GameEvent {
         self.message = message
         self.gameId = gameId
         self.messageId = ""
+        self.clientSideMessageId = UUID().uuidString
     }
     
     var paramsDictionary: [String : Any?] {
         return [
             "senderId": self.senderId,
             "sender": self.senderName,
-            "text": self.message
+            "text": self.message,
+            "clientSideMessageId": self.clientSideMessageId
         ]
     }
     

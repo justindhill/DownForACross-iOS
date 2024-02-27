@@ -45,3 +45,20 @@ enum Direction {
         }
     }
 }
+
+struct MessageAndPlayer: Hashable, Identifiable {
+    let message: ChatEvent
+    let player: Player
+    
+    static func == (lhs: MessageAndPlayer, rhs: MessageAndPlayer) -> Bool {
+        return lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.id)
+    }
+        
+    var id: String {
+        return self.message.clientSideMessageId ?? self.message.messageId
+    }
+}

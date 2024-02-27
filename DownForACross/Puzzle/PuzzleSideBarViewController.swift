@@ -95,78 +95,14 @@ class PuzzleSideBarViewController: UIViewController {
     @objc func selectedSegmentDidChange(_ sender: UISegmentedControl) {
         switch self.currentTab {
             case .clues:
-                self.show(view: self.clueListViewController.view)
-                self.hide(view: self.messagesViewController.view)
+                ShowHideAnimationHelpers.show(view: self.clueListViewController.view)
+                ShowHideAnimationHelpers.hide(view: self.messagesViewController.view)
                 self.delegate?.sideBarViewController(self, didSwitchToTab: .clues)
             case .messages:
-                self.show(view: self.messagesViewController.view)
-                self.hide(view: self.clueListViewController.view)
+                ShowHideAnimationHelpers.show(view: self.messagesViewController.view)
+                ShowHideAnimationHelpers.hide(view: self.clueListViewController.view)
                 self.delegate?.sideBarViewController(self, didSwitchToTab: .messages)
         }
-    }
-    
-    func hide(view: UIView) {
-        CATransaction.begin()
-        CATransaction.setCompletionBlock {
-            view.isHidden = true
-            view.layer.removeAllAnimations()
-        }
-
-        let alphaAnimation = CABasicAnimation(keyPath: "opacity")
-        alphaAnimation.fromValue = 1.0
-        alphaAnimation.toValue = 0.0
-        alphaAnimation.duration = 0.1
-        
-        let scaleAnimation = CABasicAnimation(keyPath: "transform")
-        scaleAnimation.fromValue = CATransform3DIdentity
-        scaleAnimation.toValue = CATransform3DMakeAffineTransform(CGAffineTransform(scaleX: 0.8, y: 0.8))
-        scaleAnimation.duration = 0.1
-        
-        let group = CAAnimationGroup()
-        group.animations = [alphaAnimation, scaleAnimation]
-        group.duration = 0.1
-        group.timingFunction = CAMediaTimingFunction(name: .easeOut)
-        group.fillMode = .forwards
-        group.isRemovedOnCompletion = false
-
-        view.layer.add(group, forKey: "outGroup")
-        
-        CATransaction.commit()
-    }
-    
-    func show(view: UIView) {
-        view.isHidden = false
-        view.layer.opacity = 0
-        
-        CATransaction.begin()
-        CATransaction.setCompletionBlock {
-            view.layer.opacity = 1
-            view.layer.removeAllAnimations()
-        }
-        
-        let alphaAnimation = CABasicAnimation(keyPath: "opacity")
-        alphaAnimation.fromValue = 0.0
-        alphaAnimation.toValue = 1.0
-        alphaAnimation.duration = 0.1
-        alphaAnimation.beginTime = 0.05
-        
-        let scaleAnimation = CABasicAnimation(keyPath: "transform")
-        scaleAnimation.fromValue = CATransform3DMakeAffineTransform(CGAffineTransform(scaleX: 0.8, y: 0.8))
-        scaleAnimation.toValue = CATransform3DIdentity
-        scaleAnimation.duration = 0.1
-        scaleAnimation.beginTime = 0.05
-        
-        let group = CAAnimationGroup()
-        group.animations = [alphaAnimation, scaleAnimation]
-        group.duration = 0.15
-        group.timingFunction = CAMediaTimingFunction(name: .easeOut)
-        group.fillMode = .forwards
-        group.isRemovedOnCompletion = false
-        
-        view.layer.add(group, forKey: "inGroup")
-        
-        CATransaction.commit()
-
     }
     
 }
