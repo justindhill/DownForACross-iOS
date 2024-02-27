@@ -58,6 +58,10 @@ class PuzzleViewController: UIViewController {
         return client
     }()
     
+    var isSidebarVisible: Bool {
+        return self.sideBarLeadingConstraint.constant < 0
+    }
+    
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     init(puzzleListEntry: PuzzleListEntry, userId: String, siteInteractor: SiteInteractor, api: API) {
         self.puzzle = puzzleListEntry.content
@@ -229,17 +233,17 @@ class PuzzleViewController: UIViewController {
     }
     
     @objc func toggleSidebar() {
-        if self.sideBarLeadingConstraint.constant == 0 {
+        if self.isSidebarVisible {
+            self.puzzleView.becomeFirstResponder()
+            self.keyboardToolbar.mode = .clues
+            self.sideBarLeadingConstraint.constant = 0
+            self.sideBarTapToDismissView.isUserInteractionEnabled = false
+        } else {
             self.sideBarLeadingConstraint.constant = -self.sideBarViewController.view.frame.size.width
             self.sideBarTapToDismissView.isUserInteractionEnabled = true
             if self.sideBarViewController.currentTab == .messages {
                 self.keyboardToolbar.mode = .messages
             }
-        } else {
-            self.puzzleView.becomeFirstResponder()
-            self.keyboardToolbar.mode = .clues
-            self.sideBarLeadingConstraint.constant = 0
-            self.sideBarTapToDismissView.isUserInteractionEnabled = false
         }
         
         UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut, animations: {
@@ -281,7 +285,7 @@ extension PuzzleViewController: GameClientDelegate {
         self.sideBarViewController.messagesViewController.addMessage(
             MessageAndPlayer(message: message, player: from))
         
-        guard !gameClient.isPerformingBulkEventSync else { return }
+        guard !(gameClient.isPerformingBulkEventSync || self.isSidebarVisible) else { return }
         
         self.newMessageStackView.addChatMessage(message, from: from)
 

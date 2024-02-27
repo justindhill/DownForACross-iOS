@@ -26,6 +26,7 @@ class PuzzleMessageCell: UITableViewCell {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.layer.cornerRadius = 12
+        view.layer.cornerCurve = .continuous
         
         return view
     }()
@@ -86,6 +87,7 @@ class PuzzleMessageCell: UITableViewCell {
         ])
         
         self.modeDidChange()
+        self.appearanceDidChange()
         
         NSLayoutConstraint.activate(initialConstraints)
     }
@@ -108,7 +110,8 @@ class PuzzleMessageCell: UITableViewCell {
                 NSLayoutConstraint.deactivate(self.sentBySelfConstraints)
                 NSLayoutConstraint.activate(self.sentByOtherConstraints)
                 self.senderLabel.isHidden = false
-                self.bubbleView.layer.borderWidth = 0.5
+                self.bubbleView.layer.borderWidth = 1
+                self.bubbleView.layer.masksToBounds = true
                 self.bubbleView.backgroundColor = UIColor.ChatMessage.backgroundOther
                 self.messageLabel.textColor = UIColor.ChatMessage.textOther
                 self.senderLabel.textColor = UIColor.systemPink

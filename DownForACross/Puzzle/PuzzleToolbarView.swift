@@ -38,6 +38,17 @@ class PuzzleToolbarView: UIVisualEffectView {
         return label
     }()
     
+    let topSeparatorView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .separator.withAlphaComponent(0.1)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            view.heightAnchor.constraint(equalToConstant: 0.5)
+        ])
+        
+        return view
+    }()
+    
     let messageModeContainer: UIView = UIView()
     let messagePlaceholderLabel: UILabel = {
         let label = UILabel()
@@ -100,6 +111,7 @@ class PuzzleToolbarView: UIVisualEffectView {
         self.messageModeContainer.addSubview(self.messagePlaceholderLabel)
         self.updateTextViewAppearance()
         
+        self.contentView.addSubview(self.topSeparatorView)
         self.contentView.addSubview(self.clueModeContainer)
         self.contentView.addSubview(self.messageModeContainer)
         self.contentView.preservesSuperviewLayoutMargins = false
@@ -114,6 +126,9 @@ class PuzzleToolbarView: UIVisualEffectView {
         ]
         
         NSLayoutConstraint.activate([
+            self.topSeparatorView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            self.topSeparatorView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            self.topSeparatorView.topAnchor.constraint(equalTo: self.topAnchor),
             self.leftButton.leadingAnchor.constraint(equalTo: self.clueModeContainer.leadingAnchor),
             self.leftButton.topAnchor.constraint(equalTo: self.clueModeContainer.topAnchor),
             self.leftButton.bottomAnchor.constraint(equalTo: self.clueModeContainer.bottomAnchor),
