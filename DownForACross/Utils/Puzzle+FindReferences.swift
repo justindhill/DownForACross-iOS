@@ -20,7 +20,10 @@ extension PuzzleClues {
             TryCapture(as: cellNumber, { OneOrMore(.digit) }, transform: { match in
                 return numberFormatter.number(from: String(match))?.intValue
             })
-            "-"
+            ChoiceOf {
+                "-"
+                " "
+            }
             Optionally {
                 Optionally {
                     " "
@@ -34,10 +37,6 @@ extension PuzzleClues {
             }
             Optionally {
                 ","
-            }
-            ChoiceOf {
-                " "
-                "."
             }
         }
         
