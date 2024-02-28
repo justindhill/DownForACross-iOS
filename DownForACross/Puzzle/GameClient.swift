@@ -17,10 +17,16 @@ protocol GameClientDelegate: AnyObject {
 
 class GameClient: NSObject, URLSessionDelegate {
     
+    enum InputMode: Int, CaseIterable {
+        case normal
+        case autocorrect
+        case pencil
+    }
+    
     weak var delegate: GameClientDelegate?
     
     var isPuzzleSolved: Bool = false
-    var autocheckEnabled: Bool = true
+    var inputMode: InputMode = .autocorrect
     let puzzle: Puzzle
     let userId: String
     let correctSolution: [[String?]]
@@ -205,7 +211,7 @@ class GameClient: NSObject, URLSessionDelegate {
         var resolvedValue: CellEntry?
         if let value {
             resolvedValue = CellEntry(userId: self.userId, value: value, correctness: nil)
-            if self.autocheckEnabled {
+            if self.inputMode == .autocorrect {
                 let correctness: Correctness = self.puzzle.grid[coordinates.row][coordinates.cell] == value ? .correct : .incorrect
                 resolvedValue?.correctness = correctness
             }
@@ -220,7 +226,7 @@ class GameClient: NSObject, URLSessionDelegate {
                                                                          gameId: self.gameId,
                                                                          cell: coordinates,
                                                                          value: value,
-                                                                         autocheck: self.autocheckEnabled).eventPayload())
+                                                                         autocheck: self.inputMode == .autocorrect).eventPayload())
     }
     
     func moveUserCursor(to coordinates: CellCoordinates) {

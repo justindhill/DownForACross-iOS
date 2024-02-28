@@ -49,6 +49,12 @@ class PuzzleViewController: UIViewController {
         return tap
     }()
     
+    lazy var inputModeToggleTapGestureRecognizer: UITapGestureRecognizer = {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(toggleInputMode))
+        tap.numberOfTouchesRequired = 3
+        return tap
+    }()
+    
     var newMessageStackView: PuzzleNewMessageStackView = PuzzleNewMessageStackView()
     var confettiView: LottieAnimationView?
     
@@ -102,15 +108,11 @@ class PuzzleViewController: UIViewController {
             self.updateContentInsets()
         }
         
-        let copyItem = UIBarButtonItem(image: UIImage(systemName: "doc.on.doc"),
-                                                      style: .plain,
-                                                      target: self,
-                                                      action: #selector(copyGameURLToPasteboard))
         let sideBarToggleItem = UIBarButtonItem(image: UIImage(systemName: "sidebar.right"),
                                                 style: .plain,
                                                 target: self,
                                                 action: #selector(toggleSidebar))
-        self.navigationItem.rightBarButtonItems = [copyItem, sideBarToggleItem]
+        self.navigationItem.rightBarButtonItem = sideBarToggleItem
     }
     
     override func viewDidLoad() {
@@ -122,6 +124,7 @@ class PuzzleViewController: UIViewController {
         self.puzzleView.isSolved = self.gameClient.isPuzzleSolved
         self.puzzleView.translatesAutoresizingMaskIntoConstraints = false
         self.puzzleView.delegate = self
+        self.puzzleView.addGestureRecognizer(self.inputModeToggleTapGestureRecognizer)
         
         self.keyboardToolbar = PuzzleToolbarView()
         self.keyboardToolbar.translatesAutoresizingMaskIntoConstraints = false
@@ -277,6 +280,13 @@ class PuzzleViewController: UIViewController {
             self?.confettiView = nil
         }
     }
+    
+    @objc func toggleInputMode() {
+        let newIndex = (self.gameClient.inputMode.rawValue + 1) % GameClient.InputMode.allCases.count
+        guard let newInputMode = GameClient.InputMode(rawValue: newIndex) else { return }
+        self.gameClient.inputMode = newInputMode
+        print("New input mode: \(newInputMode)")
+    }
 }
 
 extension PuzzleViewController: GameClientDelegate {
@@ -365,7 +375,7 @@ extension PuzzleViewController: PuzzleSideBarViewControllerDelegate {
     
     func sideBarViewController(_ sideBarViewController: PuzzleSideBarViewController, didSwitchToTab tab: PuzzleSideBarViewController.Tab) {
         switch tab {
-            case .clues:
+            case .clues, .players:
                 self.keyboardToolbar.mode = .clues
                 self.puzzleView.becomeFirstResponder()
             case .messages:

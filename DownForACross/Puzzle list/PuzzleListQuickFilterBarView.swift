@@ -35,7 +35,8 @@ class PuzzleListQuickFilterBarView: UIView {
         "NY Times",
         "LA Times",
         "The Crossword",
-        "WSJ"
+        "WSJ",
+        "Mania"
     ]
     
     lazy var wordFilterButtons = self.wordFilters.map({ term in

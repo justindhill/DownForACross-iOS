@@ -10,6 +10,10 @@ import UIKit
 class ShowHideAnimationHelpers {
     
     static func hide(view: UIView, duration: TimeInterval = 0.1) {
+        if view.isHidden {
+            return
+        }
+        
         CATransaction.begin()
         CATransaction.setCompletionBlock {
             view.isHidden = true
@@ -41,6 +45,10 @@ class ShowHideAnimationHelpers {
     }
     
     static func show(view: UIView, duration: TimeInterval = 0.1) {
+        if !view.isHidden {
+            return
+        }
+        
         view.isHidden = false
         view.layer.opacity = 0
         
