@@ -41,7 +41,10 @@ class PuzzleViewController: UIViewController {
         return gesture
     }()
      
-    var sideBarViewController: PuzzleSideBarViewController
+    lazy var sideBarViewController: PuzzleSideBarViewController = {
+        return PuzzleSideBarViewController(puzzle: self.puzzle, gameClient: self.gameClient)
+    }()
+    
     var sideBarTapToDismissView: UIView
     var sideBarLeadingConstraint: NSLayoutConstraint!
     lazy var sideBarTapToDismissGestureRecognizer: UITapGestureRecognizer = {
@@ -75,8 +78,6 @@ class PuzzleViewController: UIViewController {
         self.userId = userId
         self.siteInteractor = siteInteractor
         self.api = api
-        self.sideBarViewController = PuzzleSideBarViewController(puzzle: puzzleListEntry.content)
-        self.sideBarViewController.messagesViewController.selfUserId = userId
         self.sideBarTapToDismissView = UIView()
         self.sideBarTapToDismissView.translatesAutoresizingMaskIntoConstraints = false
         self.sideBarTapToDismissView.isUserInteractionEnabled = false
@@ -89,6 +90,8 @@ class PuzzleViewController: UIViewController {
         
         super.init(nibName: nil, bundle: nil)
         
+        self.sideBarViewController.messagesViewController.selfUserId = userId
+
         self.sideBarViewController.delegate = self
         self.hidesBottomBarWhenPushed = true
         self.sideBarTapToDismissView.addGestureRecognizer(self.sideBarTapToDismissGestureRecognizer)
@@ -227,12 +230,6 @@ class PuzzleViewController: UIViewController {
             self.puzzleView.isUserInteractionEnabled = newValue
             self.puzzleView.alpha = newValue ? 1 : 0.5
         }
-    }
-    
-    @objc func copyGameURLToPasteboard() {
-        var baseURLComponents = Config.siteBaseURLComponents
-        baseURLComponents.path = "/beta/game/\(self.gameClient.gameId)"
-        UIPasteboard.general.url = baseURLComponents.url!
     }
     
     @objc func toggleSidebar() {
@@ -408,7 +405,7 @@ extension PuzzleViewController: PuzzleToolbarViewDelegate {
         // player object doesn't matter because it's not used for messages sent by the user, only for messages
         // sent by others
         let messageAndPlayer = MessageAndPlayer(message: sentEvent,
-                                                player: Player(displayName: "", color: .black))
+                                                player: Player(userId: self.gameClient.userId, displayName: "", color: .black))
         self.sideBarViewController.messagesViewController.addMessage(messageAndPlayer)
     }
     

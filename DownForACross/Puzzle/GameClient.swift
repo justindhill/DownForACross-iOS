@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 import SocketIO
+import Combine
 
 protocol GameClientDelegate: AnyObject {
     func gameClient(_ client: GameClient, cursorsDidChange: [String: Cursor])
@@ -49,6 +50,7 @@ class GameClient: NSObject, URLSessionDelegate {
         }
     }
     
+    @Published
     var players: [String: Player] = [:] {
         didSet {
             var cursors = self.cursors
@@ -157,7 +159,7 @@ class GameClient: NSObject, URLSessionDelegate {
                         cursor.coordinates = event.cell
                         self.cursors[event.userId] = cursor
                     } else {
-                        self.cursors[event.userId] = Cursor(player: Player(), coordinates: event.cell)
+                        self.cursors[event.userId] = Cursor(player: Player(userId: event.userId), coordinates: event.cell)
                     }
                 } else if type == "updateCell"  {
                     let event = UpdateCellEvent(payload: payload)
@@ -173,7 +175,7 @@ class GameClient: NSObject, URLSessionDelegate {
                     }
                 } else if type == "updateColor" {
                     let event = try UpdateColorEvent(payload: payload)
-                    var player = self.players[event.userId] ?? Player()
+                    var player = self.players[event.userId] ?? Player(userId: event.userId)
                     player.color = event.color
                     self.players[event.userId] = player
                 } else if type == "check" {
@@ -184,7 +186,7 @@ class GameClient: NSObject, URLSessionDelegate {
                     }
                 } else if type == "updateDisplayName" {
                     let event = try UpdateDisplayNameEvent(payload: payload)
-                    var player = self.players[event.userId] ?? Player()
+                    var player = self.players[event.userId] ?? Player(userId: event.userId)
                     player.displayName = event.displayName
                     self.players[event.userId] = player
                 } else if type == "chat" {

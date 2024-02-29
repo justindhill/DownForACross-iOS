@@ -80,6 +80,7 @@ class PuzzleMessagesViewController: UIViewController {
         cell.senderLabel.text = messageAndPlayer.player.displayName
         cell.senderLabel.textColor = messageAndPlayer.player.color
         if self.messagesNeedingAnimation.contains(messageAndPlayer) {
+            cell.bubbleView.isHidden = true
             cell.bubbleView.layer.opacity = 0
         }
         

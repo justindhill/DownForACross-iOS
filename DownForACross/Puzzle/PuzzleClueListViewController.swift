@@ -36,7 +36,6 @@ class PuzzleClueListViewController: UIViewController {
     }
     
     static let reuseIdentifier = "ReuseIdentifier"
-    static let marginWidth: CGFloat = 8
     
     var delegate: PuzzleClueListViewControllerDelegate?
     
@@ -83,10 +82,7 @@ class PuzzleClueListViewController: UIViewController {
         
         self.tableView.dataSource = dataSource
         self.tableView.backgroundColor = .clear
-        self.tableView.layoutMargins = UIEdgeInsets(top: Self.marginWidth, 
-                                                    left: Self.marginWidth,
-                                                    bottom: Self.marginWidth,
-                                                    right: Self.marginWidth)
+        self.tableView.layoutMargins = PuzzleSideBarViewController.subviewLayoutMargins
         self.view.addSubview(self.tableView)
         NSLayoutConstraint.activate([
             self.tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),

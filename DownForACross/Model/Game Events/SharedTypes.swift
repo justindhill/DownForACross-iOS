@@ -24,7 +24,12 @@ enum Correctness: Equatable, Codable {
     case incorrect
 }
 
-struct Player {
+struct Player: Hashable, Identifiable {
+    var id: String {
+        return self.userId
+    }
+    
+    var userId: String
     var displayName: String = "Unknown player"
     var color: UIColor = .systemGray6
 }

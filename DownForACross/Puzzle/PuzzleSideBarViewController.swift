@@ -13,7 +13,7 @@ protocol PuzzleSideBarViewControllerDelegate: AnyObject {
 
 class PuzzleSideBarViewController: UIViewController {
     
-    let subviewLayoutMargins: UIEdgeInsets = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+    static let subviewLayoutMargins: UIEdgeInsets = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
     
     enum Tab: Int {
         case clues
@@ -49,10 +49,10 @@ class PuzzleSideBarViewController: UIViewController {
     ])
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    init(puzzle: Puzzle) {
+    init(puzzle: Puzzle, gameClient: GameClient) {
         self.clueListViewController = PuzzleClueListViewController(clues: puzzle.clues)
         self.messagesViewController = PuzzleMessagesViewController()
-        self.playersViewController = PuzzlePlayersViewController()
+        self.playersViewController = PuzzlePlayersViewController(gameClient: gameClient)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -73,7 +73,7 @@ class PuzzleSideBarViewController: UIViewController {
         self.clueListViewController.view.translatesAutoresizingMaskIntoConstraints = false
         self.contentView.addSubview(self.clueListViewController.view)
         self.clueListViewController.viewRespectsSystemMinimumLayoutMargins = false
-        self.clueListViewController.view.layoutMargins = self.subviewLayoutMargins
+        self.clueListViewController.view.layoutMargins = Self.subviewLayoutMargins
         self.clueListViewController.didMove(toParent: self)
         
         self.messagesViewController.willMove(toParent: self)
@@ -81,7 +81,7 @@ class PuzzleSideBarViewController: UIViewController {
         self.messagesViewController.view.translatesAutoresizingMaskIntoConstraints = false
         self.contentView.addSubview(self.messagesViewController.view)
         self.messagesViewController.viewRespectsSystemMinimumLayoutMargins = false
-        self.messagesViewController.view.layoutMargins = self.subviewLayoutMargins
+        self.messagesViewController.view.layoutMargins = Self.subviewLayoutMargins
         self.messagesViewController.didMove(toParent: self)
         self.messagesViewController.view.layer.opacity = 0
         self.messagesViewController.view.isHidden = true
@@ -91,7 +91,7 @@ class PuzzleSideBarViewController: UIViewController {
         self.playersViewController.view.translatesAutoresizingMaskIntoConstraints = false
         self.contentView.addSubview(self.playersViewController.view)
         self.playersViewController.viewRespectsSystemMinimumLayoutMargins = false
-        self.playersViewController.view.layoutMargins = self.subviewLayoutMargins
+        self.playersViewController.view.layoutMargins = Self.subviewLayoutMargins
         self.playersViewController.didMove(toParent: self)
         self.playersViewController.view.layer.opacity = 0
         self.playersViewController.view.isHidden = true
