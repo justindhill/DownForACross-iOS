@@ -11,7 +11,6 @@ import WebKit
 class PuzzleListViewController: UIViewController, UITableViewDelegate {
     
     let reuseIdentifier: String = "ItemReuseIdentifier"
-    static let userIdUserDefaultsKey: String = "UserId"
     
     lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
@@ -38,14 +37,17 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
         return view
     }()
     
-    var userId: String?
-    let siteInteractor = SiteInteractor()
-    let api = API()
+    var userId: String
+    let siteInteractor: SiteInteractor
+    let api: API
     let settingsStorage: SettingsStorage
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    init(settingsStorage: SettingsStorage) {
+    init(userId: String, settingsStorage: SettingsStorage, api: API, siteInteractor: SiteInteractor) {
+        self.userId = userId
         self.settingsStorage = settingsStorage
+        self.api = api
+        self.siteInteractor = siteInteractor
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -61,21 +63,6 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
         self.view.addSubview(self.quickFilterBar)
         
         self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: self.reuseIdentifier)
-        
-        self.userId = UserDefaults.standard.string(forKey: Self.userIdUserDefaultsKey)
-        if self.userId == nil {
-            self.siteInteractor.getUserId { [weak self] userId in
-                if let userId {
-                    self?.userId = userId
-                    UserDefaults.standard.setValue(userId, forKey: Self.userIdUserDefaultsKey)
-                    print("got a user id!")
-                } else {
-                    print("failed to get a user id from the site")
-                }
-            }
-        } else {
-            print("got a user id from UserDefaults!")
-        }
         
         NSLayoutConstraint.activate([
             self.quickFilterBar.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
@@ -98,9 +85,17 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let puzzleListEntry = self.dataSource.itemIdentifier(for: indexPath),
-              let userId = self.userId else { return }
-        let vc = PuzzleViewController(puzzleListEntry: puzzleListEntry, userId: userId, siteInteractor: self.siteInteractor, api: self.api)
+        guard let puzzleListEntry = self.dataSource.itemIdentifier(for: indexPath) else { return }
+        self.show(puzzleListEntry: puzzleListEntry)
+    }
+    
+    func show(puzzleListEntry: PuzzleListEntry, gameId: String? = nil) {
+        let vc = PuzzleViewController(puzzleListEntry: puzzleListEntry,
+                                      userId: self.userId,
+                                      gameId: gameId,
+                                      siteInteractor: self.siteInteractor,
+                                      api: self.api,
+                                      settingsStorage: self.settingsStorage)
         self.navigationController?.pushViewController(vc, animated: true)
     }
     

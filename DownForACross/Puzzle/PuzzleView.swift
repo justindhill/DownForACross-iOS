@@ -27,6 +27,7 @@ class PuzzleView: UIView {
     
     weak var delegate: PuzzleViewDelegate?
     
+    var userCursorColor: UIColor = .gray
     var isDarkMode: Bool { self.traitCollection.userInterfaceStyle == .dark }
     var isSolved: Bool = false
     var grid: [[String]]
@@ -151,7 +152,7 @@ class PuzzleView: UIView {
         // user cursor word indicator
         if self.userCursorWordIndicatorLayer.superlayer == nil {
             self.puzzleContainerView.layer.addSublayer(self.userCursorWordIndicatorLayer)
-            self.userCursorWordIndicatorLayer.backgroundColor = UIColor.systemPink.withAlphaComponent(0.1).cgColor
+            self.userCursorWordIndicatorLayer.backgroundColor = self.userCursorColor.withAlphaComponent(0.1).cgColor
         }
         
         let oldWordIndicatorFrame = self.userCursorWordIndicatorLayer.frame
@@ -321,7 +322,7 @@ class PuzzleView: UIView {
         // user cursor letter indicator
         if self.userCursorLetterIndicatorLayer.superlayer == nil {
             self.puzzleContainerView.layer.addSublayer(self.userCursorLetterIndicatorLayer)
-            self.userCursorLetterIndicatorLayer.borderColor = UIColor.systemPink.cgColor
+            self.userCursorLetterIndicatorLayer.borderColor = self.userCursorColor.cgColor
             self.userCursorLetterIndicatorLayer.borderWidth = 2
         }
         self.userCursorLetterIndicatorLayer.frame = CGRect(x: CGFloat(self.userCursor.coordinates.cell) * cellSideLength,

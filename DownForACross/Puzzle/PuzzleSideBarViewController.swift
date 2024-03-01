@@ -42,6 +42,28 @@ class PuzzleSideBarViewController: UIViewController {
     let messagesViewController: PuzzleMessagesViewController
     let playersViewController: PuzzlePlayersViewController
     
+    let leadingSeparatorView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .separator.withAlphaComponent(0.1)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            view.widthAnchor.constraint(equalToConstant: 0.5)
+        ])
+        
+        return view
+    }()
+    
+    let topSeparatorView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .separator.withAlphaComponent(0.1)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            view.heightAnchor.constraint(equalToConstant: 0.5)
+        ])
+        
+        return view
+    }()
+    
     let segmentedControl = UISegmentedControl(items: [
         UIImage(systemName: "list.bullet.rectangle")!,
         UIImage(systemName: "message")!,
@@ -66,6 +88,8 @@ class PuzzleSideBarViewController: UIViewController {
     }
     
     override func viewDidLoad() {
+        self.contentView.addSubview(self.leadingSeparatorView)
+        self.contentView.addSubview(self.topSeparatorView)
         self.contentView.addSubview(self.segmentedControl)
         
         self.clueListViewController.willMove(toParent: self)
@@ -101,6 +125,12 @@ class PuzzleSideBarViewController: UIViewController {
         self.segmentedControl.addTarget(self, action: #selector(selectedSegmentDidChange(_:)), for: .valueChanged)
         
         NSLayoutConstraint.activate([
+            self.leadingSeparatorView.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor),
+            self.leadingSeparatorView.topAnchor.constraint(equalTo: self.contentView.topAnchor),
+            self.leadingSeparatorView.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor),
+            self.topSeparatorView.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor),
+            self.topSeparatorView.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor),
+            self.topSeparatorView.topAnchor.constraint(equalTo: self.contentView.topAnchor),
             self.segmentedControl.leadingAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.leadingAnchor),
             self.segmentedControl.topAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.topAnchor),
             self.segmentedControl.trailingAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.trailingAnchor),

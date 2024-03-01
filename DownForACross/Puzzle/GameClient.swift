@@ -30,6 +30,7 @@ class GameClient: NSObject, URLSessionDelegate {
     var inputMode: InputMode = .autocorrect
     let puzzle: Puzzle
     let userId: String
+    let settingsStorage: SettingsStorage
     let correctSolution: [[String?]]
     
     private(set) var isPerformingBulkEventSync: Bool = false
@@ -87,10 +88,11 @@ class GameClient: NSObject, URLSessionDelegate {
         )
     }()
     
-    init(puzzle: Puzzle, userId: String, gameId: String?) {
+    init(puzzle: Puzzle, userId: String, gameId: String?, settingsStorage: SettingsStorage) {
         self.puzzle = puzzle
         self.userId = userId
         self.gameId = gameId ?? ""
+        self.settingsStorage = settingsStorage
         
         if let loadedSolution = Self.loadSolution(forGameId: self.gameId) {
             self.solution = loadedSolution
@@ -108,16 +110,22 @@ class GameClient: NSObject, URLSessionDelegate {
     
     
     
-    func connect(gameId: String) {
+    func connect(gameId: String? = nil) {
         let socket = self.socketManager.defaultSocket
-        self.gameId = gameId
+        
+        let resolvedGameId = gameId ?? self.gameId
+        guard resolvedGameId != "" else {
+            fatalError("You must either pass a game id in the initializer or in connect!")
+        }
+        
+        self.gameId = resolvedGameId
         
         socket.on("connect") { data, ack in
             print("connected!")
-            socket.emitWithAckNoOp(eventName: "join_game", gameId)
+            socket.emitWithAckNoOp(eventName: "join_game", resolvedGameId)
             socket.emitWithAckNoOp(UpdateDisplayNameEvent(userId: self.userId,
                                                           gameId: self.gameId,
-                                                          displayName: "It me, Justin").eventPayload())
+                                                          displayName: self.settingsStorage.userDisplayName).eventPayload())
             
             socket.emitWithAck("sync_all_game_events", self.gameId).timingOut(after: 5) { [weak self] data in
                 guard let self, let events = data.first as? [[String: Any]] else { return }
@@ -241,7 +249,7 @@ class GameClient: NSObject, URLSessionDelegate {
     func sendMessage(_ message: String) -> ChatEvent {
         let event = ChatEvent(gameId: self.gameId,
                               senderId: self.userId,
-                              senderName: "It me, Justin",
+                              senderName: self.settingsStorage.userDisplayName,
                               message: message)
         self.socketManager.defaultSocket.emitWithAckNoOp(event.eventPayload())
         return event

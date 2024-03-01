@@ -114,7 +114,6 @@ class PuzzleMessageCell: UITableViewCell {
                 self.bubbleView.layer.masksToBounds = true
                 self.bubbleView.backgroundColor = UIColor.ChatMessage.backgroundOther
                 self.messageLabel.textColor = UIColor.ChatMessage.textOther
-                self.senderLabel.textColor = UIColor.systemPink
         }
     }
     

@@ -16,12 +16,12 @@ class API {
     let baseURLComponents = Config.apiBaseURLComponents
     let session = URLSession.shared
     
-    func getPuzzleList(page: Int = 0, wordFilter: String, includeMinis: Bool, includeStandards: Bool) async throws -> PuzzleList {
+    func getPuzzleList(page: Int = 0, wordFilter: String, includeMinis: Bool, includeStandards: Bool, limit: Int = 50) async throws -> PuzzleList {
         var urlComponents = self.baseURLComponents
         urlComponents.path = "/api/puzzle_list"
         urlComponents.queryItems = []
         urlComponents.queryItems?.append(URLQueryItem(name: "page", value: "\(page)"))
-        urlComponents.queryItems?.append(URLQueryItem(name: "pageSize", value: "50"))
+        urlComponents.queryItems?.append(URLQueryItem(name: "pageSize", value: "\(limit)"))
         urlComponents.queryItems?.append(URLQueryItem(name: "filter[nameOrTitleFilter]", value: wordFilter))
         urlComponents.queryItems?.append(URLQueryItem(name: "filter[sizeFilter][Mini]", value: String(includeMinis)))
         urlComponents.queryItems?.append(URLQueryItem(name: "filter[sizeFilter][Standard]", value: String(includeStandards)))
@@ -37,6 +37,17 @@ class API {
         
         let decoded = try jsonDecoder.decode(PuzzleList.self, from: data)
         return decoded
+    }
+    
+    func findPuzzle(name: String, id: String) async throws -> PuzzleListEntry? {
+        let puzzleList = try await self.getPuzzleList(wordFilter: name, includeMinis: true, includeStandards: true, limit: 5)
+        for puzzle in puzzleList.puzzles {
+            if puzzle.pid == id {
+                return puzzle
+            }
+        }
+        
+        return nil
     }
     
 }

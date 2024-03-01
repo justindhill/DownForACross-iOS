@@ -38,3 +38,32 @@ fileprivate let jsonDecoder: JSONDecoder = JSONDecoder()
     }
     
 }
+
+@propertyWrapper class UserDefaultsArchiveEntry<T: NSSecureCoding> {
+    
+    private let domainPrefix: String = "com.justinhill.DownForACross."
+    
+    private var defaultValue: T
+    var key: String
+    var wrappedValue: T {
+        set {
+            let value = try! NSKeyedArchiver.archivedData(withRootObject: newValue, requiringSecureCoding: true)
+            UserDefaults.standard.setValue(value, forKey: self.key)
+        }
+        
+        get {
+            if let value = UserDefaults.standard.value(forKey: self.key) as? Data,
+               let decodedValue = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [T.self], from: value) as? T {
+                return decodedValue
+            } else {
+                return defaultValue
+            }
+        }
+    }
+    
+    init(wrappedValue: T, key: String) {
+        self.key = self.domainPrefix + key
+        self.defaultValue = wrappedValue
+    }
+    
+}

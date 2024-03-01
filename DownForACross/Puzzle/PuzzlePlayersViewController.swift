@@ -8,9 +8,15 @@
 import UIKit
 import Combine
 
+protocol PuzzlePlayersViewControllerDelegate: AnyObject {
+    func playersViewControllerDidSelectSendInvite(_ playersViewController: PuzzlePlayersViewController)
+}
+
 class PuzzlePlayersViewController: UIViewController {
     
     static let playerCellReuseIdentifier: String = "PlayerCellReuseIdentifier"
+    
+    weak var delegate: PuzzlePlayersViewControllerDelegate?
     
     let tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
@@ -70,14 +76,7 @@ class PuzzlePlayersViewController: UIViewController {
     }
     
     @objc func inviteButtonTapped() {
-        var baseURLComponents = Config.siteBaseURLComponents
-        baseURLComponents.path = "/beta/game/\(self.gameClient.gameId)"
-        
-        let text = "Join my crossword on DownForACross!"
-        let url = baseURLComponents.url!
-        
-        let activityViewController = UIActivityViewController(activityItems: [text, url], applicationActivities: nil)
-        self.present(activityViewController, animated: true)
+        self.delegate?.playersViewControllerDidSelectSendInvite(self)
     }
     
     func updateContent() {
