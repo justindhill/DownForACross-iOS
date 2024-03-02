@@ -23,7 +23,7 @@ class SettingsStorage {
         }
     }
     
-    private let currentOnboardingVersion: Int = 1
+    private let currentOnboardingVersion: Int = 2
     
     @UserDefaultsEntry<String>(key: "userDisplayName")
     var userDisplayName = ""

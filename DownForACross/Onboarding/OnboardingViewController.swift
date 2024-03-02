@@ -82,6 +82,21 @@ class OnboardingViewController: UIViewController {
         return textField
     }()
     
+    let cursorColorLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Cursor color"
+        label.font = UIFont.preferredFont(forTextStyle: .caption1)
+        label.textColor = .secondaryLabel
+        
+        return label
+    }()
+    lazy var colorPickerView: ColorPickerView = {
+        let view = ColorPickerView()
+        view.addTarget(self, action: #selector(selectedColorDidChange), for: .valueChanged)
+        
+        return view
+    }()
+    
     let stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
@@ -108,14 +123,22 @@ class OnboardingViewController: UIViewController {
         self.view.backgroundColor = .systemBackground
         self.additionalSafeAreaInsets.top = 32
         
+        self.colorPickerView.setSelectedColorToMatchingColorIfPossible(self.settingsStorage.userDisplayColor)
+        
         self.stackView.addArrangedSubview(self.titleLabel)
         self.stackView.setCustomSpacing(16, after: self.titleLabel)
         self.stackView.addArrangedSubview(self.displayNameLabel)
+        self.stackView.setCustomSpacing(4, after: self.displayNameLabel)
         self.stackView.addArrangedSubview(self.displayNameTextField)
-        self.stackView.setCustomSpacing(32, after: self.displayNameTextField)
+        self.stackView.setCustomSpacing(16, after: self.displayNameTextField)
+        self.stackView.addArrangedSubview(self.cursorColorLabel)
+        self.stackView.setCustomSpacing(4, after: self.cursorColorLabel)
+        self.stackView.addArrangedSubview(self.colorPickerView)
+        self.stackView.setCustomSpacing(32, after: self.colorPickerView)
         self.stackView.addArrangedSubview(self.otherPreferencesLabel)
         self.stackView.setCustomSpacing(16, after: self.otherPreferencesLabel)
         self.stackView.addArrangedSubview(self.appearanceLabel)
+        self.stackView.setCustomSpacing(4, after: self.appearanceLabel)
         self.stackView.addArrangedSubview(self.appearanceModeSelector)
         
         NSLayoutConstraint.activate([
@@ -155,6 +178,15 @@ class OnboardingViewController: UIViewController {
     @objc func continueButtonTapped() {
         self.settingsStorage.setOnboardingComplete()
         self.delegate?.onboardingViewControllerDidComplete(self)
+    }
+    
+    @objc func selectedColorDidChange() {
+        let color = self.colorPickerView.selectedColor
+        print()
+        print(color)
+        self.settingsStorage.userDisplayColor = color
+        print(self.settingsStorage.userDisplayColor)
+        
     }
     
 }

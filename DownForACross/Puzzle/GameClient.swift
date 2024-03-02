@@ -126,6 +126,9 @@ class GameClient: NSObject, URLSessionDelegate {
             socket.emitWithAckNoOp(UpdateDisplayNameEvent(userId: self.userId,
                                                           gameId: self.gameId,
                                                           displayName: self.settingsStorage.userDisplayName).eventPayload())
+            socket.emitWithAckNoOp(UpdateColorEvent(gameId: self.gameId,
+                                                    userId: self.userId,
+                                                    color: self.settingsStorage.userDisplayColor).eventPayload())
             
             socket.emitWithAck("sync_all_game_events", self.gameId).timingOut(after: 5) { [weak self] data in
                 guard let self, let events = data.first as? [[String: Any]] else { return }

@@ -43,6 +43,11 @@ extension UIColor {
                    saturation: s * 100.0,
                    lightness: l * 100.0)
     }
+    
+    var hslString: String {
+        let hsl = self.hsl
+        return "hsl(\(hsl.hue), \(hsl.saturation)%, \(hsl.lightness)%)"
+    }
 
     /// Initializes a color from HSL (hue, saturation, lightness) components.
     /// - parameter hsl: The components used to initialize the color.

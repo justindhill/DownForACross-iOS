@@ -17,10 +17,6 @@ struct UpdateColorEvent: GameEvent {
     var userId: String
     var color: UIColor
     
-    var paramsDictionary: [String : Any?] {
-        [:]
-    }
-    
     init(payload: [String: Any]) throws {
         self.gameId = ""
         guard let params = payload["params"] as? [String: Any],
@@ -31,6 +27,12 @@ struct UpdateColorEvent: GameEvent {
         
         self.userId = userId
         self.color = try Self.parseHSL(string: hslString)
+    }
+    
+    init(gameId: String, userId: String, color: UIColor) {
+        self.gameId = gameId
+        self.userId = userId
+        self.color = color
     }
     
     static func parseHSL(string: String) throws -> UIColor {
@@ -48,11 +50,11 @@ struct UpdateColorEvent: GameEvent {
         
         let hslRegex = Regex {
             "hsl("
-            TryCapture(as: hue, { OneOrMore(.digit) }, transform: floatTransformBlock)
+            TryCapture(as: hue, { OneOrMore(.any) }, transform: floatTransformBlock)
             ","
-            TryCapture(as: saturation, { OneOrMore(.digit) }, transform: floatTransformBlock)
+            TryCapture(as: saturation, { OneOrMore(.any) }, transform: floatTransformBlock)
             "%,"
-            TryCapture(as: luminance, { OneOrMore(.digit) }, transform: floatTransformBlock)
+            TryCapture(as: luminance, { OneOrMore(.any) }, transform: floatTransformBlock)
             "%)"
         }
         
@@ -62,5 +64,10 @@ struct UpdateColorEvent: GameEvent {
         
         return UIColor(UIColor.HSL(hue: result[hue], saturation: result[saturation], lightness: result[luminance]))
     }
+    
+    var paramsDictionary: [String : Any?] {[
+        "id": self.userId,
+        "color": self.color.hslString
+    ]}
     
 }
