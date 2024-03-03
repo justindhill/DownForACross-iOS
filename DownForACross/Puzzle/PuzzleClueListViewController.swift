@@ -66,8 +66,8 @@ class PuzzleClueListViewController: UIViewController {
     init(clues: PuzzleClues) {
         self.clues = clues
         
-        self.compactAcrossClues = clues.across.enumerated().compactMap({ $1 != nil ? ListEntry(originalIndex: $0, clue: $1!) : nil })
-        self.compactDownClues = clues.down.enumerated().compactMap({ $1 != nil ? ListEntry(originalIndex: $0, clue: $1!) : nil })
+        self.compactAcrossClues = clues.across.enumerated().map({ ListEntry(originalIndex: $0, clue: $1 ?? "") })
+        self.compactDownClues = clues.down.enumerated().map({ ListEntry(originalIndex: $0, clue: $1 ?? "")})
 
         super.init(nibName: nil, bundle: nil)
         
@@ -128,6 +128,14 @@ extension PuzzleClueListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let direction: Direction = indexPath.section == 0 ? .across : .down
         self.delegate?.clueListViewController(self, didSelectClueAtSequenceIndex: indexPath.row, direction: direction)
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        guard let item = self.dataSource.itemIdentifier(for: indexPath), item.clue != "" else {
+            return 0
+        }
+        
+        return 44
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
