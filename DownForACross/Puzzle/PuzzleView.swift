@@ -28,6 +28,22 @@ class PuzzleView: UIView {
     
     weak var delegate: PuzzleViewDelegate?
     
+    override var frame: CGRect {
+        didSet {
+            if frame.size != oldValue.size {
+                self.setNeedsTextLayout()
+            }
+        }
+    }
+    
+    override var bounds: CGRect {
+        didSet {
+            if bounds.size != oldValue.size {
+                self.setNeedsTextLayout()
+            }
+        }
+    }
+    
     var userCursorColor: UIColor = .gray
     var isDarkMode: Bool { self.traitCollection.userInterfaceStyle == .dark }
     var isSolved: Bool = false
@@ -71,6 +87,12 @@ class PuzzleView: UIView {
     var circleLayers: [CAShapeLayer] = []
     var incorrectCheckLayers: [CAShapeLayer] = []
     var referenceIndicatorLayers: [CALayer] = []
+    
+    var _needsTextLayout: Bool = true
+    func setNeedsTextLayout() {
+        _needsTextLayout = true
+        self.setNeedsLayout()
+    }
     
     private var isFirstLayout: Bool = true
     
@@ -147,11 +169,21 @@ class PuzzleView: UIView {
     }
     
     override func layoutSubviews() {
-        var layoutStart = Date.now.timeIntervalSince1970
+        // cache these because apparently bridging to CGColor is really expensive
+        let emptySpaceBackgroundColor = Theme.emptySpaceBackground.cgColor
+        let clearBackgroundColor = UIColor.clear.cgColor
+        let normalFillColor = Theme.fillNormal.cgColor
+        let correctFillColor = Theme.fillCorrect.cgColor
+        let incorrectSlashColor = Theme.incorrectSlash.cgColor
+        let circleColor = Theme.circle.cgColor
+        let separatorColor = Theme.separator.cgColor
+        
+        let cellSideLength = self.cellSideLength
+        let layoutStart = Date.now.timeIntervalSince1970
         let separatorWidth = self.separatorWidth
                 
         self.puzzleContainerView.layer.borderWidth = separatorWidth
-        self.puzzleContainerView.layer.borderColor = Theme.separator.cgColor
+        self.puzzleContainerView.layer.borderColor = separatorColor
         self.backgroundView.backgroundColor = Theme.separator
         
         guard self.grid.count > 0 && self.grid[0].count > 0 else { return }
@@ -226,57 +258,57 @@ class PuzzleView: UIView {
                 
                 let ltrCellIndex = (rowIndex * row.count) + itemIndex
                 let hasCircle = self.circles.contains(ltrCellIndex)
-                
-                if self.itemRequiresNumberLabel(item, atRow: rowIndex, index: itemIndex) {
-                    let numberTextLayer: CATextLayer
-                    if cellNumber < self.numberTextLayers.count + 1 {
-                        numberTextLayer = self.numberTextLayers[cellNumber - 1]
-                    } else {
-                        numberTextLayer = self.createNumberTextLayer()
+                if self._needsTextLayout {
+                    if self.itemRequiresNumberLabel(item, atRow: rowIndex, index: itemIndex) {
+                        let numberTextLayer: CATextLayer
+                        if cellNumber < self.numberTextLayers.count + 1 {
+                            numberTextLayer = self.numberTextLayers[cellNumber - 1]
+                        } else {
+                            numberTextLayer = self.createNumberTextLayer()
+                        }
+                        numberTextLayer.font = numberFont
+                        numberTextLayer.fontSize = numberFont.pointSize
+                        numberTextLayer.string = "\(cellNumber)"
+                        numberTextLayer.frame = CGRect(x: CGFloat(itemIndex) * cellSideLength + separatorWidth + numberPadding,
+                                                       y: CGFloat(rowIndex) * cellSideLength + numberPadding,
+                                                       width: cellSideLength,
+                                                       height: numberFont.lineHeight)
+                        
+                        if self.isFirstLayout && cellNumber == 1 {
+                            self.userCursor.coordinates = CellCoordinates(row: rowIndex, cell: itemIndex)
+                        }
+                        
+                        if  // at the beginning or the previous one is a word boundary
+                            (rowIndex == 0 || (self.grid[rowIndex - 1][itemIndex] == ".")) &&
+                                // not at the end
+                                (rowIndex < self.grid.count - 1 &&
+                                 // next one isn't a word boundary
+                                 self.grid[rowIndex + 1][itemIndex] != ".") {
+                            let coordinates = CellCoordinates(row: rowIndex, cell: itemIndex)
+                            downSequence.append((cellNumber, coordinates))
+                            downCellNumberToCoordinatesMap[cellNumber] = coordinates
+                        }
+                        
+                        if  // previous one is a word boundary or the beginning of the row
+                            (itemIndex == 0 || self.grid[rowIndex][itemIndex - 1] == ".") &&
+                                // current one isn't a word boundary
+                                self.grid[rowIndex][itemIndex] != "." {
+                            let coordinates = CellCoordinates(row: rowIndex, cell: itemIndex)
+                            acrossSequence.append((cellNumber, coordinates))
+                            acrossCellNumberToCoordinatesMap[cellNumber] = coordinates
+                        }
+                        
+                        cellNumber += 1
                     }
-                    numberTextLayer.font = numberFont
-                    numberTextLayer.fontSize = numberFont.pointSize
-                    numberTextLayer.foregroundColor = Theme.fillNormal.cgColor
-                    numberTextLayer.string = "\(cellNumber)"
-                    numberTextLayer.frame = CGRect(x: CGFloat(itemIndex) * cellSideLength + separatorWidth + numberPadding,
-                                                   y: CGFloat(rowIndex) * cellSideLength + numberPadding,
-                                                   width: cellSideLength,
-                                                   height: numberFont.lineHeight)
                     
-                    if self.isFirstLayout && cellNumber == 1 {
-                        self.userCursor.coordinates = CellCoordinates(row: rowIndex, cell: itemIndex)
-                    }
-                    
-                    if  // at the beginning or the previous one is a word boundary
-                        (rowIndex == 0 || (self.grid[rowIndex - 1][itemIndex] == ".")) &&
-                        // not at the end
-                        (rowIndex < self.grid.count - 1 &&
-                        // next one isn't a word boundary
-                        self.grid[rowIndex + 1][itemIndex] != ".") {
-                        let coordinates = CellCoordinates(row: rowIndex, cell: itemIndex)
-                        downSequence.append((cellNumber, coordinates))
-                        downCellNumberToCoordinatesMap[cellNumber] = coordinates
-                    }
-                    
-                    if  // previous one is a word boundary or the beginning of the row
-                        (itemIndex == 0 || self.grid[rowIndex][itemIndex - 1] == ".") &&
-                        // current one isn't a word boundary
-                        self.grid[rowIndex][itemIndex] != "." {
-                        let coordinates = CellCoordinates(row: rowIndex, cell: itemIndex)
-                        acrossSequence.append((cellNumber, coordinates))
-                        acrossCellNumberToCoordinatesMap[cellNumber] = coordinates
-                    }
-                    
-                    cellNumber += 1
+                    layer.frame = CGRect(x: CGFloat(itemIndex) * cellSideLength,
+                                         y: CGFloat(rowIndex) * cellSideLength,
+                                         width: cellSideLength,
+                                         height: cellSideLength).adjusted(forSeparatorWidth: separatorWidth)
                 }
                 
-                layer.frame = CGRect(x: CGFloat(itemIndex) * cellSideLength,
-                                     y: CGFloat(rowIndex) * cellSideLength,
-                                     width: cellSideLength,
-                                     height: cellSideLength).adjusted(forSeparatorWidth: separatorWidth)
-                
                 if item == "." {
-                    layer.backgroundColor = Theme.emptySpaceBackground.cgColor
+                    layer.backgroundColor = emptySpaceBackgroundColor
                     layer.string = nil
                 } else {
                     let fillFont: UIFont
@@ -296,16 +328,16 @@ class PuzzleView: UIView {
                         if let correctness = solutionEntry.correctness {
                             switch correctness {
                                 case .correct:
-                                    layer.foregroundColor = Theme.fillCorrect.cgColor
+                                    layer.foregroundColor = correctFillColor
                                 case .incorrect:
                                     let markerLayer = self.createOrReuseIncorrectCheckMarker(atIndex: incorrectIndex)
                                     markerLayer.frame = layer.frame
                                     markerLayer.path = incorrectCheckSlashPath
-                                    markerLayer.strokeColor = Theme.incorrectSlash.cgColor
+                                    markerLayer.strokeColor = incorrectSlashColor
                                     incorrectIndex += 1
                             }
                         } else {
-                            layer.foregroundColor = Theme.fillNormal.cgColor
+                            layer.foregroundColor = normalFillColor
                         }
                     } else {
                         layer.string = nil
@@ -316,7 +348,7 @@ class PuzzleView: UIView {
                 
                 if hasCircle {
                     let circleLayer = self.circleLayers[circleIndex]
-                    circleLayer.strokeColor = Theme.circle.cgColor
+                    circleLayer.strokeColor = circleColor
                     circleIndex += 1
                     
                     let rect = CGRect(x: CGFloat(itemIndex) * cellSideLength,
@@ -343,14 +375,14 @@ class PuzzleView: UIView {
             let horizontal = self.separatorLayers[i]
             let offset = CGFloat(i + 1) * cellSideLength
             horizontal.frame = CGRect(x: 0, y: offset, width: self.frame.size.width, height: separatorWidth)
-            horizontal.backgroundColor = Theme.separator.cgColor
+            horizontal.backgroundColor = separatorColor
         }
         for i in (self.grid.count)..<self.grid.count + self.grid[0].count - 1 {
             let vertical = self.separatorLayers[i]
             let offset = CGFloat(i - self.grid.count + 1) * cellSideLength
             let newHeight = self.puzzleContainerView.frame.size.height * self.scrollView.zoomScale
             vertical.frame = CGRect(x: offset, y: 0, width: separatorWidth, height: newHeight)
-            vertical.backgroundColor = Theme.separator.cgColor
+            vertical.backgroundColor = separatorColor
         }
         
         // cursors
@@ -400,11 +432,14 @@ class PuzzleView: UIView {
             }
         }
         
-        self.referenceIndicatorLayers.forEach({ $0.backgroundColor = Theme.referenceBackground.cgColor })
+        self.numberTextLayers.forEach({ $0.foregroundColor = normalFillColor })
         self.trimIncorrectMarkerLayers(toCount: incorrectIndex)
         
+        // don't cache this color because this code path is rarely hit
+        self.referenceIndicatorLayers.forEach({ $0.backgroundColor = Theme.referenceBackground.cgColor })
+        
         self.isFirstLayout = false
-        self.invalidateIntrinsicContentSize()
+        self._needsTextLayout = false
         
         print("TIMING: layout finished in \((Date.now.timeIntervalSince1970 - layoutStart) * 1000)ms")
     }
