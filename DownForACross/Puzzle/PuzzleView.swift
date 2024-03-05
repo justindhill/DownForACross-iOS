@@ -63,6 +63,7 @@ class PuzzleView: UIView {
     
     lazy var userCursorLetterIndicatorLayer: CALayer = self.createActionlessLayer()
     lazy var userCursorWordIndicatorLayer: CALayer = self.createActionlessLayer()
+    var backgroundView: UIView = UIView()
     var cursorIndicatorLayers: [String: CALayer] = [:]
     var numberTextLayers: [CATextLayer] = []
     var fillTextLayers: [CATextLayer] = []
@@ -75,7 +76,6 @@ class PuzzleView: UIView {
     
     lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
-        scrollView.maximumZoomScale = 3.0
         scrollView.delegate = self
         scrollView.contentInsetAdjustmentBehavior = .always
         scrollView.showsHorizontalScrollIndicator = false
@@ -83,7 +83,12 @@ class PuzzleView: UIView {
         return scrollView
     }()
     
-    var puzzleContainerView: UIView = UIView()
+    var puzzleContainerView: UIView = {
+        let view = UIView()
+        view.clipsToBounds = true
+        view.backgroundColor = Theme.background
+        return view
+    }()
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     
@@ -102,16 +107,11 @@ class PuzzleView: UIView {
         self.cursors = [:]
         self.circles = Set(puzzle.circles)
         super.init(frame: .zero)
-        
-        self.puzzleContainerView.layer.borderWidth = 0.5
-        self.puzzleContainerView.backgroundColor = Theme.background
-        
+                
         self.addSubview(self.scrollView)
-        self.scrollView.addSubview(self.puzzleContainerView)
+        self.scrollView.addSubview(self.backgroundView)
+        self.backgroundView.addSubview(self.puzzleContainerView)
         self.scrollView.addGestureRecognizer(self.tapGestureRecognizer)
-        
-        self.layer.shouldRasterize = true
-        self.layer.rasterizationScale = 5
     }
     
     var cellCount: Int {
@@ -135,32 +135,54 @@ class PuzzleView: UIView {
     
     var cellSideLength: CGFloat {
         guard self.cellCount > 0 else { return 0 }
-        return self.frame.size.width / CGFloat(self.grid[0].count)
+        
+        let unclippedWidth = self.frame.size.width / CGFloat(self.grid[0].count)
+        let clippedWidth = unclippedWidth - unclippedWidth.truncatingRemainder(dividingBy: self.nativePixelWidth)
+        return clippedWidth
     }
     
     override var intrinsicContentSize: CGSize {
-        return CGSize(width: self.frame.size.width, height: self.cellSideLength * CGFloat(self.grid.count))
+        return CGSize(width: self.backgroundView.frame.size.width, 
+                      height: self.backgroundView.frame.size.height)
     }
     
     override func layoutSubviews() {
+        var layoutStart = Date.now.timeIntervalSince1970
         let separatorWidth = self.separatorWidth
                 
+        self.puzzleContainerView.layer.borderWidth = separatorWidth
         self.puzzleContainerView.layer.borderColor = Theme.separator.cgColor
+        self.backgroundView.backgroundColor = Theme.separator
         
         guard self.grid.count > 0 && self.grid[0].count > 0 else { return }
         
         self.scrollView.frame = self.bounds
-        self.puzzleContainerView.frame = CGRect(origin: .zero, size: self.intrinsicContentSize)
+            
+        var unscaledPuzzleContainerFrame = CGRect(x: 0,
+                                                  y: 0,
+                                                  width: self.cellSideLength * CGFloat(self.grid[0].count),
+                                                  height: self.cellSideLength * CGFloat(self.grid.count) +  separatorWidth)
+        var borderWidth = (self.frame.size.width - unscaledPuzzleContainerFrame.size.width) / 2
+        borderWidth = borderWidth - borderWidth.truncatingRemainder(dividingBy: self.nativePixelWidth)
+        unscaledPuzzleContainerFrame.origin = CGPoint(x: borderWidth, y: borderWidth)
+            
+        self.backgroundView.frame = CGRect(x: 0,
+                                           y: 0,
+                                           width: self.frame.size.width,
+                                           height: unscaledPuzzleContainerFrame.size.height + (2 * borderWidth))
             .applying(CGAffineTransform(scaleX: self.scrollView.zoomScale,
                                         y: self.scrollView.zoomScale))
+        
+        self.puzzleContainerView.frame = unscaledPuzzleContainerFrame
+
         
         if self.scrollView.contentSize == .zero {
             self.scrollView.contentSize = self.intrinsicContentSize
         }
         
         let cellCount = self.cellCount
-        let cellSideLength = self.cellSideLength
-        
+        self.scrollView.maximumZoomScale = max((50 / self.cellSideLength), 1)
+                
         let sizingFont = UIFont.systemFont(ofSize: 12)
         let pointToCapHeight = sizingFont.pointSize / sizingFont.capHeight
         let baseFillFont = UIFont.systemFont(ofSize: ceil((cellSideLength * 0.4) * pointToCapHeight))
@@ -216,7 +238,7 @@ class PuzzleView: UIView {
                     numberTextLayer.fontSize = numberFont.pointSize
                     numberTextLayer.foregroundColor = Theme.fillNormal.cgColor
                     numberTextLayer.string = "\(cellNumber)"
-                    numberTextLayer.frame = CGRect(x: CGFloat(itemIndex) * cellSideLength + numberPadding,
+                    numberTextLayer.frame = CGRect(x: CGFloat(itemIndex) * cellSideLength + separatorWidth + numberPadding,
                                                    y: CGFloat(rowIndex) * cellSideLength + numberPadding,
                                                    width: cellSideLength,
                                                    height: numberFont.lineHeight)
@@ -251,7 +273,7 @@ class PuzzleView: UIView {
                 layer.frame = CGRect(x: CGFloat(itemIndex) * cellSideLength,
                                      y: CGFloat(rowIndex) * cellSideLength,
                                      width: cellSideLength,
-                                     height: cellSideLength)
+                                     height: cellSideLength).adjusted(forSeparatorWidth: separatorWidth)
                 
                 if item == "." {
                     layer.backgroundColor = Theme.emptySpaceBackground.cgColor
@@ -320,14 +342,14 @@ class PuzzleView: UIView {
         for i in 0..<self.grid.count - 1 {
             let horizontal = self.separatorLayers[i]
             let offset = CGFloat(i + 1) * cellSideLength
-            horizontal.frame = CGRect(x: 0, y: offset, width: self.frame.size.width, height: 0.5)
+            horizontal.frame = CGRect(x: 0, y: offset, width: self.frame.size.width, height: separatorWidth)
             horizontal.backgroundColor = Theme.separator.cgColor
         }
         for i in (self.grid.count)..<self.grid.count + self.grid[0].count - 1 {
             let vertical = self.separatorLayers[i]
             let offset = CGFloat(i - self.grid.count + 1) * cellSideLength
-            let newHeight = self.puzzleContainerView.frame.size.height * (1 / self.scrollView.zoomScale)
-            vertical.frame = CGRect(x: offset, y: 0, width: 0.5, height: newHeight)
+            let newHeight = self.puzzleContainerView.frame.size.height * self.scrollView.zoomScale
+            vertical.frame = CGRect(x: offset, y: 0, width: separatorWidth, height: newHeight)
             vertical.backgroundColor = Theme.separator.cgColor
         }
         
@@ -340,19 +362,19 @@ class PuzzleView: UIView {
             layer.frame = CGRect(x: CGFloat(cursor.coordinates.cell) * cellSideLength,
                                  y: CGFloat(cursor.coordinates.row) * cellSideLength,
                                  width: cellSideLength,
-                                 height: cellSideLength)
+                                 height: cellSideLength).adjusted(forSeparatorWidth: separatorWidth)
         }
         
         // user cursor letter indicator
         if self.userCursorLetterIndicatorLayer.superlayer == nil {
             self.puzzleContainerView.layer.addSublayer(self.userCursorLetterIndicatorLayer)
             self.userCursorLetterIndicatorLayer.borderColor = self.userCursorColor.cgColor
-            self.userCursorLetterIndicatorLayer.borderWidth = 2
+            self.userCursorLetterIndicatorLayer.borderWidth = separatorWidth
         }
         self.userCursorLetterIndicatorLayer.frame = CGRect(x: CGFloat(self.userCursor.coordinates.cell) * cellSideLength,
-                                                     y: CGFloat(self.userCursor.coordinates.row) * cellSideLength,
-                                                     width: cellSideLength,
-                                                     height: cellSideLength)
+                                                           y: CGFloat(self.userCursor.coordinates.row) * cellSideLength,
+                                                           width: cellSideLength,
+                                                           height: cellSideLength).adjusted(forSeparatorWidth: separatorWidth)
         
         if oldWordIndicatorFrame != self.userCursorWordIndicatorLayer.frame, let modelLocation = self.findCurrentClueCellNumber() {
             self.delegate?.puzzleView(self, 
@@ -383,6 +405,8 @@ class PuzzleView: UIView {
         
         self.isFirstLayout = false
         self.invalidateIntrinsicContentSize()
+        
+        print("TIMING: layout finished in \((Date.now.timeIntervalSince1970 - layoutStart) * 1000)ms")
     }
     
     func itemRequiresNumberLabel(_ item: String?, atRow row: Int, index: Int) -> Bool {
@@ -833,14 +857,14 @@ class PuzzleView: UIView {
     }
     
     @objc func tapGestureRecognizerTriggered(_ tap: UITapGestureRecognizer) {
-        let sideLength = self.cellSideLength * self.scrollView.zoomScale
-        let pointCoords = tap.location(in: self.scrollView)
+        let pointCoords = tap.location(in: self.puzzleContainerView)
         
-        guard self.puzzleContainerView.frame.contains(pointCoords) else {
+        guard self.puzzleContainerView.bounds.contains(pointCoords) else {
             print("tapped outside puzzle")
             return
         }
         
+        let sideLength = self.cellSideLength
         let cellCoords = CellCoordinates(row: Int(pointCoords.y / sideLength),
                                          cell: Int(pointCoords.x / sideLength))
         
@@ -940,7 +964,7 @@ class PuzzleView: UIView {
 
 extension PuzzleView: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return self.puzzleContainerView
+        return self.backgroundView
     }
     
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
@@ -950,7 +974,20 @@ extension PuzzleView: UIScrollViewDelegate {
         self.fillTextLayers.forEach({ $0.contentsScale = window.screen.scale * scale })
         self.numberTextLayers.forEach({ $0.contentsScale = window.screen.scale * scale })
         CATransaction.commit()
+        
+        self.setNeedsLayout()
     }
+}
+
+extension CGRect {
+    
+    func adjusted(forSeparatorWidth separatorWidth: CGFloat) -> CGRect {
+        var adjusted = self
+        adjusted.size.width += separatorWidth
+        adjusted.size.height += separatorWidth
+        return adjusted.insetBy(dx: separatorWidth, dy: separatorWidth)
+    }
+    
 }
 
 extension PuzzleView: UIKeyInput {

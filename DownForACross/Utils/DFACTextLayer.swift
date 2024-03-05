@@ -15,7 +15,10 @@ class DFACTextLayer: CATextLayer {
             return
         }
         
-        let yDiff = (self.bounds.size.height - font.lineHeight) / 2
+        let ascenderAdjustment = (font.lineHeight - font.capHeight + font.descender - font.leading)
+        let yCenterOffset = (self.frame.size.height - font.capHeight) / 2
+        let yDiff = yCenterOffset - ascenderAdjustment
+        
 
         context.saveGState()
         context.translateBy(x: 0, y: yDiff)
