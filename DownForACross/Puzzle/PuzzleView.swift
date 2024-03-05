@@ -68,6 +68,7 @@ class PuzzleView: UIView {
     var fillTextLayers: [CATextLayer] = []
     var separatorLayers: [CALayer] = []
     var circleLayers: [CAShapeLayer] = []
+    var incorrectCheckLayers: [CAShapeLayer] = []
     var referenceIndicatorLayers: [CALayer] = []
     
     private var isFirstLayout: Bool = true
@@ -118,6 +119,20 @@ class PuzzleView: UIView {
         return self.grid.count * self.grid[0].count
     }
     
+    var nativePixelWidth: CGFloat {
+        guard let screenScale = self.window?.screen.scale else { return 1 }
+        return 1 / screenScale
+    }
+    
+    var separatorWidth: CGFloat {
+        let nativePixelWidth = self.nativePixelWidth
+        if nativePixelWidth < 0.5 && self.grid[0].count < 20{
+            return nativePixelWidth * 2
+        } else {
+            return nativePixelWidth
+        }
+    }
+    
     var cellSideLength: CGFloat {
         guard self.cellCount > 0 else { return 0 }
         return self.frame.size.width / CGFloat(self.grid[0].count)
@@ -128,6 +143,8 @@ class PuzzleView: UIView {
     }
     
     override func layoutSubviews() {
+        let separatorWidth = self.separatorWidth
+                
         self.puzzleContainerView.layer.borderColor = Theme.separator.cgColor
         
         guard self.grid.count > 0 && self.grid[0].count > 0 else { return }
@@ -164,8 +181,16 @@ class PuzzleView: UIView {
         self.updateSeparatorCount(target: separatorCount)
         self.updateCircleCount(target: self.circles.count)
         
+        let incorrectCheckSlashPath: CGPath = {
+            let path = UIBezierPath()
+            path.move(to: CGPoint(x: 0, y: cellSideLength - separatorWidth))
+            path.addLine(to: CGPoint(x: cellSideLength - separatorWidth, y: 0))
+            return path.cgPath
+        }()
+        
         var textLayerIndex = 0
         var circleIndex = 0
+        var incorrectIndex = 0
         var cellNumber = 1
         
         var acrossSequence: [SequenceEntry] = []
@@ -251,8 +276,11 @@ class PuzzleView: UIView {
                                 case .correct:
                                     layer.foregroundColor = Theme.fillCorrect.cgColor
                                 case .incorrect:
-                                    break
-//                                    layer.foregroundColor = UIColor.systemRed.cgColor
+                                    let markerLayer = self.createOrReuseIncorrectCheckMarker(atIndex: incorrectIndex)
+                                    markerLayer.frame = layer.frame
+                                    markerLayer.path = incorrectCheckSlashPath
+                                    markerLayer.strokeColor = Theme.incorrectSlash.cgColor
+                                    incorrectIndex += 1
                             }
                         } else {
                             layer.foregroundColor = Theme.fillNormal.cgColor
@@ -351,6 +379,7 @@ class PuzzleView: UIView {
         }
         
         self.referenceIndicatorLayers.forEach({ $0.backgroundColor = Theme.referenceBackground.cgColor })
+        self.trimIncorrectMarkerLayers(toCount: incorrectIndex)
         
         self.isFirstLayout = false
         self.invalidateIntrinsicContentSize()
@@ -373,6 +402,30 @@ class PuzzleView: UIView {
         self.numberTextLayers.append(layer)
         self.puzzleContainerView.layer.addSublayer(layer)
         return layer
+    }
+    
+    func createOrReuseIncorrectCheckMarker(atIndex index: Int) -> CAShapeLayer {
+        if index < self.incorrectCheckLayers.count {
+            return self.incorrectCheckLayers[index]
+        } else {
+            let layer = CAShapeLayer()
+            layer.lineWidth = 2
+            layer.masksToBounds = true
+            layer.actions = [
+                "bounds": NSNull(),
+                "position": NSNull(),
+                "size": NSNull()
+            ]
+            self.incorrectCheckLayers.append(layer)
+            self.puzzleContainerView.layer.insertSublayer(layer, at: 0)
+            return layer
+        }
+    }
+    
+    func trimIncorrectMarkerLayers(toCount count: Int) {
+        while count < self.incorrectCheckLayers.count {
+            self.incorrectCheckLayers.removeLast().removeFromSuperlayer()
+        }
     }
     
     func syncCursorLayerCount() {
