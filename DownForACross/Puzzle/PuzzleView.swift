@@ -181,6 +181,9 @@ class PuzzleView: UIView {
         let cellSideLength = self.cellSideLength
         let layoutStart = Date.now.timeIntervalSince1970
         let separatorWidth = self.separatorWidth
+        let slashLineWidth = (cellSideLength * 0.1)
+        let circleLineWidth = (cellSideLength * 0.05)
+        let letterIndicatorWidth = (cellSideLength * 0.07)
                 
         self.puzzleContainerView.layer.borderWidth = separatorWidth
         self.puzzleContainerView.layer.borderColor = separatorColor
@@ -321,7 +324,7 @@ class PuzzleView: UIView {
                     
                     layer.font = fillFont
                     layer.fontSize = fillFont.pointSize
-                    layer.backgroundColor = UIColor.clear.cgColor
+                    layer.backgroundColor = clearBackgroundColor
                     
                     if let solutionEntry = self.solution[rowIndex][itemIndex] {
                         layer.string = solutionEntry.value
@@ -330,10 +333,12 @@ class PuzzleView: UIView {
                                 case .correct:
                                     layer.foregroundColor = correctFillColor
                                 case .incorrect:
+                                    layer.foregroundColor = normalFillColor
                                     let markerLayer = self.createOrReuseIncorrectCheckMarker(atIndex: incorrectIndex)
                                     markerLayer.frame = layer.frame
                                     markerLayer.path = incorrectCheckSlashPath
                                     markerLayer.strokeColor = incorrectSlashColor
+                                    markerLayer.lineWidth = slashLineWidth
                                     incorrectIndex += 1
                             }
                         } else {
@@ -351,18 +356,13 @@ class PuzzleView: UIView {
                     circleLayer.strokeColor = circleColor
                     circleIndex += 1
                     
-                    let rect = CGRect(x: CGFloat(itemIndex) * cellSideLength,
-                                      y: CGFloat(rowIndex) * cellSideLength,
-                                      width: cellSideLength,
-                                      height: cellSideLength)
-                    let insetRect = rect.insetBy(dx: cellSideLength * 0.1, dy: cellSideLength * 0.1)
-                    
-                    circleLayer.frame = insetRect
-                    circleLayer.frame.origin.y += 0.5
+                    let rect = layer.frame.insetBy(dx: cellSideLength * 0.1, dy: cellSideLength * 0.1)
+                    circleLayer.lineWidth = circleLineWidth
+                    circleLayer.frame = rect
                     circleLayer.path = UIBezierPath(ovalIn: CGRect(x: 0,
                                                                    y: 0,
-                                                                   width: insetRect.size.width,
-                                                                   height: insetRect.size.height)).cgPath
+                                                                   width: rect.size.width,
+                                                                   height: rect.size.height)).cgPath
                 }
             }
         }
@@ -401,7 +401,7 @@ class PuzzleView: UIView {
         if self.userCursorLetterIndicatorLayer.superlayer == nil {
             self.puzzleContainerView.layer.addSublayer(self.userCursorLetterIndicatorLayer)
             self.userCursorLetterIndicatorLayer.borderColor = self.userCursorColor.cgColor
-            self.userCursorLetterIndicatorLayer.borderWidth = separatorWidth
+            self.userCursorLetterIndicatorLayer.borderWidth = letterIndicatorWidth
         }
         self.userCursorLetterIndicatorLayer.frame = CGRect(x: CGFloat(self.userCursor.coordinates.cell) * cellSideLength,
                                                            y: CGFloat(self.userCursor.coordinates.row) * cellSideLength,
@@ -452,7 +452,6 @@ class PuzzleView: UIView {
     
     func createNumberTextLayer() -> CATextLayer {
         let layer = CATextLayer()
-        layer.foregroundColor = Theme.fillNormal.cgColor
         layer.contentsScale = self.window?.screen.scale ?? 1
         layer.actions = [
             "contents": NSNull()
@@ -503,7 +502,6 @@ class PuzzleView: UIView {
                 let layer = DFACTextLayer()
                 layer.font = font
                 layer.fontSize = font.pointSize
-                layer.foregroundColor = Theme.fillNormal.cgColor
                 layer.contentsScale = self.window?.screen.scale ?? 1
                 layer.alignmentMode = .center
                 layer.anchorPoint = CGPoint(x: 0.5, y: 0.5)
@@ -524,7 +522,6 @@ class PuzzleView: UIView {
         while self.separatorLayers.count != target {
             if self.separatorLayers.count < target {
                 let layer = CALayer()
-                layer.backgroundColor = Theme.separator.cgColor
                 self.puzzleContainerView.layer.addSublayer(layer)
                 self.separatorLayers.append(layer)
             } else {
@@ -537,7 +534,6 @@ class PuzzleView: UIView {
         while self.circleLayers.count != target {
             if self.circleLayers.count < target {
                 let layer = CAShapeLayer()
-                layer.strokeColor = Theme.circle.cgColor
                 layer.fillColor = UIColor.clear.cgColor
                 self.puzzleContainerView.layer.addSublayer(layer)
                 self.circleLayers.append(layer)
@@ -551,7 +547,6 @@ class PuzzleView: UIView {
         while self.referenceIndicatorLayers.count != target {
             if self.referenceIndicatorLayers.count < target {
                 let layer = self.createActionlessLayer()
-                layer.backgroundColor = Theme.referenceBackground.cgColor
                 
                 self.puzzleContainerView.layer.insertSublayer(layer, at: 0)
                 self.referenceIndicatorLayers.append(layer)
