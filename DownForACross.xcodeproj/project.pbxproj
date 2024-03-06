@@ -38,6 +38,7 @@
 		3B9A93512B6AA58200013239 /* PuzzleSideBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9A93502B6AA58200013239 /* PuzzleSideBarViewController.swift */; };
 		3B9A93532B6AAF5B00013239 /* PuzzleClueListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9A93522B6AAF5B00013239 /* PuzzleClueListViewController.swift */; };
 		3B9A93552B6AAF7B00013239 /* PuzzleMessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9A93542B6AAF7B00013239 /* PuzzleMessagesViewController.swift */; };
+		3BAD21272B98BBBB00839504 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BAD21262B98BBBB00839504 /* EmptyStateView.swift */; };
 		3BB0FCD92B6C5CB300CD907C /* ChatEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCD82B6C5CB300CD907C /* ChatEvent.swift */; };
 		3BB0FCDD2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCDC2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift */; };
 		3BB0FCE02B6C9A9A00CD907C /* confetti.json in Resources */ = {isa = PBXBuildFile; fileRef = 3BB0FCDF2B6C9A9A00CD907C /* confetti.json */; };
@@ -88,6 +89,7 @@
 		3B9A93502B6AA58200013239 /* PuzzleSideBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleSideBarViewController.swift; sourceTree = "<group>"; };
 		3B9A93522B6AAF5B00013239 /* PuzzleClueListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleClueListViewController.swift; sourceTree = "<group>"; };
 		3B9A93542B6AAF7B00013239 /* PuzzleMessagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleMessagesViewController.swift; sourceTree = "<group>"; };
+		3BAD21262B98BBBB00839504 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		3BB0FCD82B6C5CB300CD907C /* ChatEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatEvent.swift; sourceTree = "<group>"; };
 		3BB0FCDC2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleNewMessageStackView.swift; sourceTree = "<group>"; };
 		3BB0FCDF2B6C9A9A00CD907C /* confetti.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = confetti.json; sourceTree = "<group>"; };
@@ -246,6 +248,7 @@
 			children = (
 				3B011DE92B30BED400BDB732 /* PuzzleListViewController.swift */,
 				3BB0FCE12B6F33AF00CD907C /* PuzzleListQuickFilterBarView.swift */,
+				3BAD21262B98BBBB00839504 /* EmptyStateView.swift */,
 			);
 			path = "Puzzle list";
 			sourceTree = "<group>";
@@ -414,6 +417,7 @@
 				3B73AD7C2B921494005DB5F8 /* LaunchInterstitialViewController.swift in Sources */,
 				3B986BCC2B8F8808007CE13F /* PuzzlePlayersViewController.swift in Sources */,
 				3B73AD832B93E3AB005DB5F8 /* DFACTextLayer.swift in Sources */,
+				3BAD21272B98BBBB00839504 /* EmptyStateView.swift in Sources */,
 				3B7AD2672B597AA4004DEC1A /* UpdateColorEvent.swift in Sources */,
 				3BF367322B313675005BB41E /* PuzzleView.swift in Sources */,
 				3B90033F2B35D5D90088729C /* SharedTypes.swift in Sources */,

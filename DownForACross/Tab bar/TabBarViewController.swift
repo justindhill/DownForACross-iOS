@@ -39,6 +39,10 @@ class TabBarViewController: UITabBarController {
         self.siteInteractor = siteInteractor
         super.init(nibName: nil, bundle: nil)
         
+        let tabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithDefaultBackground()
+        self.tabBar.scrollEdgeAppearance = tabBarAppearance
+        
         self.viewControllers = [
             self.puzzleListNavigationController,
             self.settingsNavigationController

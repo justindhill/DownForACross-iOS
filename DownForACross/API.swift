@@ -33,6 +33,7 @@ class API {
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.timeoutInterval = 5
+        request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         let (data, _) = try await session.data(for: request)
         
         let decoded = try jsonDecoder.decode(PuzzleList.self, from: data)
