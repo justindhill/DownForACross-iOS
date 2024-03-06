@@ -58,7 +58,7 @@ class PuzzleListQuickFilterBarView: UIView {
         
         var displayString: String {
             switch self {
-                case .all: "All sizes"
+                case .all: "All"
                 case .standard: "Standard"
                 case .mini: "Mini"
             }
