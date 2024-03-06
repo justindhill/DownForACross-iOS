@@ -367,8 +367,10 @@ class PuzzleView: UIView {
             }
         }
         
-        self.acrossSequence = acrossSequence
-        self.downSequence = downSequence
+        if self._needsTextLayout {
+            self.acrossSequence = acrossSequence
+            self.downSequence = downSequence
+        }
         
         // separators
         for i in 0..<self.grid.count - 1 {
