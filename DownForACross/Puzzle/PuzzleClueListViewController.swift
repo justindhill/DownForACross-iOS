@@ -66,8 +66,8 @@ class PuzzleClueListViewController: UIViewController {
     init(clues: PuzzleClues) {
         self.clues = clues
         
-        self.compactAcrossClues = clues.across.enumerated().map({ ListEntry(originalIndex: $0, clue: $1 ?? "") })
-        self.compactDownClues = clues.down.enumerated().map({ ListEntry(originalIndex: $0, clue: $1 ?? "")})
+        self.compactAcrossClues = clues.across.enumerated().compactMap({ $1 == nil ? nil : ListEntry(originalIndex: $0, clue: $1!) })
+        self.compactDownClues = clues.down.enumerated().compactMap({ $1 == nil ? nil : ListEntry(originalIndex: $0, clue: $1!) })
 
         super.init(nibName: nil, bundle: nil)
         
