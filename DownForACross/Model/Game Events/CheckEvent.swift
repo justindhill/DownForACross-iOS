@@ -10,6 +10,8 @@ import Foundation
 class CheckEvent: GameEvent {
     
     var type: String = "check"
+    var eventId: String = UUID().uuidString
+
     var gameId: String
     var cells: [CellCoordinates]
     

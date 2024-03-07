@@ -10,6 +10,7 @@ import Foundation
 struct UpdateCursorEvent: GameEvent {
     
     var type: String { "updateCursor" }
+    var eventId: String = UUID().uuidString
     
     let userId: String
     let gameId: String

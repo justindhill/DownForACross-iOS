@@ -10,6 +10,7 @@ import Foundation
 class ChatEvent: GameEvent {
     
     var type: String { "chat" }
+    var eventId: String = UUID().uuidString
 
     var messageId: String
     var gameId: String

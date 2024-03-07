@@ -7,9 +7,10 @@
 
 import Foundation
 
-struct UpdateDisplayNameEvent: GameEvent {
+struct UpdateDisplayNameEvent: DedupableGameEvent {
     
     var type: String { "updateDisplayName" }
+    var eventId: String = UUID().uuidString
     
     let userId: String
     let gameId: String

@@ -10,7 +10,7 @@ import UIKit
 protocol PuzzleViewDelegate: AnyObject {
     func puzzleView(_ puzzleView: PuzzleView, didEnterText text: String?, atCoordinates coordinates: CellCoordinates)
     func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToCoordinates coordinates: CellCoordinates)
-    func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToClueIndex clueIndex: Int, sequenceIndex: Int, direction: Direction)
+    func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToClue: PuzzleView.ModelLocation?)
     
     func puzzleView(_ puzzleView: PuzzleView, referencesInClueAtClueIndex clueIndex: Int, direction: Direction) -> [PuzzleClues.ClueReference]
 }
@@ -277,10 +277,6 @@ class PuzzleView: UIView {
                                                        width: cellSideLength,
                                                        height: numberFont.lineHeight)
                         
-                        if self.isFirstLayout && cellNumber == 1 {
-                            self.userCursor.coordinates = CellCoordinates(row: rowIndex, cell: itemIndex)
-                        }
-                        
                         if  // at the beginning or the previous one is a word boundary
                             (rowIndex == 0 || (self.grid[rowIndex - 1][itemIndex] == ".")) &&
                                 // not at the end
@@ -372,6 +368,13 @@ class PuzzleView: UIView {
         if self._needsTextLayout {
             self.acrossSequence = acrossSequence
             self.downSequence = downSequence
+            
+            if self.isFirstLayout, let firstAcrossCoordinates = acrossSequence.first?.coordinates {
+                self.userCursor.coordinates = firstAcrossCoordinates
+                if self.currentWordIsFullAndPotentiallyCorrect() {
+                    self.advanceUserCursorToNextWord()
+                }
+            }
         }
         
         // separators
@@ -412,11 +415,13 @@ class PuzzleView: UIView {
                                                            width: cellSideLength,
                                                            height: cellSideLength).adjusted(forSeparatorWidth: separatorWidth)
         
-        if oldWordIndicatorFrame != self.userCursorWordIndicatorLayer.frame, let modelLocation = self.findCurrentClueCellNumber() {
-            self.delegate?.puzzleView(self, 
-                                      userCursorDidMoveToClueIndex: modelLocation.clueIndex,
-                                      sequenceIndex: modelLocation.sequenceIndex, 
-                                      direction: modelLocation.direction)
+        if oldWordIndicatorFrame != self.userCursorWordIndicatorLayer.frame {
+            guard let modelLocation = self.findCurrentClueCellNumber() else {
+                self.delegate?.puzzleView(self, userCursorDidMoveToClue: nil)
+                return
+            }
+            
+            self.delegate?.puzzleView(self, userCursorDidMoveToClue: modelLocation)
             if let references = self.delegate?.puzzleView(self, referencesInClueAtClueIndex: modelLocation.clueIndex, direction: modelLocation.direction) {
                 self.updateReferenceIndicatorCount(target: references.count)
                 for (index, reference) in references.enumerated() {

@@ -135,7 +135,9 @@ class PuzzleViewController: UIViewController {
         self.keyboardToolbar = PuzzleToolbarView()
         self.keyboardToolbar.translatesAutoresizingMaskIntoConstraints = false
         self.keyboardToolbar.delegate = self
-        self.puzzleView(self.puzzleView, userCursorDidMoveToClueIndex: 1, sequenceIndex: 0, direction: self.puzzleView.userCursor.direction)
+        self.puzzleView(self.puzzleView, userCursorDidMoveToClue: PuzzleView.ModelLocation(clueIndex: 1,
+                                                                                           sequenceIndex: 0,
+                                                                                           direction: self.puzzleView.userCursor.direction))
         
         self.keyboardToolbar.leftButton.addAction(UIAction(handler: { [weak self] _ in
             self?.puzzleView.retreatUserCursorToPreviousWord()
@@ -332,15 +334,21 @@ extension PuzzleViewController: GameClientDelegate {
 
 extension PuzzleViewController: PuzzleViewDelegate {
     
-    func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToClueIndex clueIndex: Int, sequenceIndex: Int, direction: Direction) {
-        switch direction {
-            case .across:
-                self.keyboardToolbar.clueLabel.text = self.puzzle.content.clues.across[clueIndex]
-            case .down:
-                self.keyboardToolbar.clueLabel.text = self.puzzle.content.clues.down[clueIndex]
+    func puzzleView(_ puzzleView: PuzzleView, userCursorDidMoveToClue clue: PuzzleView.ModelLocation?) {
+        guard let clue else {
+            self.sideBarViewController.clueListViewController.selectClue(atSequenceIndex: nil, direction: .across)
+            self.keyboardToolbar.clueLabel.text = ""
+            return
         }
         
-        self.sideBarViewController.clueListViewController.selectClue(atSequenceIndex: sequenceIndex, direction: direction)
+        switch clue.direction {
+            case .across:
+                self.keyboardToolbar.clueLabel.text = self.puzzle.content.clues.across[clue.clueIndex]
+            case .down:
+                self.keyboardToolbar.clueLabel.text = self.puzzle.content.clues.down[clue.clueIndex]
+        }
+        
+        self.sideBarViewController.clueListViewController.selectClue(atSequenceIndex: clue.sequenceIndex, direction: clue.direction)
     }
     
     func puzzleView(_ puzzleView: PuzzleView, didEnterText text: String?, atCoordinates coordinates: CellCoordinates) {

@@ -8,10 +8,10 @@
 import UIKit
 import RegexBuilder
 
-struct UpdateColorEvent: GameEvent {
-    
+struct UpdateColorEvent: DedupableGameEvent {
     
     var type: String = "updateColor"
+    var eventId: String = UUID().uuidString
     
     var gameId: String
     var userId: String

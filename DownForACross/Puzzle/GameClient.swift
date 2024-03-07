@@ -32,6 +32,7 @@ class GameClient: NSObject, URLSessionDelegate {
     let userId: String
     let settingsStorage: SettingsStorage
     let correctSolution: [[String?]]
+    var mostRecentDedupableEvents: [String: String] = [:]
     
     private(set) var isPerformingBulkEventSync: Bool = false
     private(set) var gameId: String
@@ -97,9 +98,7 @@ class GameClient: NSObject, URLSessionDelegate {
         if let loadedSolution = Self.loadSolution(forGameId: self.gameId) {
             self.solution = loadedSolution
         } else {
-            self.solution = Array(repeating: Array(repeating: nil,
-                                                   count: puzzle.grid[0].count),
-                                  count: puzzle.grid.count)
+            self.solution = Self.createEmptySolution(forPuzzle: puzzle)
         }
         
         self.correctSolution = self.puzzle.grid.map({ $0.map({ $0 == "." ? nil : $0 }) })
@@ -122,17 +121,21 @@ class GameClient: NSObject, URLSessionDelegate {
         
         socket.on("connect") { data, ack in
             print("connected!")
-            socket.emitWithAckNoOp(eventName: "join_game", resolvedGameId)
-            socket.emitWithAckNoOp(UpdateDisplayNameEvent(userId: self.userId,
-                                                          gameId: self.gameId,
-                                                          displayName: self.settingsStorage.userDisplayName).eventPayload())
-            socket.emitWithAckNoOp(UpdateColorEvent(gameId: self.gameId,
-                                                    userId: self.userId,
-                                                    color: self.settingsStorage.userDisplayColor).eventPayload())
+            self.emitWithAckNoOp(eventName: "join_game", resolvedGameId)
+            self.emitWithAckNoOp(UpdateDisplayNameEvent(userId: self.userId,
+                                                        gameId: self.gameId,
+                                                        displayName: self.settingsStorage.userDisplayName))
+            self.emitWithAckNoOp(UpdateColorEvent(gameId: self.gameId,
+                                                  userId: self.userId,
+                                                  color: self.settingsStorage.userDisplayColor))
+            self.players[self.userId] = Player(userId: self.userId,
+                                               displayName: self.settingsStorage.userDisplayName,
+                                               color: self.settingsStorage.userDisplayColor)
             
-            socket.emitWithAck("sync_all_game_events", self.gameId).timingOut(after: 5) { [weak self] data in
+            self.emitWithAck("sync_all_game_events", self.gameId).timingOut(after: 5) { [weak self] data in
                 guard let self, let events = data.first as? [[String: Any]] else { return }
                 self.isPerformingBulkEventSync = true
+                self.solution = Self.createEmptySolution(forPuzzle: self.puzzle)
                 self.handleGameEvents(events)
                 self.isPerformingBulkEventSync = false
                 self.writeCurrentSolutionToFile()
@@ -164,54 +167,90 @@ class GameClient: NSObject, URLSessionDelegate {
             }
             
             do {
+                var dedupableEvent: DedupableGameEvent?
+                var applyClosure: (() -> Void)
                 if type == "updateCursor" {
                     let event = UpdateCursorEvent(payload: payload)
-                    if var cursor = self.cursors[event.userId] {
-                        cursor.coordinates = event.cell
-                        self.cursors[event.userId] = cursor
-                    } else {
-                        self.cursors[event.userId] = Cursor(player: Player(userId: event.userId), coordinates: event.cell)
+                    applyClosure = {
+                        if var cursor = self.cursors[event.userId] {
+                            cursor.coordinates = event.cell
+                            self.cursors[event.userId] = cursor
+                        } else {
+                            self.cursors[event.userId] = Cursor(player: Player(userId: event.userId), coordinates: event.cell)
+                        }
                     }
                 } else if type == "updateCell"  {
                     let event = UpdateCellEvent(payload: payload)
-                    if let value = event.value, value != "" {
-                        var correctness: Correctness?
-                        if let autocheck = event.autocheck, autocheck {
-                            correctness = self.correctness(forEntry: value, at: event.cell)
+                    dedupableEvent = event
+                    applyClosure = {
+                        if let value = event.value, value != "" {
+                            var correctness: Correctness?
+                            if let autocheck = event.autocheck, autocheck {
+                                correctness = self.correctness(forEntry: value, at: event.cell)
+                            }
+                            
+                            self.solution[event.cell.row][event.cell.cell] = CellEntry(userId: event.userId, value: value, correctness: correctness)
+                        } else {
+                            self.solution[event.cell.row][event.cell.cell] = nil
                         }
-                        
-                        self.solution[event.cell.row][event.cell.cell] = CellEntry(userId: event.userId, value: value, correctness: correctness)
-                    } else {
-                        self.solution[event.cell.row][event.cell.cell] = nil
                     }
                 } else if type == "updateColor" {
                     let event = try UpdateColorEvent(payload: payload)
-                    var player = self.players[event.userId] ?? Player(userId: event.userId)
-                    player.color = event.color
-                    self.players[event.userId] = player
+                    dedupableEvent = event
+                    applyClosure = {
+                        var player = self.players[event.userId] ?? Player(userId: event.userId)
+                        player.color = event.color
+                        self.players[event.userId] = player
+                    }
                 } else if type == "check" {
                     let event = try CheckEvent(payload: payload)
-                    for cell in event.cells {
-                        let correctness = self.correctness(forEntryAt: cell)
-                        self.solution[cell.row][cell.cell]?.correctness = correctness
+                    applyClosure = {
+                        for cell in event.cells {
+                            let correctness = self.correctness(forEntryAt: cell)
+                            self.solution[cell.row][cell.cell]?.correctness = correctness
+                        }
                     }
                 } else if type == "updateDisplayName" {
                     let event = try UpdateDisplayNameEvent(payload: payload)
-                    var player = self.players[event.userId] ?? Player(userId: event.userId)
-                    player.displayName = event.displayName
-                    self.players[event.userId] = player
+                    dedupableEvent = event
+                    applyClosure = {
+                        var player = self.players[event.userId] ?? Player(userId: event.userId)
+                        player.displayName = event.displayName
+                        self.players[event.userId] = player
+                    }
                 } else if type == "chat" {
                     let event = try ChatEvent(payload: payload)
-                    if let player = self.players[event.senderId] {
-                        self.delegate?.gameClient(self, didReceiveNewChatMessage: event, from: player)
-                    } else {
-                        print("Received a chat message from an unknown player")
+                    applyClosure = {
+                        if let player = self.players[event.senderId] {
+                            self.delegate?.gameClient(self, didReceiveNewChatMessage: event, from: player)
+                        } else {
+                            print("Received a chat message from an unknown player")
+                        }
+                        print("CHAT: \(event.senderName) \(event.message)")
                     }
-                    print("CHAT: \(event.senderName) \(event.message)")
                 } else if type == "sendChatMessage" {
                     // no-op
+                    applyClosure = {}
                 } else {
+                    applyClosure = {}
                     print("unknown game_event type: \(type)")
+                }
+                
+                if let dedupableEvent,
+                    dedupableEvent.userId == self.userId {
+                    
+                    if let mostRecent = self.mostRecentDedupableEvents[dedupableEvent.dedupKey] {
+                        // only apply if this is the most recent event we sent
+                        if dedupableEvent.eventId == mostRecent {
+                            applyClosure()
+                        }
+                    } else {
+                        // we haven't sent an event of this type yet
+                        applyClosure()
+                    }
+                } else {
+                    // not a dedupable event or is one, but doesn't match our user id
+                    applyClosure()
                 }
             } catch {
                 print("Encountered an error while parsing \"\(type)\" event")
@@ -235,18 +274,17 @@ class GameClient: NSObject, URLSessionDelegate {
         self.solution[coordinates.row][coordinates.cell] = resolvedValue
 
         
-        self.socketManager.defaultSocket.emitWithAckNoOp(UpdateCellEvent(userId: self.userId,
-                                                                         gameId: self.gameId,
-                                                                         cell: coordinates,
-                                                                         value: value,
-                                                                         autocheck: self.inputMode == .autocorrect).eventPayload())
+        self.emitWithAckNoOp(UpdateCellEvent(userId: self.userId,
+                                             gameId: self.gameId,
+                                             cell: coordinates,
+                                             value: value,
+                                             autocheck: self.inputMode == .autocorrect))
     }
     
     func moveUserCursor(to coordinates: CellCoordinates) {
-        self.socketManager.defaultSocket.emitWithAckNoOp(
-            UpdateCursorEvent(userId: self.userId,
-                              gameId: self.gameId,
-                              coordinates: coordinates).eventPayload())
+        self.emitWithAckNoOp(UpdateCursorEvent(userId: self.userId,
+                                               gameId: self.gameId,
+                                               coordinates: coordinates))
     }
     
     func sendMessage(_ message: String) -> ChatEvent {
@@ -254,7 +292,7 @@ class GameClient: NSObject, URLSessionDelegate {
                               senderId: self.userId,
                               senderName: self.settingsStorage.userDisplayName,
                               message: message)
-        self.socketManager.defaultSocket.emitWithAckNoOp(event.eventPayload())
+        self.emitWithAckNoOp(event)
         return event
     }
     
@@ -330,4 +368,38 @@ class GameClient: NSObject, URLSessionDelegate {
         return filePath
     }
     
+    static func createEmptySolution(forPuzzle puzzle: Puzzle) -> [[CellEntry?]] {
+        return Array(repeating: Array(repeating: nil,
+                                      count: puzzle.grid[0].count),
+                     count: puzzle.grid.count)
+    }
+    
+}
+
+extension GameClient {
+    func emitWithAck(_ gameEvent: GameEvent) -> OnAckCallback {
+        return self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.eventPayload())
+    }
+    
+    func emitWithAckNoOp(_ gameEvent: GameEvent) {
+        self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.eventPayload()).timingOut(after: 5, callback: { _ in })
+    }
+    
+    func emitWithAck(_ gameEvent: DedupableGameEvent) -> OnAckCallback {
+        self.mostRecentDedupableEvents[gameEvent.dedupKey] = gameEvent.eventId
+        return self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.eventPayload())
+    }
+    
+    func emitWithAckNoOp(_ gameEvent: DedupableGameEvent) {
+        self.mostRecentDedupableEvents[gameEvent.dedupKey] = gameEvent.eventId
+        self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.eventPayload()).timingOut(after: 5, callback: { _ in })
+    }
+    
+    func emitWithAckNoOp(eventName: String = "game_event", _ items: SocketData...) {
+        self.socketManager.defaultSocket.emitWithAck(eventName, items).timingOut(after: 5, callback: { _ in })
+    }
+    
+    func emitWithAck(_ event: String, _ items: SocketData...) -> OnAckCallback {
+        self.socketManager.defaultSocket.emitWithAck(event, with: items)
+    }
 }

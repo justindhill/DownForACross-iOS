@@ -92,9 +92,16 @@ class PuzzleClueListViewController: UIViewController {
         ])
     }
     
-    func selectClue(atSequenceIndex sequenceIndex: Int, direction: Direction) {
-        let candidate = IndexPath(row: sequenceIndex, section: direction.sectionIndex)
+    func selectClue(atSequenceIndex sequenceIndex: Int?, direction: Direction) {
+        guard let sequenceIndex else {
+            if let selectedRow = self.tableView.indexPathForSelectedRow {
+                self.tableView.deselectRow(at: selectedRow, animated: true)
+            }
+            
+            return
+        }
         
+        let candidate = IndexPath(row: sequenceIndex, section: direction.sectionIndex)
         if candidate != self.tableView.indexPathForSelectedRow {
             self.tableView.selectRow(at: candidate, animated: true, scrollPosition: .middle)
         }
@@ -128,14 +135,6 @@ extension PuzzleClueListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let direction: Direction = indexPath.section == 0 ? .across : .down
         self.delegate?.clueListViewController(self, didSelectClueAtSequenceIndex: indexPath.row, direction: direction)
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        guard let item = self.dataSource.itemIdentifier(for: indexPath), item.clue != "" else {
-            return 0
-        }
-        
-        return 44
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
