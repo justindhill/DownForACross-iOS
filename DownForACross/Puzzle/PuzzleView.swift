@@ -294,8 +294,10 @@ class PuzzleView: UIView {
                         
                         if  // previous one is a word boundary or the beginning of the row
                             (itemIndex == 0 || self.grid[rowIndex][itemIndex - 1] == ".") &&
-                                // current one isn't a word boundary
-                                self.grid[rowIndex][itemIndex] != "." {
+                                // not at the end
+                                (itemIndex < self.grid[rowIndex].count &&
+                                 // next one isn't a word boundary
+                                 self.grid[rowIndex][itemIndex + 1] != ".") {
                             let coordinates = CellCoordinates(row: rowIndex, cell: itemIndex)
                             acrossSequence.append((cellNumber, coordinates))
                             acrossCellNumberToCoordinatesMap[cellNumber] = coordinates
