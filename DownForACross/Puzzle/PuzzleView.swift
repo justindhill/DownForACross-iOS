@@ -179,7 +179,6 @@ class PuzzleView: UIView {
         let separatorColor = Theme.separator.cgColor
         
         let cellSideLength = self.cellSideLength
-        let layoutStart = Date.now.timeIntervalSince1970
         let separatorWidth = self.separatorWidth
         let slashLineWidth = (cellSideLength * 0.1)
         let circleLineWidth = (cellSideLength * 0.05)
@@ -449,8 +448,6 @@ class PuzzleView: UIView {
         
         self.isFirstLayout = false
         self._needsTextLayout = false
-        
-        print("TIMING: layout finished in \((Date.now.timeIntervalSince1970 - layoutStart) * 1000)ms")
     }
     
     func itemRequiresNumberLabel(_ item: String?, atRow row: Int, index: Int) -> Bool {
