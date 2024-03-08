@@ -7,8 +7,14 @@
 
 import UIKit
 import WebKit
+import Combine
 
 class PuzzleListViewController: UIViewController, UITableViewDelegate {
+    
+    enum RefreshType {
+        case pullToRefresh
+        case other
+    }
     
     let reuseIdentifier: String = "ItemReuseIdentifier"
     
@@ -43,6 +49,8 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
         view.delegate = self
         return view
     }()
+    
+    var updateTask: AnyCancellable?
     
     var userId: String
     let siteInteractor: SiteInteractor
@@ -91,9 +99,7 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
             self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
         ])
         
-        Task {
-            await self.updatePuzzleList()
-        }
+        self.updatePuzzleList(refreshType: .other)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -118,46 +124,49 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate {
         self.navigationController?.pushViewController(vc, animated: true)
     }
     
-    func updatePuzzleList() async {
-        do {
-            if !self.refreshControl.isRefreshing {
-                self.emptyStateView.activityIndicator.isHidden = false
-                self.emptyStateView.activityIndicator.startAnimating()
+    func updatePuzzleList(refreshType: RefreshType) {
+        self.updateTask = AnyCancellable(Task {
+            do {
+                switch refreshType {
+                    case .pullToRefresh:
+                        self.refreshControl.beginRefreshing()
+                    case .other:
+                        self.emptyStateView.activityIndicator.isHidden = false
+                        self.emptyStateView.activityIndicator.startAnimating()
+                }
+                
+                let puzzleList = try await api.getPuzzleList(
+                    wordFilter: self.quickFilterBar.selectedWordFilter ?? "",
+                    includeMinis: self.quickFilterBar.selectedPuzzleSize.includeMinis,
+                    includeStandards: self.quickFilterBar.selectedPuzzleSize.includeStandards)
+                
+                self.emptyStateView.activityIndicator.stopAnimating()
+                self.emptyStateView.activityIndicator.isHidden = true
+                self.refreshControl.endRefreshing()
+                
+                var snapshot = NSDiffableDataSourceSnapshot<Int, PuzzleListEntry>()
+                snapshot.appendSections([0])
+                snapshot.appendItems(puzzleList.puzzles, toSection: 0)
+                await self.dataSource.apply(snapshot, animatingDifferences: false)
+                
+                if puzzleList.puzzles.count == 0 {
+                    self.emptyStateView.label.text = "No puzzles found"
+                    self.emptyStateView.isHidden = false
+                } else {
+                    self.emptyStateView.isHidden = true
+                }
+                
+            } catch {
+                self.emptyStateView.label.text = "Couldn't load the puzzle list"
+                self.quickFilterBar.isUserInteractionEnabled = true
+                self.emptyStateView.activityIndicator.stopAnimating()
+                print(error)
             }
-            self.quickFilterBar.isUserInteractionEnabled = false
-            let puzzleList = try await api.getPuzzleList(
-                wordFilter: self.quickFilterBar.selectedWordFilter ?? "",
-                includeMinis: self.quickFilterBar.selectedPuzzleSize.includeMinis,
-                includeStandards: self.quickFilterBar.selectedPuzzleSize.includeStandards)
-            self.quickFilterBar.isUserInteractionEnabled = true
-            var snapshot = NSDiffableDataSourceSnapshot<Int, PuzzleListEntry>()
-            snapshot.appendSections([0])
-            snapshot.appendItems(puzzleList.puzzles, toSection: 0)
-            await self.dataSource.apply(snapshot, animatingDifferences: false)
-
-            self.emptyStateView.activityIndicator.stopAnimating()
-            
-            if puzzleList.puzzles.count == 0 {
-                self.emptyStateView.label.text = "No puzzles found"
-                self.emptyStateView.isHidden = false
-            } else {
-                self.emptyStateView.isHidden = true
-            }
-                        
-        } catch {
-            self.emptyStateView.label.text = "Couldn't load the puzzle list"
-            self.quickFilterBar.isUserInteractionEnabled = true
-            self.emptyStateView.activityIndicator.stopAnimating()
-            print(error)
-        }
+        }.cancel)
     }
     
     @objc func refreshControlDidBeginRefreshing() {
-        Task {
-            self.refreshControl.beginRefreshing()
-            await self.updatePuzzleList()
-            self.refreshControl.endRefreshing()
-        }
+        self.updatePuzzleList(refreshType: .pullToRefresh)
     }
 
 }
@@ -166,16 +175,12 @@ extension PuzzleListViewController: PuzzleListQuickFilterBarViewDelegate {
     
     func filterBar(_ filterBar: PuzzleListQuickFilterBarView, selectedSizesDidChange size: PuzzleListQuickFilterBarView.PuzzleSize) {
         self.settingsStorage.puzzleListSizeFilter = size
-        Task {
-            await self.updatePuzzleList()
-        }
+        self.updatePuzzleList(refreshType: .other)
     }
     
     func filterBar(_ filterBar: PuzzleListQuickFilterBarView, selectedWordFilterDidChange word: String?) {
         self.settingsStorage.puzzleTextFilter = word ?? ""
-        Task {
-            await self.updatePuzzleList()
-        }
+        self.updatePuzzleList(refreshType: .other)
     }
     
 }
