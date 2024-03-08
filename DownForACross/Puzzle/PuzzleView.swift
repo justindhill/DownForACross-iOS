@@ -451,9 +451,23 @@ class PuzzleView: UIView {
     }
     
     func itemRequiresNumberLabel(_ item: String?, atRow row: Int, index: Int) -> Bool {
-        return (row == 0 || index == 0) && item != "." ||
-               (row > 0 && self.grid[row - 1][index] == ".") && item != "." ||
-               (index > 0 && self.grid[row][index - 1] == ".") && item != "."
+        let dueToFirstCell = (row == 0 || index == 0) && item != "."
+        let dueToDown = 
+            // previous row is an empty space
+            (row > 0 && self.grid[row - 1][index] == ".") &&
+            // this row is not an empty space
+            item != "." &&
+            // next row is not an empty space
+            (row < self.grid.count - 1 && self.grid[row + 1][index] != ".")
+        let dueToAcross =
+            // previous column is an empty space
+            (index > 0 && self.grid[row][index - 1] == ".") &&
+            // this column is not an empty space
+            item != "." &&
+            // next column is not an empty space
+            (index < self.grid[row].count - 1 && self.grid[row][index + 1] != ".")
+        
+        return dueToFirstCell || dueToDown || dueToAcross
     }
     
     func createNumberTextLayer() -> CATextLayer {
@@ -643,26 +657,39 @@ class PuzzleView: UIView {
     
     func advanceUserCursorToNextWord() {
         let wordExtent = self.findCurrentWordExtent()
-        var rollover = false
         switch self.userCursor.direction {
             case .across:
                 let firstLetterCoordinates = CellCoordinates(row: self.userCursor.coordinates.row, cell: wordExtent.location)
-                guard let currentIndex = self.acrossSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates }) else { return }
-                let newIndex = (currentIndex + 1) % self.acrossSequence.count
-                let newCoordinates = self.acrossSequence[newIndex]
-                rollover = (newIndex == 0)
-                self.userCursor.coordinates = newCoordinates.coordinates
+                let newIndex: Int
+                if let currentIndex = self.acrossSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates }) {
+                    newIndex = (currentIndex + 1) % self.acrossSequence.count
+                } else {
+                    newIndex = 0
+                }
+                
+                // rollover
+                if newIndex == 0 {
+                    self.toggleDirection()
+                    self.userCursor.coordinates = self.downSequence[newIndex].coordinates
+                } else {
+                    self.userCursor.coordinates = self.acrossSequence[newIndex].coordinates
+                }
             case .down:
                 let firstLetterCoordinates = CellCoordinates(row: wordExtent.location, cell: self.userCursor.coordinates.cell)
-                guard let currentIndex = self.downSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates }) else { return }
-                let newIndex = (currentIndex + 1) % self.downSequence.count
-                let newCoordinates = self.downSequence[newIndex]
-                rollover = (newIndex == 0)
-                self.userCursor.coordinates = newCoordinates.coordinates
-        }
-        
-        if rollover {
-            self.toggleDirection()
+                let newIndex: Int
+                if let currentIndex = self.downSequence.firstIndex(where: { $0.coordinates == firstLetterCoordinates }) {
+                    newIndex = (currentIndex + 1) % self.downSequence.count
+                } else {
+                    newIndex = 0
+                }
+
+                // rollover
+                if newIndex == 0 {
+                    self.toggleDirection()
+                    self.userCursor.coordinates = self.acrossSequence[newIndex].coordinates
+                } else {
+                    self.userCursor.coordinates = self.downSequence[newIndex].coordinates
+                }
         }
         
         let isFullAndPotentiallyCorrect = self.currentWordIsFullAndPotentiallyCorrect()
@@ -909,9 +936,15 @@ class PuzzleView: UIView {
         if item == "." {
             return
         } else if cellCoords == self.userCursor.coordinates {
-            self.userCursor = UserCursor(coordinates: cellCoords, direction: self.userCursor.direction.opposite)
+            self.toggleDirection()
+            if self.findCurrentWordExtent().length == 1 {
+                self.toggleDirection()
+            }
         } else {
             self.userCursor = UserCursor(coordinates: cellCoords, direction: self.userCursor.direction)
+            if self.findCurrentWordExtent().length == 1 {
+                self.toggleDirection()
+            }
         }
     }
     
@@ -1046,6 +1079,9 @@ extension PuzzleView: UIKeyInput {
         
         if text == " " {
             self.toggleDirection()
+            if self.findCurrentWordExtent().length == 1 {
+                self.toggleDirection()
+            }
             return
         } else if text == "\n" || self.solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
             advance()
