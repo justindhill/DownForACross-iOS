@@ -2,3 +2,4 @@ DerivedData
 Pods
 *.xcworkspace
 *.xcodeproj/xcuserdata
+.DS_Store
