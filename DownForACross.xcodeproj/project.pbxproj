@@ -26,6 +26,9 @@
 		3B73AD7F2B922746005DB5F8 /* OnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B73AD7E2B922746005DB5F8 /* OnboardingViewController.swift */; };
 		3B73AD812B928FF5005DB5F8 /* ColorPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B73AD802B928FF5005DB5F8 /* ColorPickerView.swift */; };
 		3B73AD832B93E3AB005DB5F8 /* DFACTextLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B73AD822B93E3AB005DB5F8 /* DFACTextLayer.swift */; };
+		3B76C8CA2B9BECD700E60AFD /* UINavigationBar+TitleControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B76C8C92B9BECD700E60AFD /* UINavigationBar+TitleControl.swift */; };
+		3B76C8CC2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B76C8CB2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift */; };
+		3B76C8CE2B9C061500E60AFD /* AccumulatingTapGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B76C8CD2B9C061500E60AFD /* AccumulatingTapGestureRecognizer.swift */; };
 		3B7AD2672B597AA4004DEC1A /* UpdateColorEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7AD2662B597AA4004DEC1A /* UpdateColorEvent.swift */; };
 		3B7AD26A2B597BF0004DEC1A /* SocketIOClient+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7AD2692B597BF0004DEC1A /* SocketIOClient+Utils.swift */; };
 		3B9003382B34CDA20088729C /* GameClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9003372B34CDA20088729C /* GameClient.swift */; };
@@ -77,6 +80,9 @@
 		3B73AD7E2B922746005DB5F8 /* OnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewController.swift; sourceTree = "<group>"; };
 		3B73AD802B928FF5005DB5F8 /* ColorPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPickerView.swift; sourceTree = "<group>"; };
 		3B73AD822B93E3AB005DB5F8 /* DFACTextLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DFACTextLayer.swift; sourceTree = "<group>"; };
+		3B76C8C92B9BECD700E60AFD /* UINavigationBar+TitleControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UINavigationBar+TitleControl.swift"; sourceTree = "<group>"; };
+		3B76C8CB2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleTitleBarAnimator.swift; sourceTree = "<group>"; };
+		3B76C8CD2B9C061500E60AFD /* AccumulatingTapGestureRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccumulatingTapGestureRecognizer.swift; sourceTree = "<group>"; };
 		3B7AD2662B597AA4004DEC1A /* UpdateColorEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateColorEvent.swift; sourceTree = "<group>"; };
 		3B7AD2692B597BF0004DEC1A /* SocketIOClient+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SocketIOClient+Utils.swift"; sourceTree = "<group>"; };
 		3B9003372B34CDA20088729C /* GameClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameClient.swift; sourceTree = "<group>"; };
@@ -200,6 +206,7 @@
 			isa = PBXGroup;
 			children = (
 				3B9003402B3627CC0088729C /* SiteInteractor.swift */,
+				3B76C8CD2B9C061500E60AFD /* AccumulatingTapGestureRecognizer.swift */,
 				3B7AD2692B597BF0004DEC1A /* SocketIOClient+Utils.swift */,
 				3BC12A3F2B62A9380060C29F /* UIColor+HSL.swift */,
 				3BB0FCEC2B7E5AEB00CD907C /* UserDefaultsEntryPropertyWrapper.swift */,
@@ -208,6 +215,7 @@
 				3B581B182B8444040084EC9B /* Puzzle+FindReferences.swift */,
 				3B581B1C2B8E35860084EC9B /* ShowHideAnimationHelpers.swift */,
 				3B73AD822B93E3AB005DB5F8 /* DFACTextLayer.swift */,
+				3B76C8C92B9BECD700E60AFD /* UINavigationBar+TitleControl.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -239,6 +247,7 @@
 				3B581B1A2B8CE1C20084EC9B /* PuzzleMessageCell.swift */,
 				3BB0FCDC2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift */,
 				3B986BCB2B8F8808007CE13F /* PuzzlePlayersViewController.swift */,
+				3B76C8CB2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift */,
 			);
 			path = Puzzle;
 			sourceTree = "<group>";
@@ -415,6 +424,7 @@
 				3B581B152B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift in Sources */,
 				3B73AD812B928FF5005DB5F8 /* ColorPickerView.swift in Sources */,
 				3B73AD7C2B921494005DB5F8 /* LaunchInterstitialViewController.swift in Sources */,
+				3B76C8CC2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift in Sources */,
 				3B986BCC2B8F8808007CE13F /* PuzzlePlayersViewController.swift in Sources */,
 				3B73AD832B93E3AB005DB5F8 /* DFACTextLayer.swift in Sources */,
 				3BAD21272B98BBBB00839504 /* EmptyStateView.swift in Sources */,
@@ -423,6 +433,7 @@
 				3B90033F2B35D5D90088729C /* SharedTypes.swift in Sources */,
 				3B9A93512B6AA58200013239 /* PuzzleSideBarViewController.swift in Sources */,
 				3B7AD26A2B597BF0004DEC1A /* SocketIOClient+Utils.swift in Sources */,
+				3B76C8CE2B9C061500E60AFD /* AccumulatingTapGestureRecognizer.swift in Sources */,
 				3B011DFA2B30BFF000BDB732 /* API.swift in Sources */,
 				3B4D818F2B63F01A0098A5DA /* CheckEvent.swift in Sources */,
 				3BB0FCDD2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift in Sources */,
@@ -434,6 +445,7 @@
 				3B581B1D2B8E35860084EC9B /* ShowHideAnimationHelpers.swift in Sources */,
 				3BF367302B313374005BB41E /* PuzzleViewController.swift in Sources */,
 				3BB0FCE22B6F33AF00CD907C /* PuzzleListQuickFilterBarView.swift in Sources */,
+				3B76C8CA2B9BECD700E60AFD /* UINavigationBar+TitleControl.swift in Sources */,
 				3B011DFD2B30C02F00BDB732 /* ListPuzzle.swift in Sources */,
 				3BB0FCED2B7E5AEB00CD907C /* UserDefaultsEntryPropertyWrapper.swift in Sources */,
 				3BB0FCEB2B76746900CD907C /* SettingsViewController.swift in Sources */,

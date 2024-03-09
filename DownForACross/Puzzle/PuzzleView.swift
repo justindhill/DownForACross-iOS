@@ -69,7 +69,7 @@ class PuzzleView: UIView {
         }
     }
     
-    lazy var tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapGestureRecognizerTriggered))
+    lazy var tapGestureRecognizer = AccumulatingTapGestureRecognizer(target: self, action: #selector(tapGestureRecognizerTriggered))
     
     var currentDepressedKeys = Set<UIKeyboardHIDUsage>()
     

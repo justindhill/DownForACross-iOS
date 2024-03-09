@@ -28,6 +28,7 @@ class PuzzleViewController: UIViewController {
     var puzzleView: PuzzleView!
     var keyboardToolbar: PuzzleToolbarView!
     var keyboardToolbarBottomConstraint: NSLayoutConstraint!
+    var titleBarAnimator: PuzzleTitleBarAnimator?
     
     var currentKeyboardHeight: CGFloat = 0 {
         didSet {
@@ -218,6 +219,10 @@ class PuzzleViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.puzzleView.becomeFirstResponder()
+        
+        if let navigationBar = self.navigationController?.navigationBar {
+            self.titleBarAnimator = PuzzleTitleBarAnimator(navigationBar: navigationBar, navigationItem: self.navigationItem)
+        }
     }
     
     func updateContentInsets() {
@@ -292,7 +297,7 @@ class PuzzleViewController: UIViewController {
         let newIndex = (self.gameClient.inputMode.rawValue + 1) % GameClient.InputMode.allCases.count
         guard let newInputMode = GameClient.InputMode(rawValue: newIndex) else { return }
         self.gameClient.inputMode = newInputMode
-        print("New input mode: \(newInputMode)")
+        self.titleBarAnimator?.showPill(withText: "\(newInputMode)".capitalized)
     }
 }
 
