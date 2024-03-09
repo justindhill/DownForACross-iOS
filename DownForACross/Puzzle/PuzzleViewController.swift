@@ -297,7 +297,7 @@ class PuzzleViewController: UIViewController {
         let newIndex = (self.gameClient.inputMode.rawValue + 1) % GameClient.InputMode.allCases.count
         guard let newInputMode = GameClient.InputMode(rawValue: newIndex) else { return }
         self.gameClient.inputMode = newInputMode
-        self.titleBarAnimator?.showPill(withText: "\(newInputMode)".capitalized)
+        self.titleBarAnimator?.showPill(withText: newInputMode.displayString)
     }
 }
 

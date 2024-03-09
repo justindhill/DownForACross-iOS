@@ -20,14 +20,22 @@ class GameClient: NSObject, URLSessionDelegate {
     
     enum InputMode: Int, CaseIterable {
         case normal
-        case autocorrect
+        case autocheck
         case pencil
+        
+        var displayString: String {
+            switch self {
+                case .normal: "Normal"
+                case .autocheck: "Auto-check"
+                case .pencil: "Pencil"
+            }
+        }
     }
     
     weak var delegate: GameClientDelegate?
     
     var isPuzzleSolved: Bool = false
-    var inputMode: InputMode = .autocorrect
+    var inputMode: InputMode = .autocheck
     let puzzle: Puzzle
     let userId: String
     let settingsStorage: SettingsStorage
@@ -263,7 +271,7 @@ class GameClient: NSObject, URLSessionDelegate {
         var resolvedValue: CellEntry?
         if let value {
             resolvedValue = CellEntry(userId: self.userId, value: value, correctness: nil)
-            if self.inputMode == .autocorrect {
+            if self.inputMode == .autocheck {
                 let correctness: Correctness = self.puzzle.grid[coordinates.row][coordinates.cell] == value ? .correct : .incorrect
                 resolvedValue?.correctness = correctness
             }
@@ -278,7 +286,7 @@ class GameClient: NSObject, URLSessionDelegate {
                                              gameId: self.gameId,
                                              cell: coordinates,
                                              value: value,
-                                             autocheck: self.inputMode == .autocorrect))
+                                             autocheck: self.inputMode == .autocheck))
     }
     
     func moveUserCursor(to coordinates: CellCoordinates) {
