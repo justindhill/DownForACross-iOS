@@ -32,6 +32,13 @@ class AccumulatingTapGestureRecognizer: UIGestureRecognizer {
         self.currentTouches.subtract(touches)
     }
     
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
+        super.touchesMoved(touches, with: event)
+        self.currentTouches = []
+        self.accumulatedTouches = []
+        self.state = .failed
+    }
+    
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
         super.touchesEnded(touches, with: event)
         
