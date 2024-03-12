@@ -29,6 +29,7 @@ class PuzzleViewController: UIViewController {
     var keyboardToolbar: PuzzleToolbarView!
     var keyboardToolbarBottomConstraint: NSLayoutConstraint!
     var titleBarAnimator: PuzzleTitleBarAnimator?
+    var previewImageView: UIImageView = UIImageView()
     
     var currentKeyboardHeight: CGFloat = 0 {
         didSet {
@@ -102,7 +103,7 @@ class PuzzleViewController: UIViewController {
         
         self.sideBarViewController.clueListViewController.delegate = self
         
-        NotificationCenter.default.addObserver(forName: UIControl.keyboardWillShowNotification, object: nil, queue: nil) { [weak self] note in
+        NotificationCenter.default.addObserver(forName: UIControl.keyboardDidShowNotification, object: nil, queue: nil) { [weak self] note in
             guard let self, let userInfo = note.userInfo else { return }
             let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue.size
             self.currentKeyboardHeight = keyboardSize.height
@@ -122,6 +123,8 @@ class PuzzleViewController: UIViewController {
         self.navigationItem.rightBarButtonItem = sideBarToggleItem
     }
     
+    lazy var contextMenuInteraction = UIContextMenuInteraction(delegate: self)
+    
     override func viewDidLoad() {
         self.view.backgroundColor = .systemBackground
         self.view.addGestureRecognizer(self.swipeGestureRecognizer)
@@ -132,6 +135,7 @@ class PuzzleViewController: UIViewController {
         self.puzzleView.translatesAutoresizingMaskIntoConstraints = false
         self.puzzleView.delegate = self
         self.puzzleView.addGestureRecognizer(self.inputModeToggleTapGestureRecognizer)
+        self.puzzleView.addInteraction(self.contextMenuInteraction)
         
         self.keyboardToolbar = PuzzleToolbarView()
         self.keyboardToolbar.translatesAutoresizingMaskIntoConstraints = false
@@ -139,6 +143,7 @@ class PuzzleViewController: UIViewController {
         self.puzzleView(self.puzzleView, userCursorDidMoveToClue: PuzzleView.ModelLocation(clueIndex: 1,
                                                                                            sequenceIndex: 0,
                                                                                            direction: self.puzzleView.userCursor.direction))
+        
         
         self.keyboardToolbar.leftButton.addAction(UIAction(handler: { [weak self] _ in
             self?.puzzleView.retreatUserCursorToPreviousWord()
@@ -167,6 +172,10 @@ class PuzzleViewController: UIViewController {
         self.sideBarViewController.didMove(toParent: self)
         
         self.sideBarLeadingConstraint = self.sideBarViewController.view.leadingAnchor.constraint(equalTo: self.view.trailingAnchor)
+        
+        self.previewImageView.isHidden = true
+        self.previewImageView.isUserInteractionEnabled = false
+        self.view.addSubview(self.previewImageView)
 
         NSLayoutConstraint.activate([
             self.puzzleView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
@@ -226,13 +235,17 @@ class PuzzleViewController: UIViewController {
     }
     
     func updateContentInsets() {
-        self.additionalSafeAreaInsets.bottom = self.currentKeyboardHeight - self.view.safeAreaInsets.bottom
+        if !self.previewImageView.isHidden {
+            // the keyboard gets hidden when a context menu is open, which can cause content offset to shift when adjusting insets
+            return
+        }
+        
         self.puzzleView.scrollView.contentInset.bottom =
-            self.keyboardToolbar.frame.size.height - self.keyboardToolbar.contentView.layoutMargins.bottom
+            self.keyboardToolbar.frame.size.height + self.currentKeyboardHeight - self.view.safeAreaInsets.bottom
         
         if self.currentKeyboardHeight == 0 {
             self.keyboardToolbar.layoutMargins.bottom = self.view.safeAreaInsets.bottom
-            self.keyboardToolbarBottomConstraint.constant = self.view.safeAreaInsets.bottom
+            self.keyboardToolbarBottomConstraint.constant = 0
         } else {
             self.keyboardToolbar.layoutMargins.bottom = 0
             self.keyboardToolbarBottomConstraint.constant = 0
@@ -452,6 +465,76 @@ extension PuzzleViewController: PuzzlePlayersViewControllerDelegate {
         
         let activityViewController = UIActivityViewController(activityItems: [text, url], applicationActivities: nil)
         self.present(activityViewController, animated: true)
+    }
+    
+}
+
+extension PuzzleViewController: UIContextMenuInteractionDelegate {
+    
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(actionProvider: { _ in
+            UIMenu(title: "", image: nil, identifier: .root, options: [.displayInline], children: [
+                        UIMenu(title: "Check", identifier: nil, options: [], preferredElementSize: .automatic, children: [
+                            UIAction(title: "Cell", handler: { [weak self] _ in
+                                guard let self else { return }
+                                self.gameClient.check(cells: [self.puzzleView.userCursor.coordinates])
+                            }),
+                            UIAction(title: "Word", handler: { [weak self] _ in
+                                guard let self else { return }
+                                self.gameClient.check(cells: self.puzzleView.findCurrentWordCellCoordinates())
+                            })
+                        ]),
+                        UIMenu(title: "Reveal", identifier: nil, options: [], preferredElementSize: .automatic, children: [
+                            UIAction(title: "Cell", handler: { [weak self] _ in
+                                guard let self else { return }
+                                self.gameClient.reveal(cells: [self.puzzleView.userCursor.coordinates])
+                            }),
+                            UIAction(title: "Word", handler: { [weak self] _ in
+                                guard let self else { return }
+                                self.gameClient.reveal(cells: self.puzzleView.findCurrentWordCellCoordinates())
+                            })
+                        ])
+                    ]
+                )
+            }
+        )
+    }
+    
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, highlightPreviewForItemWithIdentifier identifier: any NSCopying) -> UITargetedPreview? {
+        DispatchQueue.main.async {
+            self.previewImageView.isHidden = false
+        }
+        let sideLength = self.puzzleView.cellSideLength
+        let scaledSideLength = sideLength * self.puzzleView.scrollView.zoomScale
+        var rect = self.puzzleView.boundingBoxOfCurrentWord(cellSideLength: sideLength)
+        rect = rect.offsetBy(dx: self.puzzleView.puzzleContainerView.frame.origin.x,
+                      dy: self.puzzleView.puzzleContainerView.frame.origin.y)
+        rect = rect.scaled(by: self.puzzleView.scrollView.zoomScale)
+        rect = rect.insetBy(dx: -scaledSideLength * 0.3, dy: -scaledSideLength * 0.3)
+        let parentOrigin = self.puzzleView.scrollView.convert(rect.origin, to: self.view)
+        let parentRect = CGRect(origin: parentOrigin, size: rect.size)
+        self.previewImageView.frame = parentRect
+        self.previewImageView.image = self.puzzleView.scrollView.snapshot(of: rect)
+        return UITargetedPreview(view: self.previewImageView)
+    }
+    
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, willEndFor configuration: UIContextMenuConfiguration, animator: (any UIContextMenuInteractionAnimating)?) {
+        let sideLength = self.puzzleView.cellSideLength
+        let scaledSideLength = sideLength * self.puzzleView.scrollView.zoomScale
+        var rect = self.puzzleView.boundingBoxOfCurrentWord(cellSideLength: sideLength)
+        rect = rect.offsetBy(dx: self.puzzleView.puzzleContainerView.frame.origin.x,
+                      dy: self.puzzleView.puzzleContainerView.frame.origin.y)
+        rect = rect.scaled(by: self.puzzleView.scrollView.zoomScale)
+        rect = rect.insetBy(dx: -scaledSideLength * 0.3, dy: -scaledSideLength * 0.3)
+        self.puzzleView.layoutIfNeeded()
+        
+        let image = self.puzzleView.scrollView.snapshot(of: rect, afterScreenUpdates: true)
+        self.previewImageView.image = image
+        
+        animator?.addCompletion {
+            self.previewImageView.isHidden = true
+            self.updateContentInsets()
+        }
     }
     
 }

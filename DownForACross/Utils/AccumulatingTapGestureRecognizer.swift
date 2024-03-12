@@ -41,8 +41,7 @@ class AccumulatingTapGestureRecognizer: UIGestureRecognizer {
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
         super.touchesEnded(touches, with: event)
-        
-        self.currentTouches.subtract(touches)
+        self.currentTouches = self.currentTouches.filter({ ![.ended, .cancelled].contains($0.phase) })
         if self.currentTouches.count == 0 {
             if accumulatedNumberOfTouches == self.numberOfTouchesRequired {
                 self.state = .ended

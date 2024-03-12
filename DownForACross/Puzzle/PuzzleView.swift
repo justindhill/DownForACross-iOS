@@ -174,6 +174,7 @@ class PuzzleView: UIView {
         let clearBackgroundColor = UIColor.clear.cgColor
         let normalFillColor = Theme.fillNormal.cgColor
         let correctFillColor = Theme.fillCorrect.cgColor
+        let revealedFillColor = Theme.fillRevealed.cgColor
         let incorrectSlashColor = Theme.incorrectSlash.cgColor
         let circleColor = Theme.circle.cgColor
         let separatorColor = Theme.separator.cgColor
@@ -329,6 +330,8 @@ class PuzzleView: UIView {
                             switch correctness {
                                 case .correct:
                                     layer.foregroundColor = correctFillColor
+                                case .revealed:
+                                    layer.foregroundColor = revealedFillColor
                                 case .incorrect:
                                     layer.foregroundColor = normalFillColor
                                     let markerLayer = self.createOrReuseIncorrectCheckMarker(atIndex: incorrectIndex)
@@ -611,7 +614,7 @@ class PuzzleView: UIView {
             return
         }
         
-        while self.grid[candidate.row][candidate.cell] == "." || self.solution[candidate.row][candidate.cell]?.correctness == .correct  {
+        while self.grid[candidate.row][candidate.cell] == "." || self.solution[candidate.row][candidate.cell]?.correctness?.writable == false {
             candidate = nextCandidate(after: candidate)
             if candidate == current {
                 return
@@ -645,7 +648,7 @@ class PuzzleView: UIView {
         
         var candidate = nextCandidate(after: current)
         
-        while self.grid[candidate.row][candidate.cell] == "." || self.solution[candidate.row][candidate.cell]?.correctness == .correct {
+        while self.grid[candidate.row][candidate.cell] == "." || self.solution[candidate.row][candidate.cell]?.correctness?.writable == false {
             candidate = nextCandidate(after: candidate)
             if candidate == current {
                 return
@@ -700,7 +703,7 @@ class PuzzleView: UIView {
         if !self.isSolved {
             if isCurrentWordFullAndPotentiallyCorrect {
                 self.advanceUserCursorToNextWord()
-            } else if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
+            } else if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness?.writable == false {
                 self.advanceUserCursorToNextLetter()
             }
         }
@@ -709,7 +712,7 @@ class PuzzleView: UIView {
     func currentWordIsFullAndPotentiallyCorrect() -> Bool {
         return self.findCurrentWordCellCoordinates().reduce(into: true) { partialResult, coords in
             let value = self.solution[coords.row][coords.cell]
-            partialResult = partialResult && value != nil && value?.correctness != .incorrect
+            partialResult = partialResult && value != nil && value?.correctness?.writable == false
         }
     }
     
@@ -753,10 +756,12 @@ class PuzzleView: UIView {
             self.retreatUserCursorToPreviousWord(trailingEdge: trailingEdge)
         } else if trailingEdge {
             let newWordExtent = self.findCurrentWordCellCoordinates()
-            if let lastNonCorrectCell = newWordExtent.reversed().first(where: { self.solution[$0.row][$0.cell]?.correctness != .correct }) {
+            if let lastNonCorrectCell = newWordExtent.reversed().first(where: {
+                (self.solution[$0.row][$0.cell]?.correctness?.writable ?? true) == true }
+            ) {
                 self.userCursor.coordinates = lastNonCorrectCell
             }
-        } else if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
+        } else if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness?.writable == false {
             self.advanceUserCursorToNextLetter()
         }
     }
@@ -774,7 +779,7 @@ class PuzzleView: UIView {
                     // at the end of the word
                     self.grid[coordinates.row][coordinates.cell + 1] == "." ||
                     // remainder of the word is checked and correct
-                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness == .correct })
+                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness?.writable == false })
                     
             case .down:
                 // cells in the word after the current cell
@@ -786,7 +791,7 @@ class PuzzleView: UIView {
                     // at the end of the word
                     self.grid[coordinates.row + 1][coordinates.cell] == "." ||
                     // remainder of the word is checked and correct
-                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness == .correct })
+                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness?.writable == false })
         }
     }
     
@@ -803,7 +808,7 @@ class PuzzleView: UIView {
                     // at the beginning of the word
                     self.grid[coordinates.row][coordinates.cell - 1] == "." ||
                     // cells of the word before this one are checked and correct
-                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness == .correct })
+                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness?.writable == false })
                     
             case .down:
                 // cells in the word after the current cell
@@ -815,7 +820,7 @@ class PuzzleView: UIView {
                     // at the beginning of the word
                     self.grid[coordinates.row - 1][coordinates.cell] == "." ||
                     // remainder of the word is checked and correct
-                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness == .correct })
+                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness?.writable == false })
         }
     }
     
@@ -923,7 +928,6 @@ class PuzzleView: UIView {
         let pointCoords = tap.location(in: self.puzzleContainerView)
         
         guard self.puzzleContainerView.bounds.contains(pointCoords) else {
-            print("tapped outside puzzle")
             return
         }
         
@@ -1083,7 +1087,7 @@ extension PuzzleView: UIKeyInput {
                 self.toggleDirection()
             }
             return
-        } else if text == "\n" || self.solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness == .correct {
+        } else if text == "\n" || self.solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness?.writable == false {
             advance()
         } else {
             self.delegate?.puzzleView(self, didEnterText: text.uppercased(), atCoordinates: self.userCursor.coordinates)
@@ -1093,7 +1097,7 @@ extension PuzzleView: UIKeyInput {
     
     func deleteBackward() {
         if let currentCellEntry = self.solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell],
-            currentCellEntry.correctness != .correct {
+            currentCellEntry.correctness?.writable == true {
             
             self.delegate?.puzzleView(self, didEnterText: nil, atCoordinates: self.userCursor.coordinates)
             return

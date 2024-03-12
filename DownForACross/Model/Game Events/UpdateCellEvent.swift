@@ -12,7 +12,7 @@ protocol GameEvent {
     var gameId: String { get }
     var type: String { get }
     var paramsDictionary: [String: Any?] { get }
-    func eventPayload() -> [String: Any]
+    func emitPayload() -> [String: Any]
 }
 
 protocol DedupableGameEvent: GameEvent {
@@ -29,14 +29,18 @@ extension DedupableGameEvent {
 extension GameEvent {
     func eventPayload() -> [String: Any] {
         [
-            "event": [
-                "id": self.eventId,
-                "type": self.type,
-                "timestamp": [
-                    ".sv": "timestamp"
-                ],
-                "params": self.paramsDictionary
+            "id": self.eventId,
+            "type": self.type,
+            "timestamp": [
+                ".sv": "timestamp"
             ],
+            "params": self.paramsDictionary
+        ]
+    }
+    
+    func emitPayload() -> [String: Any] {
+        [
+            "event": self.eventPayload(),
             "gid": self.gameId
         ]
     }

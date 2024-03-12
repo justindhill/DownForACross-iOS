@@ -24,6 +24,7 @@ class PuzzlePlayersViewController: UIViewController {
         tableView.layoutMargins = PuzzleSideBarViewController.subviewLayoutMargins
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: PuzzlePlayersViewController.playerCellReuseIdentifier)
         tableView.backgroundColor = .clear
+        tableView.allowsSelection = false
         
         return tableView
     }()

@@ -51,7 +51,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             self.siteInteractor.getUserId { [weak self] userId in
                 guard let self else { return }
                 if let userId {
-                    print("got a user id!")
+                    print("got a user id from the site!")
                     self.settingsStorage.userId = userId
                     if self.settingsStorage.onboardingComplete {
                         self.showTabBarController(userId: userId)

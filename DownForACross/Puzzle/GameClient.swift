@@ -35,7 +35,7 @@ class GameClient: NSObject, URLSessionDelegate {
     weak var delegate: GameClientDelegate?
     
     var isPuzzleSolved: Bool = false
-    var inputMode: InputMode = .autocheck
+    var inputMode: InputMode = .normal
     let puzzle: Puzzle
     let userId: String
     let settingsStorage: SettingsStorage
@@ -218,6 +218,19 @@ class GameClient: NSObject, URLSessionDelegate {
                             self.solution[cell.row][cell.cell]?.correctness = correctness
                         }
                     }
+                } else if type == "reveal" {
+                    let event = try RevealEvent(payload: payload)
+                    applyClosure = {
+                        for cell in event.cells {
+                            let correctValue = self.puzzle.grid[cell.row][cell.cell]
+                            if correctValue != "." {
+                                self.solution[cell.row][cell.cell] = CellEntry(userId: "REVEALED",
+                                                                               value: correctValue,
+                                                                               correctness: .revealed)
+
+                            }
+                        }
+                    }
                 } else if type == "updateDisplayName" {
                     let event = try UpdateDisplayNameEvent(payload: payload)
                     dedupableEvent = event
@@ -382,25 +395,37 @@ class GameClient: NSObject, URLSessionDelegate {
                      count: puzzle.grid.count)
     }
     
+    func check(cells: [CellCoordinates]) {
+        let event = CheckEvent(gameId: self.gameId, cells: cells)
+        self.emitWithAckNoOp(event)
+        self.handleGameEvents([event.eventPayload()])
+    }
+    
+    func reveal(cells: [CellCoordinates]) {
+        let event = RevealEvent(gameId: self.gameId, cells: cells)
+        self.emitWithAckNoOp(event)
+        self.handleGameEvents([event.eventPayload()])
+    }
+    
 }
 
 extension GameClient {
     func emitWithAck(_ gameEvent: GameEvent) -> OnAckCallback {
-        return self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.eventPayload())
+        return self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.emitPayload())
     }
     
     func emitWithAckNoOp(_ gameEvent: GameEvent) {
-        self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.eventPayload()).timingOut(after: 5, callback: { _ in })
+        self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.emitPayload()).timingOut(after: 5, callback: { _ in })
     }
     
     func emitWithAck(_ gameEvent: DedupableGameEvent) -> OnAckCallback {
         self.mostRecentDedupableEvents[gameEvent.dedupKey] = gameEvent.eventId
-        return self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.eventPayload())
+        return self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.emitPayload())
     }
     
     func emitWithAckNoOp(_ gameEvent: DedupableGameEvent) {
         self.mostRecentDedupableEvents[gameEvent.dedupKey] = gameEvent.eventId
-        self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.eventPayload()).timingOut(after: 5, callback: { _ in })
+        self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.emitPayload()).timingOut(after: 5, callback: { _ in })
     }
     
     func emitWithAckNoOp(eventName: String = "game_event", _ items: SocketData...) {

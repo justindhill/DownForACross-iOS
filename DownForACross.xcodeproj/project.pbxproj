@@ -29,6 +29,7 @@
 		3B76C8CA2B9BECD700E60AFD /* UINavigationBar+TitleControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B76C8C92B9BECD700E60AFD /* UINavigationBar+TitleControl.swift */; };
 		3B76C8CC2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B76C8CB2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift */; };
 		3B76C8CE2B9C061500E60AFD /* AccumulatingTapGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B76C8CD2B9C061500E60AFD /* AccumulatingTapGestureRecognizer.swift */; };
+		3B76C8D42B9F3F2C00E60AFD /* UIView+PartialSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B76C8D32B9F3F2C00E60AFD /* UIView+PartialSnapshot.swift */; };
 		3B7AD2672B597AA4004DEC1A /* UpdateColorEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7AD2662B597AA4004DEC1A /* UpdateColorEvent.swift */; };
 		3B7AD26A2B597BF0004DEC1A /* SocketIOClient+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7AD2692B597BF0004DEC1A /* SocketIOClient+Utils.swift */; };
 		3B9003382B34CDA20088729C /* GameClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9003372B34CDA20088729C /* GameClient.swift */; };
@@ -52,6 +53,7 @@
 		3BB0FCEF2B7E5B6A00CD907C /* SettingsStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCEE2B7E5B6A00CD907C /* SettingsStorage.swift */; };
 		3BC12A3E2B613B730060C29F /* PuzzleToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */; };
 		3BC12A402B62A9380060C29F /* UIColor+HSL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC12A3F2B62A9380060C29F /* UIColor+HSL.swift */; };
+		3BC761B62BA0C422003ACF81 /* RevealEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC761B52BA0C422003ACF81 /* RevealEvent.swift */; };
 		3BF367302B313374005BB41E /* PuzzleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF3672F2B313374005BB41E /* PuzzleViewController.swift */; };
 		3BF367322B313675005BB41E /* PuzzleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF367312B313675005BB41E /* PuzzleView.swift */; };
 		3FBBB0BA39E20B71AA8BC150 /* Pods_DownForACross.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCAD19FE3621A683BFFFBB76 /* Pods_DownForACross.framework */; };
@@ -83,6 +85,7 @@
 		3B76C8C92B9BECD700E60AFD /* UINavigationBar+TitleControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UINavigationBar+TitleControl.swift"; sourceTree = "<group>"; };
 		3B76C8CB2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleTitleBarAnimator.swift; sourceTree = "<group>"; };
 		3B76C8CD2B9C061500E60AFD /* AccumulatingTapGestureRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccumulatingTapGestureRecognizer.swift; sourceTree = "<group>"; };
+		3B76C8D32B9F3F2C00E60AFD /* UIView+PartialSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+PartialSnapshot.swift"; sourceTree = "<group>"; };
 		3B7AD2662B597AA4004DEC1A /* UpdateColorEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateColorEvent.swift; sourceTree = "<group>"; };
 		3B7AD2692B597BF0004DEC1A /* SocketIOClient+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SocketIOClient+Utils.swift"; sourceTree = "<group>"; };
 		3B9003372B34CDA20088729C /* GameClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameClient.swift; sourceTree = "<group>"; };
@@ -106,6 +109,7 @@
 		3BB0FCEE2B7E5B6A00CD907C /* SettingsStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStorage.swift; sourceTree = "<group>"; };
 		3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleToolbarView.swift; sourceTree = "<group>"; };
 		3BC12A3F2B62A9380060C29F /* UIColor+HSL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+HSL.swift"; sourceTree = "<group>"; };
+		3BC761B52BA0C422003ACF81 /* RevealEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevealEvent.swift; sourceTree = "<group>"; };
 		3BF3672F2B313374005BB41E /* PuzzleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleViewController.swift; sourceTree = "<group>"; };
 		3BF367312B313675005BB41E /* PuzzleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleView.swift; sourceTree = "<group>"; };
 		4D7944475CB6938B17ECC264 /* Pods-DownForACross.debug (local).xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownForACross.debug (local).xcconfig"; path = "Target Support Files/Pods-DownForACross/Pods-DownForACross.debug (local).xcconfig"; sourceTree = "<group>"; };
@@ -216,6 +220,7 @@
 				3B581B1C2B8E35860084EC9B /* ShowHideAnimationHelpers.swift */,
 				3B73AD822B93E3AB005DB5F8 /* DFACTextLayer.swift */,
 				3B76C8C92B9BECD700E60AFD /* UINavigationBar+TitleControl.swift */,
+				3B76C8D32B9F3F2C00E60AFD /* UIView+PartialSnapshot.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -230,6 +235,7 @@
 				3B90033A2B34E9AF0088729C /* UpdateCursorEvent.swift */,
 				3B9003442B3630D70088729C /* UpdateDisplayNameEvent.swift */,
 				3BB0FCD82B6C5CB300CD907C /* ChatEvent.swift */,
+				3BC761B52BA0C422003ACF81 /* RevealEvent.swift */,
 			);
 			path = "Game Events";
 			sourceTree = "<group>";
@@ -422,7 +428,9 @@
 				3B9003412B3627CC0088729C /* SiteInteractor.swift in Sources */,
 				3BB0FCEF2B7E5B6A00CD907C /* SettingsStorage.swift in Sources */,
 				3B581B152B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift in Sources */,
+				3B76C8D42B9F3F2C00E60AFD /* UIView+PartialSnapshot.swift in Sources */,
 				3B73AD812B928FF5005DB5F8 /* ColorPickerView.swift in Sources */,
+				3BC761B62BA0C422003ACF81 /* RevealEvent.swift in Sources */,
 				3B73AD7C2B921494005DB5F8 /* LaunchInterstitialViewController.swift in Sources */,
 				3B76C8CC2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift in Sources */,
 				3B986BCC2B8F8808007CE13F /* PuzzlePlayersViewController.swift in Sources */,

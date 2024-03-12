@@ -22,6 +22,18 @@ struct CellEntry: Equatable, Codable {
 enum Correctness: Equatable, Codable {
     case correct
     case incorrect
+    case revealed
+    
+    var writable: Bool {
+        switch self {
+            case .correct, .revealed: return false
+            case .incorrect: return true
+        }
+    }
+}
+
+extension Optional where Wrapped == Correctness {
+
 }
 
 struct Player: Hashable, Identifiable {
