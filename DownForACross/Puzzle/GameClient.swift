@@ -223,11 +223,10 @@ class GameClient: NSObject, URLSessionDelegate {
                     applyClosure = {
                         for cell in event.cells {
                             let correctValue = self.puzzle.grid[cell.row][cell.cell]
-                            if correctValue != "." {
+                            if correctValue != ".", self.solution[cell.row][cell.cell]?.correctness != .correct {
                                 self.solution[cell.row][cell.cell] = CellEntry(userId: "REVEALED",
                                                                                value: correctValue,
                                                                                correctness: .revealed)
-
                             }
                         }
                     }
