@@ -22,7 +22,15 @@ extension PuzzleClues {
             })
             ChoiceOf {
                 "-"
-                " "
+                Local {
+                    " "
+                    Capture {
+                        ChoiceOf {
+                            "Down"
+                            "Across"
+                        }
+                    }
+                }
             }
             Optionally {
                 Optionally {
@@ -42,11 +50,11 @@ extension PuzzleClues {
         
         var mostRecentDirection: Direction = .down
         for match in clue.matches(of: clueReferenceRegex).reversed() {
-            let (_, number, direction) = match.output
+            let (_, number, direction1, direction2) = match.output
             var directionEnum: Direction
-            if direction == "Down" {
+            if direction1 == "Down" || direction2 == "Down" {
                 directionEnum = .down
-            } else if direction == "Across" {
+            } else if direction1 == "Across" || direction2 == "Across" {
                 directionEnum = .across
             } else {
                 directionEnum = mostRecentDirection

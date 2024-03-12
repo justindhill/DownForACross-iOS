@@ -234,6 +234,11 @@ class PuzzleViewController: UIViewController {
         }
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        self.updateContentInsets()
+    }
+    
     func updateContentInsets() {
         if !self.previewImageView.isHidden {
             // the keyboard gets hidden when a context menu is open, which can cause content offset to shift when adjusting insets

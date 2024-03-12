@@ -51,6 +51,8 @@ class PuzzleView: UIView {
     var circles: Set<Int>
     var acrossSequence: [SequenceEntry] = []
     var downSequence: [SequenceEntry] = []
+    var acrossCellNumberToCoordinatesMap: [Int: CellCoordinates] = [:]
+    var downCellNumberToCoordinatesMap: [Int: CellCoordinates] = [:]
     var solution: [[CellEntry?]] {
         didSet { self.setNeedsLayout() }
     }
@@ -370,6 +372,8 @@ class PuzzleView: UIView {
         if self._needsTextLayout {
             self.acrossSequence = acrossSequence
             self.downSequence = downSequence
+            self.acrossCellNumberToCoordinatesMap = acrossCellNumberToCoordinatesMap
+            self.downCellNumberToCoordinatesMap = downCellNumberToCoordinatesMap
             
             if self.isFirstLayout, let firstAcrossCoordinates = acrossSequence.first?.coordinates {
                 self.userCursor.coordinates = firstAcrossCoordinates
@@ -430,9 +434,9 @@ class PuzzleView: UIView {
                     let coordinates: CellCoordinates?
                     switch reference.direction {
                         case .across:
-                            coordinates = acrossCellNumberToCoordinatesMap[reference.number]
+                            coordinates = self.acrossCellNumberToCoordinatesMap[reference.number]
                         case .down:
-                            coordinates = downCellNumberToCoordinatesMap[reference.number]
+                            coordinates = self.downCellNumberToCoordinatesMap[reference.number]
                     }
                     
                     if let coordinates {
