@@ -16,6 +16,15 @@ struct Puzzle: Codable, Hashable {
 
     let circles: [Int]
     let `private`: Bool
+    
+    static func empty() -> Puzzle {
+        return Puzzle(grid: [],
+                      info: PuzzleInfo(type: nil, title: "", author: "", description: ""),
+                      clues: PuzzleClues(across: [], down: []),
+                      shades: [],
+                      circles: [],
+                      private: false)
+    }
 }
 
 struct PuzzleList: Codable, Hashable {
