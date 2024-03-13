@@ -229,7 +229,7 @@ class PuzzleView: UIView {
         // user cursor word indicator
         if self.userCursorWordIndicatorLayer.superlayer == nil {
             self.puzzleContainerView.layer.addSublayer(self.userCursorWordIndicatorLayer)
-            self.userCursorWordIndicatorLayer.backgroundColor = self.userCursorColor.withAlphaComponent(0.1).cgColor
+            self.userCursorWordIndicatorLayer.backgroundColor = self.userCursorColor.withAlphaComponent(0.2).cgColor
         }
         
         let oldWordIndicatorFrame = self.userCursorWordIndicatorLayer.frame
