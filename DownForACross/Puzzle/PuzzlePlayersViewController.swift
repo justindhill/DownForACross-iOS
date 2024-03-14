@@ -15,16 +15,18 @@ protocol PuzzlePlayersViewControllerDelegate: AnyObject {
 class PuzzlePlayersViewController: UIViewController {
     
     static let playerCellReuseIdentifier: String = "PlayerCellReuseIdentifier"
+    static let sendInviteCellReuseIdentifier: String = "SendInviteCellReuseIdentifier"
     
     weak var delegate: PuzzlePlayersViewControllerDelegate?
     
-    let tableView: UITableView = {
+    lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.layoutMargins = PuzzleSideBarViewController.subviewLayoutMargins
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: PuzzlePlayersViewController.playerCellReuseIdentifier)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: PuzzlePlayersViewController.sendInviteCellReuseIdentifier)
         tableView.backgroundColor = .clear
-        tableView.allowsSelection = false
+        tableView.delegate = self
         
         return tableView
     }()
@@ -35,15 +37,6 @@ class PuzzlePlayersViewController: UIViewController {
         }
         dataSource.defaultRowAnimation = .fade
         return dataSource
-    }()
-    
-    lazy var inviteButton: UIButton = {
-        let button = UIButton(configuration: .gray())
-        button.configuration?.title = "Send invite"
-        button.addTarget(self, action: #selector(inviteButtonTapped), for: .primaryActionTriggered)
-        button.sizeToFit()
-        
-        return button
     }()
     
     let gameClient: GameClient
@@ -66,7 +59,6 @@ class PuzzlePlayersViewController: UIViewController {
     
     override func viewDidLoad() {
         self.view.addSubview(self.tableView)
-        self.tableView.tableFooterView = self.inviteButton
         
         NSLayoutConstraint.activate([
             self.tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
@@ -76,41 +68,62 @@ class PuzzlePlayersViewController: UIViewController {
         ])
     }
     
-    @objc func inviteButtonTapped() {
-        self.delegate?.playersViewControllerDidSelectSendInvite(self)
-    }
-    
     func updateContent() {
         var snapshot = NSDiffableDataSourceSnapshot<Int, Player>()
-        snapshot.appendSections([0])
+        snapshot.appendSections([0, 1])
         snapshot.appendItems(self.players, toSection: 0)
+        snapshot.appendItems([Player(userId: "SENDINVITE")], toSection: 1)
         
         self.dataSource.apply(snapshot)
     }
     
     func tableView(_ tableView: UITableView, cellForRow indexPath: IndexPath, item: Player) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: Self.playerCellReuseIdentifier, for: indexPath)
-        
-        var config = UIListContentConfiguration.cell()
-        config.text = item.displayName
-        if item.userId == self.gameClient.userId {
-            config.secondaryTextProperties.color = .secondaryLabel
-            config.secondaryText = "You"
-        }
-        let accessoryImageView: UIImageView
-        if let imageView = cell.accessoryView as? UIImageView {
-            accessoryImageView = imageView
+        if indexPath.section == 0 {
+            let cell = tableView.dequeueReusableCell(withIdentifier: Self.playerCellReuseIdentifier, for: indexPath)
+            
+            var config = UIListContentConfiguration.cell()
+            config.text = item.displayName
+            if item.userId == self.gameClient.userId {
+                config.secondaryTextProperties.color = .secondaryLabel
+                config.secondaryText = "You"
+            }
+            let accessoryImageView: UIImageView
+            if let imageView = cell.accessoryView as? UIImageView {
+                accessoryImageView = imageView
+            } else {
+                let imageView = UIImageView(image: UIImage(systemName: "circle.fill")?.withRenderingMode(.alwaysTemplate))
+                cell.accessoryView = imageView
+                accessoryImageView = imageView
+            }
+            
+            accessoryImageView.tintColor = item.color
+            
+            cell.contentConfiguration = config
+            
+            return cell
         } else {
-            let imageView = UIImageView(image: UIImage(systemName: "circle.fill")?.withRenderingMode(.alwaysTemplate))
-            cell.accessoryView = imageView
-            accessoryImageView = imageView
+            let cell = tableView.dequeueReusableCell(withIdentifier: Self.sendInviteCellReuseIdentifier, for: indexPath)
+            
+            var config = UIListContentConfiguration.cell()
+            config.image = UIImage(systemName: "square.and.arrow.up")
+            config.text = "Send invite"
+            
+            cell.contentConfiguration = config
+            return cell
         }
-        
-        accessoryImageView.tintColor = item.color
-        
-        cell.contentConfiguration = config
-        
-        return cell
+    }
+    
+}
+
+extension PuzzlePlayersViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
+        return indexPath.section == 1
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        self.delegate?.playersViewControllerDidSelectSendInvite(self)
     }
     
 }
@@ -120,7 +133,11 @@ extension PuzzlePlayersViewController {
     class DataSource<SectionIdentifierType: Hashable, RowIdentifierType: Hashable>: UITableViewDiffableDataSource<SectionIdentifierType, RowIdentifierType> {
         
         override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-            return "Players"
+            if section == 0 {
+                return "Players"
+            }
+            
+            return nil
         }
         
     }
