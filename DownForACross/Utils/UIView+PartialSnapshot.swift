@@ -19,7 +19,7 @@ extension UIView {
     /// - Returns: Returns `UIImage` of the specified portion of the view.
 
     func snapshot(of rect: CGRect, afterScreenUpdates: Bool = true) -> UIImage? {
-        var format = UIGraphicsImageRendererFormat()
+        let format = UIGraphicsImageRendererFormat()
         format.opaque = false
         
         let canvasSize: CGSize

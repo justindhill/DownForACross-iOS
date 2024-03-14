@@ -1,24 +1,28 @@
 PODS:
   - lottie-ios (4.4.0)
+  - ReachabilitySwift (5.0.0)
   - Socket.IO-Client-Swift (16.1.0):
     - Starscream (~> 4.0.6)
   - Starscream (4.0.6)
 
 DEPENDENCIES:
   - lottie-ios
+  - ReachabilitySwift
   - Socket.IO-Client-Swift
 
 SPEC REPOS:
   trunk:
     - lottie-ios
+    - ReachabilitySwift
     - Socket.IO-Client-Swift
     - Starscream
 
 SPEC CHECKSUMS:
   lottie-ios: ef1be1f90d54255f08e09d767950e43714661178
+  ReachabilitySwift: 985039c6f7b23a1da463388634119492ff86c825
   Socket.IO-Client-Swift: ee4b8f80a3db18dd7f32b266ddf273310609443c
   Starscream: fb2c4510bebf908c62bd383bcf05e673720e91fd
 
-PODFILE CHECKSUM: 729a10788cb1f8e6542737caf89bae8f80c472ee
+PODFILE CHECKSUM: f7c2f3c9128dd699fc59c0078fef2e44b97f353e
 
-COCOAPODS: 1.13.0
+COCOAPODS: 1.15.2

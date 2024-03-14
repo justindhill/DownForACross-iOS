@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import SocketIO
 import Combine
+import Reachability
 
 protocol GameClientDelegate: AnyObject {
     func gameClient(_ client: GameClient, cursorsDidChange: [String: Cursor])
@@ -51,6 +52,7 @@ class GameClient: NSObject, URLSessionDelegate {
     
     weak var delegate: GameClientDelegate?
     
+    let reachability = try! Reachability()
     var isPuzzleSolved: Bool = false
     var inputMode: InputMode = .normal
     let puzzle: Puzzle
@@ -135,9 +137,19 @@ class GameClient: NSObject, URLSessionDelegate {
         
         super.init()
         self.isPuzzleSolved = self.checkIfPuzzleIsSolved()
+                
+        do {
+            self.reachability.whenReachable = { [weak self] _ in self?.reachabilityDidChange() }
+            self.reachability.whenUnreachable = { [weak self] _ in self?.reachabilityDidChange() }
+            try self.reachability.startNotifier()
+        } catch {
+            print("Couldn't start the reachability notifier")
+        }
     }
     
-    
+    @objc func reachabilityDidChange() {
+        self.socketManager.reconnect()
+    }
     
     func connect(gameId: String? = nil) {
         self.connectionState = .connecting
@@ -180,6 +192,16 @@ class GameClient: NSObject, URLSessionDelegate {
         }
         
         socket.on(clientEvent: .disconnect) { data, ack in
+            self.connectionState = .connecting
+            print(data)
+        }
+        
+        socket.on(clientEvent: .reconnect) { data, ack in
+            self.connectionState = .connecting
+            print(data)
+        }
+        
+        socket.on(clientEvent: .reconnectAttempt) { data, ack in
             self.connectionState = .connecting
             print(data)
         }
