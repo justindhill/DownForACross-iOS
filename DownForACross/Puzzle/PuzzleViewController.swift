@@ -13,6 +13,7 @@ class PuzzleViewController: UIViewController {
     
     static let puzzleIdToGameIdMapUserDefaultsKey = "com.justinhill.DownForACross.puzzleIdToGameIdMap"
     
+    var viewHasAppeared: Bool = false
     let puzzle: PuzzleListEntry
     var gameId: String?
     let userId: String
@@ -199,11 +200,20 @@ class PuzzleViewController: UIViewController {
         ])
                 
         self.interactable = false
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.puzzleView.userCursorColor = self.settingsStorage.userDisplayColor
+        
+        if let navigationBar = self.navigationController?.navigationBar {
+            self.titleBarAnimator = PuzzleTitleBarAnimator(navigationBar: navigationBar, navigationItem: self.navigationItem)
+        }
         
         if let gameId = self.gameId {
             self.gameClient.connect(gameId: gameId)
-            self.interactable = true
         } else {
+            self.titleBarAnimator?.showPill(withText: "Creating game", timeout: nil, icon: .spinner, animated: false)
             self.siteInteractor.createGame(puzzleId: self.puzzle.pid) { gameId in
                 guard let gameId else {
                     let alert = UIAlertController(title: "Couldn't create game", message: "We couldn't create the game on DownForACross. Try again later.", preferredStyle: .alert)
@@ -215,23 +225,15 @@ class PuzzleViewController: UIViewController {
                 }
                 self.puzzleIdToGameIdMap[self.puzzle.pid] = gameId
                 self.gameClient.connect(gameId: gameId)
-                self.interactable = true
             }
         }
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        self.puzzleView.userCursorColor = self.settingsStorage.userDisplayColor
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.puzzleView.becomeFirstResponder()
-        
-        if let navigationBar = self.navigationController?.navigationBar {
-            self.titleBarAnimator = PuzzleTitleBarAnimator(navigationBar: navigationBar, navigationItem: self.navigationItem)
-        }
+        self.viewHasAppeared = true
+        self.titleBarAnimator?._titleControl = nil
     }
     
     override func viewDidLayoutSubviews() {
@@ -315,7 +317,7 @@ class PuzzleViewController: UIViewController {
         let newIndex = (self.gameClient.inputMode.rawValue + 1) % GameClient.InputMode.allCases.count
         guard let newInputMode = GameClient.InputMode(rawValue: newIndex) else { return }
         self.gameClient.inputMode = newInputMode
-        self.titleBarAnimator?.showPill(withText: newInputMode.displayString)
+        self.titleBarAnimator?.showPill(withText: newInputMode.displayString, icon: .pencil)
     }
 }
 
@@ -351,6 +353,20 @@ extension PuzzleViewController: GameClientDelegate {
     
     func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: Cursor]) {
         self.puzzleView.cursors = cursors.filter({ $0.key != self.userId })
+    }
+    
+    func gameClient(_ client: GameClient, connectionStateDidChange connectionState: GameClient.ConnectionState) {
+        switch connectionState {
+            case .disconnected:
+                self.interactable = false
+            case .connecting, .syncing:
+                self.interactable = false
+                self.titleBarAnimator?.showPill(withText: connectionState.displayString, timeout: nil, icon: .spinner, animated: self.viewHasAppeared)
+            case .connected:
+                self.interactable = true
+                self.titleBarAnimator?.showPill(withText: connectionState.displayString, icon: .success, animated: self.viewHasAppeared)
+                break
+        }
     }
     
 }

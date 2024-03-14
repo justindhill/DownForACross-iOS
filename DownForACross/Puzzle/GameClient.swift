@@ -14,9 +14,26 @@ protocol GameClientDelegate: AnyObject {
     func gameClient(_ client: GameClient, cursorsDidChange: [String: Cursor])
     func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isBulkUpdate: Bool, isSolved: Bool)
     func gameClient(_ client: GameClient, didReceiveNewChatMessage: ChatEvent, from: Player)
+    func gameClient(_ client: GameClient, connectionStateDidChange: GameClient.ConnectionState)
 }
 
 class GameClient: NSObject, URLSessionDelegate {
+    
+    enum ConnectionState {
+        case disconnected
+        case connecting
+        case syncing
+        case connected
+        
+        var displayString: String {
+            switch self {
+                case .disconnected: "Disconnected"
+                case .connecting: "Connecting"
+                case .syncing: "Updating"
+                case .connected: "Let's play!"
+            }
+        }
+    }
     
     enum InputMode: Int, CaseIterable {
         case normal
@@ -41,6 +58,11 @@ class GameClient: NSObject, URLSessionDelegate {
     let settingsStorage: SettingsStorage
     let correctSolution: [[String?]]
     var mostRecentDedupableEvents: [String: String] = [:]
+    var connectionState: ConnectionState = .disconnected {
+        didSet {
+            self.delegate?.gameClient(self, connectionStateDidChange: connectionState)
+        }
+    }
     
     private(set) var isPerformingBulkEventSync: Bool = false
     private(set) var gameId: String
@@ -118,6 +140,7 @@ class GameClient: NSObject, URLSessionDelegate {
     
     
     func connect(gameId: String? = nil) {
+        self.connectionState = .connecting
         let socket = self.socketManager.defaultSocket
         
         let resolvedGameId = gameId ?? self.gameId
@@ -128,6 +151,7 @@ class GameClient: NSObject, URLSessionDelegate {
         self.gameId = resolvedGameId
         
         socket.on("connect") { data, ack in
+            self.connectionState = .syncing
             print("connected!")
             self.emitWithAckNoOp(eventName: "join_game", resolvedGameId)
             self.emitWithAckNoOp(UpdateDisplayNameEvent(userId: self.userId,
@@ -147,15 +171,16 @@ class GameClient: NSObject, URLSessionDelegate {
                 self.handleGameEvents(events)
                 self.isPerformingBulkEventSync = false
                 self.writeCurrentSolutionToFile()
-                self.delegate?.gameClient(self, 
+                self.connectionState = .connected
+                self.delegate?.gameClient(self,
                                           solutionDidChange: self.solution,
                                           isBulkUpdate: true, 
                                           isSolved: self.checkIfPuzzleIsSolved())
             }
         }
         
-        
         socket.on(clientEvent: .disconnect) { data, ack in
+            self.connectionState = .connecting
             print(data)
         }
         
