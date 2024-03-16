@@ -9,7 +9,7 @@ import UIKit
 
 class ShowHideAnimationHelpers {
     
-    static func hide(view: UIView, duration: TimeInterval = 0.1) {
+    static func hide(view: UIView, duration: TimeInterval = 0.1, completion: (() -> Void)? = nil) {
         if view.isHidden {
             return
         }
@@ -18,6 +18,7 @@ class ShowHideAnimationHelpers {
         CATransaction.setCompletionBlock {
             view.isHidden = true
             view.layer.removeAllAnimations()
+            completion?()
         }
 
         let alphaAnimation = CABasicAnimation(keyPath: "opacity")
@@ -44,7 +45,7 @@ class ShowHideAnimationHelpers {
         CATransaction.commit()
     }
     
-    static func show(view: UIView, duration: TimeInterval = 0.1) {
+    static func show(view: UIView, duration: TimeInterval = 0.1, completion: (() -> Void)? = nil) {
         if !view.isHidden {
             return
         }
@@ -56,6 +57,7 @@ class ShowHideAnimationHelpers {
         CATransaction.setCompletionBlock {
             view.layer.opacity = 1
             view.layer.removeAllAnimations()
+            completion?()
         }
         
         let alphaAnimation = CABasicAnimation(keyPath: "opacity")

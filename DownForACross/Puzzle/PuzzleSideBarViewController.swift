@@ -101,29 +101,23 @@ class PuzzleSideBarViewController: UIViewController {
         
         self.clueListViewController.willMove(toParent: self)
         self.addChild(self.clueListViewController)
-        self.clueListViewController.view.translatesAutoresizingMaskIntoConstraints = false
         self.contentView.addSubview(self.clueListViewController.view)
+        self.clueListViewController.view.translatesAutoresizingMaskIntoConstraints = false
         self.clueListViewController.viewRespectsSystemMinimumLayoutMargins = false
         self.clueListViewController.view.layoutMargins = Self.subviewLayoutMargins
         self.clueListViewController.didMove(toParent: self)
         
-        self.messagesViewController.willMove(toParent: self)
-        self.addChild(self.messagesViewController)
-        self.messagesViewController.view.translatesAutoresizingMaskIntoConstraints = false
         self.contentView.addSubview(self.messagesViewController.view)
+        self.messagesViewController.view.translatesAutoresizingMaskIntoConstraints = false
         self.messagesViewController.viewRespectsSystemMinimumLayoutMargins = false
         self.messagesViewController.view.layoutMargins = Self.subviewLayoutMargins
-        self.messagesViewController.didMove(toParent: self)
         self.messagesViewController.view.layer.opacity = 0
         self.messagesViewController.view.isHidden = true
         
-        self.playersViewController.willMove(toParent: self)
-        self.addChild(self.playersViewController)
         self.playersViewController.view.translatesAutoresizingMaskIntoConstraints = false
         self.contentView.addSubview(self.playersViewController.view)
         self.playersViewController.viewRespectsSystemMinimumLayoutMargins = false
         self.playersViewController.view.layoutMargins = Self.subviewLayoutMargins
-        self.playersViewController.didMove(toParent: self)
         self.playersViewController.view.layer.opacity = 0
         self.playersViewController.view.isHidden = true
         
@@ -159,21 +153,49 @@ class PuzzleSideBarViewController: UIViewController {
     @objc func selectedSegmentDidChange(_ sender: UISegmentedControl) {
         switch self.currentTab {
             case .clues:
-                ShowHideAnimationHelpers.show(view: self.clueListViewController.view)
-                ShowHideAnimationHelpers.hide(view: self.messagesViewController.view)
-                ShowHideAnimationHelpers.hide(view: self.playersViewController.view)
+                self.show(viewController: self.clueListViewController)
+                self.hide(viewController: self.messagesViewController)
+                self.hide(viewController: self.playersViewController)
                 self.delegate?.sideBarViewController(self, didSwitchToTab: .clues)
             case .messages:
-                ShowHideAnimationHelpers.show(view: self.messagesViewController.view)
-                ShowHideAnimationHelpers.hide(view: self.clueListViewController.view)
-                ShowHideAnimationHelpers.hide(view: self.playersViewController.view)
+                self.show(viewController: self.messagesViewController)
+                self.hide(viewController: self.clueListViewController)
+                self.hide(viewController: self.playersViewController)
                 self.delegate?.sideBarViewController(self, didSwitchToTab: .messages)
             case .players:
-                ShowHideAnimationHelpers.hide(view: self.clueListViewController.view)
-                ShowHideAnimationHelpers.hide(view: self.messagesViewController.view)
-                ShowHideAnimationHelpers.show(view: self.playersViewController.view)
+                self.hide(viewController: self.clueListViewController)
+                self.hide(viewController: self.messagesViewController)
+                self.show(viewController: self.playersViewController)
                 self.delegate?.sideBarViewController(self, didSwitchToTab: .players)
         }
     }
-    
+
+    func show(viewController: UIViewController) {
+        if !viewController.view.isHidden {
+            return
+        }
+
+        viewController.beginAppearanceTransition(true, animated: true)
+        viewController.willMove(toParent: self)
+        self.addChild(viewController)
+        viewController.didMove(toParent: self)
+        ShowHideAnimationHelpers.show(view: viewController.view) {
+            viewController.endAppearanceTransition()
+        }
+    }
+
+    func hide(viewController: UIViewController) {
+        if viewController.view.isHidden {
+            return
+        }
+
+        viewController.beginAppearanceTransition(false, animated: true)
+        viewController.willMove(toParent: nil)
+        viewController.removeFromParent()
+        viewController.didMove(toParent: nil)
+        ShowHideAnimationHelpers.hide(view: viewController.view) {
+            viewController.endAppearanceTransition()
+        }
+    }
+
 }

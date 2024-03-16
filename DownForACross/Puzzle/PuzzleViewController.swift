@@ -277,8 +277,15 @@ class PuzzleViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.puzzleView.becomeFirstResponder()
-        self.viewHasAppeared = true
         self.titleBarAnimator?._titleControl = nil
+
+        if !viewHasAppeared {
+            self.viewHasAppeared = true
+            DispatchQueue.main.async {
+                self.sideBarViewController.beginAppearanceTransition(false, animated: false)
+                self.sideBarViewController.endAppearanceTransition()
+            }
+        }
     }
     
     override func viewDidLayoutSubviews() {
@@ -312,11 +319,13 @@ class PuzzleViewController: UIViewController {
     
     @objc func toggleSidebar() {
         if self.isSidebarVisible {
+            self.sideBarViewController.beginAppearanceTransition(false, animated: true)
             self.puzzleView.becomeFirstResponder()
             self.keyboardToolbar.mode = .clues
             self.sideBarLeadingConstraint.constant = 0
             self.sideBarTapToDismissView.isUserInteractionEnabled = false
         } else {
+            self.sideBarViewController.beginAppearanceTransition(true, animated: true)
             self.sideBarLeadingConstraint.constant = -self.sideBarViewController.view.frame.size.width
             self.sideBarTapToDismissView.isUserInteractionEnabled = true
             if self.sideBarViewController.currentTab == .messages {
@@ -326,7 +335,9 @@ class PuzzleViewController: UIViewController {
         
         UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut, animations: {
             self.view.layoutIfNeeded()
-        })
+        }) { _ in
+            self.sideBarViewController.endAppearanceTransition()
+        }
     }
     
     func playConfettiAnimation() {

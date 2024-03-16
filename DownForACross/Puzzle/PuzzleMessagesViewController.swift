@@ -22,6 +22,12 @@ class PuzzleMessagesViewController: UIViewController {
     
     var selfUserId: String = ""
     
+    private var isVisible: Bool = false {
+        didSet {
+            print("messages visible: \(isVisible)")
+        }
+    }
+
     private var messagesNeedingAnimation: [MessageAndPlayer] = []
     private var messageIds: Set<String> = Set()
     private var messages: [MessageAndPlayer] = [] {
@@ -72,7 +78,17 @@ class PuzzleMessagesViewController: UIViewController {
             self.startTheConversationLabel.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -8)
         ])
     }
-    
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.isVisible = true
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        self.isVisible = false
+    }
+
     func createCell(tableView: UITableView, indexPath: IndexPath, messageAndPlayer: MessageAndPlayer) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: self.messageCellReuseIdentifier, for: indexPath) as! PuzzleMessageCell
         cell.mode = (messageAndPlayer.message.senderId == self.selfUserId) ? .sentBySelf : .sentByOther
