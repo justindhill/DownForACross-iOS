@@ -17,8 +17,8 @@ class PuzzleSideBarViewController: UIViewController {
     
     enum Tab: Int {
         case clues
-        case messages
         case players
+        case messages
     }
     
     var currentTab: Tab {
@@ -66,15 +66,22 @@ class PuzzleSideBarViewController: UIViewController {
     
     let segmentedControl = UISegmentedControl(items: [
         UIImage(systemName: "list.bullet.rectangle")!,
-        UIImage(systemName: "message")!,
-        UIImage(systemName: "person.2")!
+        UIImage(systemName: "person.2")!,
+        UIImage(systemName: "message")!
     ])
-    
+
+    var gameClient: GameClient {
+        didSet {
+            self.playersViewController.gameClient = gameClient
+        }
+    }
+
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     init(puzzle: Puzzle, gameClient: GameClient) {
         self.clueListViewController = PuzzleClueListViewController(clues: puzzle.clues)
         self.messagesViewController = PuzzleMessagesViewController()
         self.playersViewController = PuzzlePlayersViewController(gameClient: gameClient)
+        self.gameClient = gameClient
         super.init(nibName: nil, bundle: nil)
     }
     

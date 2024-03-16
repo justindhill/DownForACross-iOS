@@ -13,17 +13,19 @@ class PuzzleTitleBarAnimator {
         case pencil
         case spinner
         case success
-        
+        case circle(color: UIColor)
+
         fileprivate var image: UIImage {
             switch self {
-                case .pencil: return UIImage(systemName: "pencil")!
-                case .spinner: return UIImage(systemName: "circle.hexagonpath")!
-                case .success: return UIImage(systemName: "checkmark.circle.fill")!
+                case .pencil: UIImage(systemName: "pencil")!
+                case .spinner: UIImage(systemName: "circle.hexagonpath")!
+                case .success: UIImage(systemName: "checkmark.circle.fill")!
+                case .circle: UIImage(systemName: "circle.fill")!
             }
         }
     }
     
-    static let timeUntilDismiss: TimeInterval = 1
+    static let timeUntilDismiss: TimeInterval = 1.4
     let transitionDuration: TimeInterval = 0.2
     let navigationBar: UINavigationBar
     let navigationItem: UINavigationItem
@@ -70,18 +72,24 @@ class PuzzleTitleBarAnimator {
         self.setStatusPillVisible(true, animated: animated)
         
         let spinAnimationKey = "spin"
-        if icon == .spinner {
-            if self.statusPill.imageView?.layer.animation(forKey: spinAnimationKey) == nil {
-                let spinAnimation = CABasicAnimation(keyPath: "transform")
-                spinAnimation.fromValue = CATransform3DMakeAffineTransform(CGAffineTransformIdentity)
-                spinAnimation.toValue = CATransform3DMakeAffineTransform(CGAffineTransform(rotationAngle: CGFloat.pi / 3))
-                spinAnimation.duration = 0.4
-                spinAnimation.repeatCount = .infinity
-                spinAnimation.repeatDuration = .infinity
-                self.statusPill.imageView?.layer.add(spinAnimation, forKey: spinAnimationKey)
-            }
-        } else {
-            self.statusPill.imageView?.layer.removeAnimation(forKey: spinAnimationKey)
+        switch icon {
+            case .spinner:
+                if self.statusPill.imageView?.layer.animation(forKey: spinAnimationKey) == nil {
+                    let spinAnimation = CABasicAnimation(keyPath: "transform")
+                    spinAnimation.fromValue = CATransform3DMakeAffineTransform(CGAffineTransformIdentity)
+                    spinAnimation.toValue = CATransform3DMakeAffineTransform(CGAffineTransform(rotationAngle: CGFloat.pi / 3))
+                    spinAnimation.duration = 0.4
+                    spinAnimation.repeatCount = .infinity
+                    spinAnimation.repeatDuration = .infinity
+                    self.statusPill.imageView?.layer.add(spinAnimation, forKey: spinAnimationKey)
+                }
+
+            case .circle(let color):
+                self.statusPill.imageView?.tintColor = color
+
+            default:
+                self.statusPill.imageView?.layer.removeAnimation(forKey: spinAnimationKey)
+                self.statusPill.imageView?.tintColor = nil
         }
         
         if let timeout {

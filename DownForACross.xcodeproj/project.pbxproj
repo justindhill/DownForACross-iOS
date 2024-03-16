@@ -22,6 +22,8 @@
 		3B581B192B8444040084EC9B /* Puzzle+FindReferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B581B182B8444040084EC9B /* Puzzle+FindReferences.swift */; };
 		3B581B1B2B8CE1C20084EC9B /* PuzzleMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B581B1A2B8CE1C20084EC9B /* PuzzleMessageCell.swift */; };
 		3B581B1D2B8E35860084EC9B /* ShowHideAnimationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B581B1C2B8E35860084EC9B /* ShowHideAnimationHelpers.swift */; };
+		3B702AF52BA4819F00F89FB0 /* JoinGameCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B702AF42BA4819F00F89FB0 /* JoinGameCoordinator.swift */; };
+		3B702AF72BA48DE800F89FB0 /* JoinConfirmationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B702AF62BA48DE800F89FB0 /* JoinConfirmationViewController.swift */; };
 		3B73AD7C2B921494005DB5F8 /* LaunchInterstitialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B73AD7B2B921494005DB5F8 /* LaunchInterstitialViewController.swift */; };
 		3B73AD7F2B922746005DB5F8 /* OnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B73AD7E2B922746005DB5F8 /* OnboardingViewController.swift */; };
 		3B73AD812B928FF5005DB5F8 /* ColorPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B73AD802B928FF5005DB5F8 /* ColorPickerView.swift */; };
@@ -78,6 +80,9 @@
 		3B581B182B8444040084EC9B /* Puzzle+FindReferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Puzzle+FindReferences.swift"; sourceTree = "<group>"; };
 		3B581B1A2B8CE1C20084EC9B /* PuzzleMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleMessageCell.swift; sourceTree = "<group>"; };
 		3B581B1C2B8E35860084EC9B /* ShowHideAnimationHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowHideAnimationHelpers.swift; sourceTree = "<group>"; };
+		3B702AF12BA3CDEC00F89FB0 /* Entitlements.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Entitlements.entitlements; sourceTree = "<group>"; };
+		3B702AF42BA4819F00F89FB0 /* JoinGameCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinGameCoordinator.swift; sourceTree = "<group>"; };
+		3B702AF62BA48DE800F89FB0 /* JoinConfirmationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinConfirmationViewController.swift; sourceTree = "<group>"; };
 		3B73AD7B2B921494005DB5F8 /* LaunchInterstitialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchInterstitialViewController.swift; sourceTree = "<group>"; };
 		3B73AD7E2B922746005DB5F8 /* OnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewController.swift; sourceTree = "<group>"; };
 		3B73AD802B928FF5005DB5F8 /* ColorPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPickerView.swift; sourceTree = "<group>"; };
@@ -150,6 +155,7 @@
 		3B011DE42B30BED400BDB732 /* DownForACross */ = {
 			isa = PBXGroup;
 			children = (
+				3B702AF32BA4818B00F89FB0 /* Deeplinking */,
 				3B73AD7D2B92273B005DB5F8 /* Onboarding */,
 				3B73AD7A2B921474005DB5F8 /* Launch */,
 				3B581B112B7E61760084EC9B /* Tab bar */,
@@ -159,12 +165,10 @@
 				3B9003432B3628680088729C /* Puzzle list */,
 				3B9003422B3628530088729C /* Puzzle */,
 				3B011DFB2B30C01F00BDB732 /* Model */,
+				3BC761B72BA3BE1B003ACF81 /* Supporting */,
 				3B011DE52B30BED400BDB732 /* AppDelegate.swift */,
 				3B011DE72B30BED400BDB732 /* SceneDelegate.swift */,
 				3BB0FCE52B7661A200CD907C /* Config.swift */,
-				3B011DEE2B30BED500BDB732 /* Assets.xcassets */,
-				3B011DF02B30BED500BDB732 /* LaunchScreen.storyboard */,
-				3B011DF32B30BED500BDB732 /* Info.plist */,
 				3B011DF92B30BFF000BDB732 /* API.swift */,
 			);
 			path = DownForACross;
@@ -187,6 +191,15 @@
 				3B581B122B7E61880084EC9B /* TabBarViewController.swift */,
 			);
 			path = "Tab bar";
+			sourceTree = "<group>";
+		};
+		3B702AF32BA4818B00F89FB0 /* Deeplinking */ = {
+			isa = PBXGroup;
+			children = (
+				3B702AF42BA4819F00F89FB0 /* JoinGameCoordinator.swift */,
+				3B702AF62BA48DE800F89FB0 /* JoinConfirmationViewController.swift */,
+			);
+			path = Deeplinking;
 			sourceTree = "<group>";
 		};
 		3B73AD7A2B921474005DB5F8 /* Launch */ = {
@@ -282,6 +295,17 @@
 				3BB0FCEA2B76746900CD907C /* SettingsViewController.swift */,
 			);
 			path = Settings;
+			sourceTree = "<group>";
+		};
+		3BC761B72BA3BE1B003ACF81 /* Supporting */ = {
+			isa = PBXGroup;
+			children = (
+				3B011DEE2B30BED500BDB732 /* Assets.xcassets */,
+				3B011DF02B30BED500BDB732 /* LaunchScreen.storyboard */,
+				3B011DF32B30BED500BDB732 /* Info.plist */,
+				3B702AF12BA3CDEC00F89FB0 /* Entitlements.entitlements */,
+			);
+			path = Supporting;
 			sourceTree = "<group>";
 		};
 		53F62DDFE970C11E954F1973 /* Pods */ = {
@@ -449,12 +473,14 @@
 				3B011DFF2B30C03500BDB732 /* Puzzle.swift in Sources */,
 				3B73AD7F2B922746005DB5F8 /* OnboardingViewController.swift in Sources */,
 				3B011E012B30C04C00BDB732 /* PuzzleStats.swift in Sources */,
+				3B702AF52BA4819F00F89FB0 /* JoinGameCoordinator.swift in Sources */,
 				3B011DE82B30BED400BDB732 /* SceneDelegate.swift in Sources */,
 				3B581B1D2B8E35860084EC9B /* ShowHideAnimationHelpers.swift in Sources */,
 				3BF367302B313374005BB41E /* PuzzleViewController.swift in Sources */,
 				3BB0FCE22B6F33AF00CD907C /* PuzzleListQuickFilterBarView.swift in Sources */,
 				3B76C8CA2B9BECD700E60AFD /* UINavigationBar+TitleControl.swift in Sources */,
 				3B011DFD2B30C02F00BDB732 /* ListPuzzle.swift in Sources */,
+				3B702AF72BA48DE800F89FB0 /* JoinConfirmationViewController.swift in Sources */,
 				3BB0FCED2B7E5AEB00CD907C /* UserDefaultsEntryPropertyWrapper.swift in Sources */,
 				3BB0FCEB2B76746900CD907C /* SettingsViewController.swift in Sources */,
 				3BC12A3E2B613B730060C29F /* PuzzleToolbarView.swift in Sources */,
@@ -513,6 +539,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -576,6 +603,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -605,12 +633,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = "${SRCROOT}/DownForACross/Supporting/Entitlements.entitlements";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B4HG869SCZ;
+				DEVELOPMENT_TEAM = 6ET9AKX465;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = DownForACross/Info.plist;
+				INFOPLIST_FILE = DownForACross/Supporting/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -622,6 +650,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.justinhill.DownForACross;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "DFAC Development";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -634,12 +663,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = "${SRCROOT}/DownForACross/Supporting/Entitlements.entitlements";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B4HG869SCZ;
+				DEVELOPMENT_TEAM = 6ET9AKX465;
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6ET9AKX465;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = DownForACross/Info.plist;
+				INFOPLIST_FILE = DownForACross/Supporting/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -651,6 +682,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.justinhill.DownForACross;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "DFAC Development";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "DFAC Development";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -690,6 +723,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -727,12 +761,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = "${SRCROOT}/DownForACross/Supporting/Entitlements.entitlements";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B4HG869SCZ;
+				DEVELOPMENT_TEAM = 6ET9AKX465;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = DownForACross/Info.plist;
+				INFOPLIST_FILE = DownForACross/Supporting/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -745,6 +779,7 @@
 				OTHER_SWIFT_FLAGS = "-D COCOAPODS $(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.justinhill.DownForACross;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "DFAC Development";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

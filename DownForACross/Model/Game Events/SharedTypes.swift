@@ -37,13 +37,28 @@ extension Optional where Wrapped == Correctness {
 }
 
 struct Player: Hashable, Identifiable {
+    private static let defaultColor: UIColor = .clear
+    private static let defaultDisplayName: String = "Unknown player"
+
     var id: String {
         return self.userId
     }
     
     var userId: String
-    var displayName: String = "Unknown player"
-    var color: UIColor = .systemGray6
+    var displayName: String = Self.defaultDisplayName
+    var color: UIColor = Self.defaultColor
+
+    var isComplete: Bool {
+        !((self.displayName == Self.defaultDisplayName) || (self.color == Self.defaultColor))
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.userId)
+    }
+
+    static func == (lhs: Player, rhs: Player) -> Bool {
+        return lhs.userId == rhs.userId
+    }
 }
 
 struct Cursor {

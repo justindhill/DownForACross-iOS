@@ -14,7 +14,8 @@ class PuzzleViewController: UIViewController {
     static let puzzleIdToGameIdMapUserDefaultsKey = "com.justinhill.DownForACross.puzzleIdToGameIdMap"
     
     var viewHasAppeared: Bool = false
-    let puzzle: PuzzleListEntry
+    let puzzleId: String
+    let puzzle: Puzzle
     var gameId: String?
     let userId: String
     let siteInteractor: SiteInteractor
@@ -46,10 +47,15 @@ class PuzzleViewController: UIViewController {
     }()
      
     lazy var sideBarViewController: PuzzleSideBarViewController = {
-        return PuzzleSideBarViewController(puzzle: self.puzzle.content, gameClient: self.gameClient)
+        return PuzzleSideBarViewController(puzzle: self.puzzle, gameClient: self.gameClient)
     }()
     
-    var sideBarTapToDismissView: UIView
+    var sideBarTapToDismissView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isUserInteractionEnabled = false
+        return view
+    }()
     var sideBarLeadingConstraint: NSLayoutConstraint!
     lazy var sideBarTapToDismissGestureRecognizer: UITapGestureRecognizer = {
         let tap = UITapGestureRecognizer(target: self, action: #selector(toggleSidebar))
@@ -65,22 +71,50 @@ class PuzzleViewController: UIViewController {
     var newMessageStackView: PuzzleNewMessageStackView = PuzzleNewMessageStackView()
     var confettiView: LottieAnimationView?
     
-    let gameClient: GameClient
-    
+    var gameClient: GameClient {
+        didSet {
+            oldValue.delegate = nil
+            gameClient.delegate = self
+            self.sideBarViewController.gameClient = gameClient
+        }
+    }
+
     var isSidebarVisible: Bool {
         return self.sideBarLeadingConstraint.constant < 0
     }
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    init(puzzleListEntry: PuzzleListEntry, userId: String, gameId: String? = nil, siteInteractor: SiteInteractor, api: API, settingsStorage: SettingsStorage) {
-        self.puzzle = puzzleListEntry
+
+    // assumes that GameClient is connected and has done a bulk sync to get all of the necessary info from the create event
+    init(gameClient: GameClient, siteInteractor: SiteInteractor, api: API, settingsStorage: SettingsStorage) {
+        self.gameClient = gameClient
+        self.puzzle = gameClient.puzzle
+        self.puzzleId = gameClient.puzzleId
+        self.gameId = gameClient.gameId
+        self.userId = gameClient.userId
+        self.api = api
+        self.siteInteractor = siteInteractor
+        self.settingsStorage = settingsStorage
+
+        if let gameIdMap = UserDefaults.standard.object(forKey: Self.puzzleIdToGameIdMapUserDefaultsKey) as? [String: String] {
+            self.puzzleIdToGameIdMap = gameIdMap
+        } else {
+            self.puzzleIdToGameIdMap = [:]
+        }
+
+        super.init(nibName: nil, bundle: nil)
+
+        self.gameClient.delegate = self
+        self.sideBarViewController.messagesViewController.selfUserId = userId
+    }
+
+    init(puzzle: Puzzle, puzzleId: String, userId: String, gameId: String? = nil, siteInteractor: SiteInteractor, api: API, settingsStorage: SettingsStorage) {
+        self.puzzle = puzzle
+        self.puzzleId = puzzleId
         self.userId = userId
         self.siteInteractor = siteInteractor
         self.settingsStorage = settingsStorage
         self.api = api
-        self.sideBarTapToDismissView = UIView()
-        self.sideBarTapToDismissView.translatesAutoresizingMaskIntoConstraints = false
-        self.sideBarTapToDismissView.isUserInteractionEnabled = false
         
         if let gameIdMap = UserDefaults.standard.object(forKey: Self.puzzleIdToGameIdMapUserDefaultsKey) as? [String: String] {
             self.puzzleIdToGameIdMap = gameIdMap
@@ -88,49 +122,49 @@ class PuzzleViewController: UIViewController {
             self.puzzleIdToGameIdMap = [:]
         }
         
-        let resolvedGameId = gameId ?? self.puzzleIdToGameIdMap[self.puzzle.pid]
+        let resolvedGameId = gameId ?? self.puzzleIdToGameIdMap[puzzleId] ?? ""
         self.gameId = resolvedGameId
-        self.gameClient = GameClient(puzzle: self.puzzle.content, userId: self.userId, gameId: resolvedGameId, settingsStorage: self.settingsStorage)
-        
+        self.gameClient = GameClient(puzzle: self.puzzle, puzzleId: self.puzzleId, userId: self.userId, gameId: resolvedGameId, settingsStorage: self.settingsStorage)
+
         super.init(nibName: nil, bundle: nil)
-        
+
         self.gameClient.delegate = self
         self.sideBarViewController.messagesViewController.selfUserId = userId
-
-        self.sideBarViewController.delegate = self
-        self.sideBarViewController.playersViewController.delegate = self
-        self.hidesBottomBarWhenPushed = true
-        self.sideBarTapToDismissView.addGestureRecognizer(self.sideBarTapToDismissGestureRecognizer)
-        
-        self.sideBarViewController.clueListViewController.delegate = self
-        
-        NotificationCenter.default.addObserver(forName: UIControl.keyboardDidShowNotification, object: nil, queue: nil) { [weak self] note in
-            guard let self, let userInfo = note.userInfo else { return }
-            let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue.size
-            self.currentKeyboardHeight = keyboardSize.height
-            self.updateContentInsets()
-        }
-        
-        NotificationCenter.default.addObserver(forName: UIControl.keyboardDidHideNotification, object: nil, queue: nil) { [weak self] note in
-            guard let self else { return }
-            self.currentKeyboardHeight = 0
-            self.updateContentInsets()
-        }
-        
-        let sideBarToggleItem = UIBarButtonItem(image: UIImage(systemName: "sidebar.right"),
-                                                style: .plain,
-                                                target: self,
-                                                action: #selector(toggleSidebar))
-        self.navigationItem.rightBarButtonItem = sideBarToggleItem
     }
     
     lazy var contextMenuInteraction = UIContextMenuInteraction(delegate: self)
     
     override func viewDidLoad() {
+        self.sideBarViewController.delegate = self
+        self.sideBarViewController.playersViewController.delegate = self
+        self.hidesBottomBarWhenPushed = true
+        self.sideBarTapToDismissView.addGestureRecognizer(self.sideBarTapToDismissGestureRecognizer)
+
+        self.sideBarViewController.clueListViewController.delegate = self
+
+        NotificationCenter.default.addObserver(forName: UIControl.keyboardWillShowNotification, object: nil, queue: nil) { [weak self] note in
+            guard let self, let userInfo = note.userInfo else { return }
+            let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue.size
+            self.currentKeyboardHeight = keyboardSize.height
+            self.updateContentInsets()
+        }
+
+        NotificationCenter.default.addObserver(forName: UIControl.keyboardWillHideNotification, object: nil, queue: nil) { [weak self] note in
+            guard let self else { return }
+            self.currentKeyboardHeight = 0
+            self.updateContentInsets()
+        }
+
+        let sideBarToggleItem = UIBarButtonItem(image: UIImage(systemName: "sidebar.right"),
+                                                style: .plain,
+                                                target: self,
+                                                action: #selector(toggleSidebar))
+        self.navigationItem.rightBarButtonItem = sideBarToggleItem
+
         self.view.backgroundColor = .systemBackground
         self.view.addGestureRecognizer(self.swipeGestureRecognizer)
 
-        self.puzzleView = PuzzleView(puzzle: self.puzzle.content)
+        self.puzzleView = PuzzleView(puzzle: self.puzzle)
         self.puzzleView.solution = self.gameClient.solution
         self.puzzleView.isSolved = self.gameClient.isPuzzleSolved
         self.puzzleView.translatesAutoresizingMaskIntoConstraints = false
@@ -154,7 +188,7 @@ class PuzzleViewController: UIViewController {
             self?.puzzleView.advanceUserCursorToNextWord()
         }), for: .primaryActionTriggered)
         
-        self.navigationItem.title = self.puzzle.content.info.title
+        self.navigationItem.title = self.puzzle.info.title
         
         self.view.addSubview(self.puzzleView)
         self.view.addSubview(self.keyboardToolbar)
@@ -210,11 +244,20 @@ class PuzzleViewController: UIViewController {
             self.titleBarAnimator = PuzzleTitleBarAnimator(navigationBar: navigationBar, navigationItem: self.navigationItem)
         }
         
-        if let gameId = self.gameId {
-            self.gameClient.connect(gameId: gameId)
+        if self.gameClient.defersJoining {
+            self.gameClient.joinGame()
+        }
+
+        if self.gameClient.connectionState == .connected {
+            self.gameClient(self.gameClient, connectionStateDidChange: .connected)
+            return
+        }
+
+        if let gameId = self.gameId, gameId != "" {
+            self.gameClient.connect()
         } else {
             self.titleBarAnimator?.showPill(withText: "Creating game", timeout: nil, icon: .spinner, animated: false)
-            self.siteInteractor.createGame(puzzleId: self.puzzle.pid) { gameId in
+            self.siteInteractor.createGame(puzzleId: self.puzzleId) { gameId in
                 guard let gameId else {
                     let alert = UIAlertController(title: "Couldn't create game", message: "We couldn't create the game on DownForACross. Try again later.", preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "Ok", style: .default) { [weak self] _ in
@@ -223,8 +266,10 @@ class PuzzleViewController: UIViewController {
                     self.present(alert, animated: true)
                     return
                 }
-                self.puzzleIdToGameIdMap[self.puzzle.pid] = gameId
-                self.gameClient.connect(gameId: gameId)
+                self.gameId = gameId
+                self.puzzleIdToGameIdMap[self.puzzleId] = gameId
+                self.gameClient = GameClient(puzzle: self.puzzle, puzzleId: self.puzzleId, userId: self.userId, gameId: gameId, settingsStorage: self.settingsStorage)
+                self.gameClient.connect()
             }
         }
     }
@@ -251,10 +296,8 @@ class PuzzleViewController: UIViewController {
             self.keyboardToolbar.frame.size.height + self.currentKeyboardHeight - self.view.safeAreaInsets.bottom
         
         if self.currentKeyboardHeight == 0 {
-            self.keyboardToolbar.layoutMargins.bottom = self.view.safeAreaInsets.bottom
-            self.keyboardToolbarBottomConstraint.constant = 0
+            self.keyboardToolbarBottomConstraint.constant = self.view.safeAreaInsets.bottom
         } else {
-            self.keyboardToolbar.layoutMargins.bottom = 0
             self.keyboardToolbarBottomConstraint.constant = 0
         }
     }
@@ -322,6 +365,11 @@ class PuzzleViewController: UIViewController {
 }
 
 extension PuzzleViewController: GameClientDelegate {
+
+    func gameClient(_ client: GameClient, newPlayerJoined player: Player) {
+        print("Player joined: \(player.displayName)")
+        self.titleBarAnimator?.showPill(withText: "\(player.displayName) joined", icon: .circle(color: player.color))
+    }
     
     func gameClient(_ client: GameClient, didReceiveNewChatMessage message: ChatEvent, from: Player) {
         self.sideBarViewController.messagesViewController.addMessage(
@@ -382,9 +430,9 @@ extension PuzzleViewController: PuzzleViewDelegate {
         
         switch clue.direction {
             case .across:
-                self.keyboardToolbar.clueLabel.text = self.puzzle.content.clues.across[clue.clueIndex]
+                self.keyboardToolbar.clueLabel.text = self.puzzle.clues.across[clue.clueIndex]
             case .down:
-                self.keyboardToolbar.clueLabel.text = self.puzzle.content.clues.down[clue.clueIndex]
+                self.keyboardToolbar.clueLabel.text = self.puzzle.clues.down[clue.clueIndex]
         }
         
         self.sideBarViewController.clueListViewController.selectClue(atSequenceIndex: clue.sequenceIndex, direction: clue.direction)
@@ -402,9 +450,9 @@ extension PuzzleViewController: PuzzleViewDelegate {
         var clue: String?
         switch direction {
             case .across:
-                clue = self.puzzle.content.clues.across[clueIndex]
+                clue = self.puzzle.clues.across[clueIndex]
             case .down:
-                clue = self.puzzle.content.clues.down[clueIndex]
+                clue = self.puzzle.clues.down[clueIndex]
         }
         
         guard let clue else { return [] }
@@ -469,23 +517,22 @@ extension PuzzleViewController: PuzzleToolbarViewDelegate {
 extension PuzzleViewController: PuzzlePlayersViewControllerDelegate {
     
     func playersViewControllerDidSelectSendInvite(_ playersViewController: PuzzlePlayersViewController) {
-//        var baseURLComponents = Config.siteBaseURLComponents
-//        baseURLComponents.path = "/beta/game/\(self.gameClient.gameId)"
-        
         var components = URLComponents()
-        components.scheme = "dfac"
-        components.host = "game"
-        components.queryItems = [
-            URLQueryItem(name: "name", value: self.puzzle.content.info.title),
-            URLQueryItem(name: "puzzleId", value: "\(self.puzzle.pid)"),
-            URLQueryItem(name: "gameId", value: self.gameClient.gameId)
-        ]
-        
+        components.scheme = "https"
+        components.host = "dfac.link"
+        components.path = "/beta/game/\(self.gameClient.gameId)"
+
+        #if targetEnvironment(simulator)
+        let url = components.url!.absoluteString
+        #else
+        let url = components.url! 
+        #endif
+
         let text = "Join my crossword on DownForACross!"
-        let url = components.url!
-        
+
         let activityViewController = UIActivityViewController(activityItems: [text, url], applicationActivities: nil)
         self.present(activityViewController, animated: true)
+
     }
     
 }

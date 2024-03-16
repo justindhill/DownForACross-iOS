@@ -16,7 +16,8 @@ class PuzzlePlayersViewController: UIViewController {
     
     static let playerCellReuseIdentifier: String = "PlayerCellReuseIdentifier"
     static let sendInviteCellReuseIdentifier: String = "SendInviteCellReuseIdentifier"
-    
+    static let sendInviteUserId: String = "SENDINVITE"
+
     weak var delegate: PuzzlePlayersViewControllerDelegate?
     
     lazy var tableView: UITableView = {
@@ -39,7 +40,14 @@ class PuzzlePlayersViewController: UIViewController {
         return dataSource
     }()
     
-    let gameClient: GameClient
+    var gameClient: GameClient {
+        didSet {
+            self.playersSubscription = gameClient.$players
+                .map({ Array($0.values) })
+                .assign(to: \.players, on: self)      
+        }
+    }
+
     var players: [Player] {
         didSet {
             self.updateContent()
@@ -53,8 +61,24 @@ class PuzzlePlayersViewController: UIViewController {
         self.players = Array(gameClient.players.values)
         super.init(nibName: nil, bundle: nil)
         self.playersSubscription = gameClient.$players
-            .map({ Array($0.values) })
-            .assign(to: \.players, on: self)
+            .map(\.values)
+            .sink(receiveValue: { values in
+                self.players = Array(values)
+                    .filter({ $0.isComplete })
+                    .sorted(by: { first, second in
+                        if first.userId == self.gameClient.userId {
+                            true
+                        } else if second.userId == self.gameClient.userId {
+                            false
+                        } else {
+                            switch first.displayName.compare(second.displayName) {
+                                case .orderedAscending: true
+                                case .orderedDescending: false
+                                case .orderedSame: first.userId > second.userId
+                            }
+                        }
+                    })
+            })
     }
     
     override func viewDidLoad() {
@@ -70,15 +94,24 @@ class PuzzlePlayersViewController: UIViewController {
     
     func updateContent() {
         var snapshot = NSDiffableDataSourceSnapshot<Int, Player>()
-        snapshot.appendSections([0, 1])
+        snapshot.appendSections([0])
         snapshot.appendItems(self.players, toSection: 0)
-        snapshot.appendItems([Player(userId: "SENDINVITE")], toSection: 1)
-        
+        snapshot.appendItems([Player(userId: Self.sendInviteUserId)], toSection: 0)
+
         self.dataSource.apply(snapshot)
     }
     
     func tableView(_ tableView: UITableView, cellForRow indexPath: IndexPath, item: Player) -> UITableViewCell {
-        if indexPath.section == 0 {
+        if item.userId == Self.sendInviteUserId {
+            let cell = tableView.dequeueReusableCell(withIdentifier: Self.sendInviteCellReuseIdentifier, for: indexPath)
+
+            var config = UIListContentConfiguration.cell()
+            config.image = UIImage(systemName: "square.and.arrow.up")
+            config.text = "Send invite"
+
+            cell.contentConfiguration = config
+            return cell
+        } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: Self.playerCellReuseIdentifier, for: indexPath)
             
             var config = UIListContentConfiguration.cell()
@@ -101,24 +134,20 @@ class PuzzlePlayersViewController: UIViewController {
             cell.contentConfiguration = config
             
             return cell
-        } else {
-            let cell = tableView.dequeueReusableCell(withIdentifier: Self.sendInviteCellReuseIdentifier, for: indexPath)
-            
-            var config = UIListContentConfiguration.cell()
-            config.image = UIImage(systemName: "square.and.arrow.up")
-            config.text = "Send invite"
-            
-            cell.contentConfiguration = config
-            return cell
         }
     }
-    
+
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 30
+    }
+
 }
 
 extension PuzzlePlayersViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
-        return indexPath.section == 1
+        guard let item = self.dataSource.itemIdentifier(for: indexPath) else { return false }
+        return item.userId == Self.sendInviteUserId
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

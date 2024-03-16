@@ -15,7 +15,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     let api: API = API()
     let siteInteractor: SiteInteractor = SiteInteractor()
     let settingsStorage: SettingsStorage = SettingsStorage()
-    
+    var joinGameCoordinator: JoinGameCoordinator?
+
     lazy var launchInterstitialViewController: LaunchInterstitialViewController = LaunchInterstitialViewController()
     lazy var onboardingViewController: OnboardingViewController = {
         let viewController = OnboardingViewController(settingsStorage: self.settingsStorage)
@@ -103,7 +104,22 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         viewController.didMove(toParent: nil)
     }
 
-    
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        guard let navigationController = self.tabBarViewController?.puzzleListNavigationController,
+              let userId = self.settingsStorage.userId else { return }
+
+        let gameId = userActivity.webpageURL!.lastPathComponent
+
+        self.tabBarViewController?.selectedIndex = 0
+        self.joinGameCoordinator = JoinGameCoordinator(navigationController: navigationController,
+                                                       gameId: gameId,
+                                                       userId: userId,
+                                                       api: self.api,
+                                                       siteInteractor: self.siteInteractor,
+                                                       settingsStorage: self.settingsStorage)
+        self.joinGameCoordinator?.start()
+    }
+
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         guard let urlContext = URLContexts.first else { return }
         let url = urlContext.url

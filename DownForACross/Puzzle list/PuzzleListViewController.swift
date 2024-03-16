@@ -184,7 +184,8 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func show(puzzleListEntry: PuzzleListEntry, gameId: String? = nil) {
-        let vc = PuzzleViewController(puzzleListEntry: puzzleListEntry,
+        let vc = PuzzleViewController(puzzle: puzzleListEntry.content,
+                                      puzzleId: puzzleListEntry.pid,
                                       userId: self.userId,
                                       gameId: gameId,
                                       siteInteractor: self.siteInteractor,

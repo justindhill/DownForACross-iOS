@@ -7,6 +7,7 @@ target 'DownForACross' do
     pod 'Socket.IO-Client-Swift'
     pod 'lottie-ios'
     pod 'ReachabilitySwift'
+    pod 'SwiftLint'
 end
 
 post_install do |installer|

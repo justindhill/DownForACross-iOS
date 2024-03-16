@@ -222,8 +222,8 @@ class PuzzleView: UIView {
                 
         let sizingFont = UIFont.systemFont(ofSize: 12)
         let pointToCapHeight = sizingFont.pointSize / sizingFont.capHeight
-        let baseFillFont = UIFont.systemFont(ofSize: ceil((cellSideLength * 0.4) * pointToCapHeight))
-        let numberFont = UIFont.systemFont(ofSize: ceil(baseFillFont.pointSize / 2.8))
+        let baseFillFont = UIFont.systemFont(ofSize: ceil((cellSideLength * 0.5) * pointToCapHeight), weight: .medium)
+        let numberFont = UIFont.systemFont(ofSize: ceil(baseFillFont.pointSize / 3.2))
         let numberPadding: CGFloat = cellSideLength / 20
         
         // user cursor word indicator

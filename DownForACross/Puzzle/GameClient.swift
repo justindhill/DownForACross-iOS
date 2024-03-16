@@ -12,10 +12,11 @@ import Combine
 import Reachability
 
 protocol GameClientDelegate: AnyObject {
-    func gameClient(_ client: GameClient, cursorsDidChange: [String: Cursor])
+    func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: Cursor])
     func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isBulkUpdate: Bool, isSolved: Bool)
-    func gameClient(_ client: GameClient, didReceiveNewChatMessage: ChatEvent, from: Player)
-    func gameClient(_ client: GameClient, connectionStateDidChange: GameClient.ConnectionState)
+    func gameClient(_ client: GameClient, didReceiveNewChatMessage message: ChatEvent, from: Player)
+    func gameClient(_ client: GameClient, connectionStateDidChange connectionState: GameClient.ConnectionState)
+    func gameClient(_ client: GameClient, newPlayerJoined player: Player)
 }
 
 class GameClient: NSObject, URLSessionDelegate {
@@ -51,11 +52,13 @@ class GameClient: NSObject, URLSessionDelegate {
     }
     
     weak var delegate: GameClientDelegate?
-    
+
+    private(set) var puzzleId: String
+    var defersJoining: Bool = false
     let reachability = try! Reachability()
     var isPuzzleSolved: Bool = false
     var inputMode: InputMode = .normal
-    let puzzle: Puzzle
+    var puzzle: Puzzle
     let userId: String
     let settingsStorage: SettingsStorage
     let correctSolution: [[String?]]
@@ -98,10 +101,19 @@ class GameClient: NSObject, URLSessionDelegate {
             }
             
             self.cursors = cursors
+
+            if !self.isPerformingBulkEventSync {
+                let newPlayers = Set(players.values).filter({ $0.isComplete })
+                    .subtracting(Set(oldValue.values).filter({ $0.isComplete }))
+                for newPlayer in newPlayers {
+                    if newPlayer.userId != self.userId {
+                        self.delegate?.gameClient(self, newPlayerJoined: newPlayer)
+                    }
+                }
+            }
         }
     }
 
-    
     lazy var socketManager: SocketManager = {
         var components = Config.apiBaseURLComponents
         components.path = "/socket.io"
@@ -121,10 +133,11 @@ class GameClient: NSObject, URLSessionDelegate {
         )
     }()
     
-    init(puzzle: Puzzle, userId: String, gameId: String?, settingsStorage: SettingsStorage) {
+    init(puzzle: Puzzle, puzzleId: String, userId: String, gameId: String, settingsStorage: SettingsStorage) {
         self.puzzle = puzzle
         self.userId = userId
-        self.gameId = gameId ?? ""
+        self.gameId = gameId
+        self.puzzleId = puzzleId
         self.settingsStorage = settingsStorage
         
         if let loadedSolution = Self.loadSolution(forGameId: self.gameId) {
@@ -151,69 +164,81 @@ class GameClient: NSObject, URLSessionDelegate {
         self.socketManager.reconnect()
     }
     
-    func connect(gameId: String? = nil) {
+    func connect() {
         self.connectionState = .connecting
         let socket = self.socketManager.defaultSocket
-        
-        let resolvedGameId = gameId ?? self.gameId
-        guard resolvedGameId != "" else {
-            fatalError("You must either pass a game id in the initializer or in connect!")
-        }
-        
-        self.gameId = resolvedGameId
-        
-        socket.on("connect") { data, ack in
-            self.connectionState = .syncing
+
+        socket.on("connect") { [weak self] data, ack in
+            guard let self else { return }
             print("connected!")
-            self.emitWithAckNoOp(eventName: "join_game", resolvedGameId)
-            self.emitWithAckNoOp(UpdateDisplayNameEvent(userId: self.userId,
-                                                        gameId: self.gameId,
-                                                        displayName: self.settingsStorage.userDisplayName))
-            self.emitWithAckNoOp(UpdateColorEvent(gameId: self.gameId,
-                                                  userId: self.userId,
-                                                  color: self.settingsStorage.userDisplayColor))
-            self.players[self.userId] = Player(userId: self.userId,
-                                               displayName: self.settingsStorage.userDisplayName,
-                                               color: self.settingsStorage.userDisplayColor)
+
+            // start receiving events for this game
+            self.emitWithAckNoOp(eventName: "join_game", self.gameId)
             
-            self.emitWithAck("sync_all_game_events", self.gameId).timingOut(after: 5) { [weak self] data in
-                guard let self, let events = data.first as? [[String: Any]] else { return }
-                self.isPerformingBulkEventSync = true
-                self.solution = Self.createEmptySolution(forPuzzle: self.puzzle)
-                self.handleGameEvents(events)
-                self.isPerformingBulkEventSync = false
-                self.writeCurrentSolutionToFile()
-                self.connectionState = .connected
-                self.delegate?.gameClient(self,
-                                          solutionDidChange: self.solution,
-                                          isBulkUpdate: true, 
-                                          isSolved: self.checkIfPuzzleIsSolved())
+            // actually insert ourselves as a player
+            if !self.defersJoining {
+                self.joinGame()
             }
+
+            self.performBulkSync()
         }
         
-        socket.on(clientEvent: .disconnect) { data, ack in
+        socket.on(clientEvent: .disconnect) { [weak self] data, ack in
+            guard let self else { return }
             self.connectionState = .connecting
             print(data)
         }
         
-        socket.on(clientEvent: .reconnect) { data, ack in
+        socket.on(clientEvent: .reconnect) { [weak self] data, ack in
+            guard let self else { return }
             self.connectionState = .connecting
             print(data)
         }
         
-        socket.on(clientEvent: .reconnectAttempt) { data, ack in
+        socket.on(clientEvent: .reconnectAttempt) { [weak self] data, ack in
+            guard let self else { return }
             self.connectionState = .connecting
             print(data)
         }
         
-        socket.on("game_event") { data, ack in
-            guard let events = data as? [[String: Any]] else { return }
+        socket.on("game_event") { [weak self] data, ack in
+            guard let self, let events = data as? [[String: Any]] else { return }
             self.handleGameEvents(events)
         }
         
         socket.connect()
     }
-    
+
+    func performBulkSync() {
+        self.connectionState = .syncing
+
+        self.emitWithAck("sync_all_game_events", self.gameId).timingOut(after: 5) { [weak self] data in
+            guard let self, let events = data.first as? [[String: Any]] else { return }
+            self.isPerformingBulkEventSync = true
+            self.solution = Self.createEmptySolution(forPuzzle: self.puzzle)
+            self.handleGameEvents(events)
+            self.isPerformingBulkEventSync = false
+            self.writeCurrentSolutionToFile()
+            self.connectionState = .connected
+            self.delegate?.gameClient(self,
+                                      solutionDidChange: self.solution,
+                                      isBulkUpdate: true,
+                                      isSolved: self.checkIfPuzzleIsSolved())
+        }
+    }
+
+    func joinGame() {
+        self.emitWithAckNoOp(UpdateDisplayNameEvent(userId: self.userId,
+                                                    gameId: self.gameId,
+                                                    displayName: self.settingsStorage.userDisplayName))
+        self.emitWithAckNoOp(UpdateColorEvent(gameId: self.gameId,
+                                              userId: self.userId,
+                                              color: self.settingsStorage.userDisplayColor))
+        self.players[self.userId] = Player(userId: self.userId,
+                                           displayName: self.settingsStorage.userDisplayName,
+                                           color: self.settingsStorage.userDisplayColor)
+    }
+
     func handleGameEvents(_ data: [[String: Any]]) {
         for payload in data {
             guard let type = payload["type"] as? String else {
@@ -225,6 +250,7 @@ class GameClient: NSObject, URLSessionDelegate {
                 var dedupableEvent: DedupableGameEvent?
                 var applyClosure: (() -> Void)
                 if type == "updateCursor" {
+                    guard self.solution.count > 0 else { continue }
                     let event = UpdateCursorEvent(payload: payload)
                     applyClosure = {
                         if var cursor = self.cursors[event.userId] {
@@ -235,6 +261,7 @@ class GameClient: NSObject, URLSessionDelegate {
                         }
                     }
                 } else if type == "updateCell"  {
+                    guard self.solution.count > 0 else { continue }
                     let event = UpdateCellEvent(payload: payload)
                     dedupableEvent = event
                     applyClosure = {
@@ -258,6 +285,7 @@ class GameClient: NSObject, URLSessionDelegate {
                         self.players[event.userId] = player
                     }
                 } else if type == "check" {
+                    guard self.solution.count > 0 else { continue }
                     let event = try CheckEvent(payload: payload)
                     applyClosure = {
                         for cell in event.cells {
@@ -266,6 +294,7 @@ class GameClient: NSObject, URLSessionDelegate {
                         }
                     }
                 } else if type == "reveal" {
+                    guard self.solution.count > 0 else { continue }
                     let event = try RevealEvent(payload: payload)
                     applyClosure = {
                         for cell in event.cells {
@@ -294,6 +323,22 @@ class GameClient: NSObject, URLSessionDelegate {
                             print("Received a chat message from an unknown player")
                         }
                         print("CHAT: \(event.senderName) \(event.message)")
+                    }
+                } else if type == "create" {
+                    applyClosure = {
+                        if self.puzzle.grid.count == 0 {
+                            print("Handling create event")
+                            do {
+                                let puzzleListEntry = try PuzzleListEntry(createEventPayload: payload)
+                                self.puzzle = puzzleListEntry.content
+                                self.puzzleId = puzzleListEntry.pid
+                                self.solution = Self.createEmptySolution(forPuzzle: self.puzzle)
+                            } catch {
+                                fatalError("Need to handle wonkiness happening here")
+                            }
+                        } else {
+                            print("Skipping create event because the grid isn't empty")
+                        }
                     }
                 } else if type == "sendChatMessage" {
                     // no-op
@@ -436,6 +481,10 @@ class GameClient: NSObject, URLSessionDelegate {
     }
     
     static func createEmptySolution(forPuzzle puzzle: Puzzle) -> [[CellEntry?]] {
+        guard puzzle.grid.count > 0 else {
+            return []
+        }
+
         return Array(repeating: Array(repeating: nil,
                                       count: puzzle.grid[0].count),
                      count: puzzle.grid.count)
