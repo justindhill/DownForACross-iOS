@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 protocol PuzzleSideBarViewControllerDelegate: AnyObject {
     func sideBarViewController(_ sideBarViewController: PuzzleSideBarViewController, didSwitchToTab: PuzzleSideBarViewController.Tab)
@@ -41,7 +42,8 @@ class PuzzleSideBarViewController: UIViewController {
     let clueListViewController: PuzzleClueListViewController
     let messagesViewController: PuzzleMessagesViewController
     let playersViewController: PuzzlePlayersViewController
-    
+    var subscriptions: [AnyCancellable] = []
+
     let leadingSeparatorView: UIView = {
         let view = UIView()
         view.backgroundColor = .separator.withAlphaComponent(0.1)
@@ -83,6 +85,17 @@ class PuzzleSideBarViewController: UIViewController {
         self.playersViewController = PuzzlePlayersViewController(gameClient: gameClient)
         self.gameClient = gameClient
         super.init(nibName: nil, bundle: nil)
+
+        self.subscriptions.append(self.messagesViewController.$hasUnreadMessages.sink(receiveValue: { hasUnreadMessages in
+            if hasUnreadMessages {
+                let config = UIImage.SymbolConfiguration(paletteColors: [.red, .label, .label])
+                self.segmentedControl.setImage(UIImage(systemName: "message.badge", withConfiguration: config),
+                                               forSegmentAt: Tab.messages.rawValue)
+            } else {
+                self.segmentedControl.setImage(UIImage(systemName: "message"),
+                                               forSegmentAt: Tab.messages.rawValue)
+            }
+        }))
     }
     
     override func loadView() {

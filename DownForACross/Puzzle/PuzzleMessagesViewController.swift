@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 class PuzzleMessagesViewController: UIViewController {
     
@@ -27,6 +28,9 @@ class PuzzleMessagesViewController: UIViewController {
             print("messages visible: \(isVisible)")
         }
     }
+
+    @Published
+    var hasUnreadMessages = false
 
     private var messagesNeedingAnimation: [MessageAndPlayer] = []
     private var messageIds: Set<String> = Set()
@@ -82,6 +86,7 @@ class PuzzleMessagesViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.isVisible = true
+        self.hasUnreadMessages = false
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -105,7 +110,11 @@ class PuzzleMessagesViewController: UIViewController {
     
     func addMessage(_ message: MessageAndPlayer) {
         guard !self.messageIds.contains(message.id) else { return }
-        
+
+        if !self.isVisible {
+            self.hasUnreadMessages = true
+        }
+
         let isAtBottom = (self.tableView.contentSize.height - self.tableView.frame.size.height - self.tableView.contentOffset.y) < 20
         self.messagesNeedingAnimation.append(message)
         self.messages.append(message)
