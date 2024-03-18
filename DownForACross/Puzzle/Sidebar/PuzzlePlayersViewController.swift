@@ -9,7 +9,7 @@ import UIKit
 import Combine
 
 protocol PuzzlePlayersViewControllerDelegate: AnyObject {
-    func playersViewControllerDidSelectSendInvite(_ playersViewController: PuzzlePlayersViewController)
+    func playersViewControllerDidSelectSendInvite(_ playersViewController: PuzzlePlayersViewController, sourceView: UIView)
 }
 
 class PuzzlePlayersViewController: UIViewController {
@@ -152,7 +152,8 @@ extension PuzzlePlayersViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        self.delegate?.playersViewControllerDidSelectSendInvite(self)
+        guard let cell = tableView.cellForRow(at: indexPath) else { return }
+        self.delegate?.playersViewControllerDidSelectSendInvite(self, sourceView: cell)
     }
     
 }

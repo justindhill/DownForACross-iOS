@@ -529,7 +529,7 @@ extension PuzzleViewController: PuzzleToolbarViewDelegate {
 
 extension PuzzleViewController: PuzzlePlayersViewControllerDelegate {
     
-    func playersViewControllerDidSelectSendInvite(_ playersViewController: PuzzlePlayersViewController) {
+    func playersViewControllerDidSelectSendInvite(_ playersViewController: PuzzlePlayersViewController, sourceView: UIView) {
         var components = URLComponents()
         components.scheme = "https"
         components.host = "dfac.link"
@@ -544,6 +544,7 @@ extension PuzzleViewController: PuzzlePlayersViewControllerDelegate {
         let text = "Join my crossword on DownForACross!"
 
         let activityViewController = UIActivityViewController(activityItems: [text, url], applicationActivities: nil)
+        activityViewController.popoverPresentationController?.sourceView = sourceView
         self.present(activityViewController, animated: true)
 
     }
