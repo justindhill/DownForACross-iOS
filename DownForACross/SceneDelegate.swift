@@ -24,13 +24,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         return viewController
     }()
     var tabBarViewController: TabBarViewController?
-    
+    var pendingUserActivity: NSUserActivity?
+
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let scene = (scene as? UIWindowScene) else { return }
-        
+
+        self.pendingUserActivity = connectionOptions.userActivities.first
+
         self.window = UIWindow(windowScene: scene)
         self.window?.rootViewController = UIViewController()
         self.window?.isHidden = false
@@ -84,6 +87,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                                                         siteInteractor: self.siteInteractor)
         self.tabBarViewController = tabBarViewController
         self.showViewController(tabBarViewController)
+
+        if let userActivity = self.pendingUserActivity {
+            self.pendingUserActivity = nil
+            self.continueUserActivity(userActivity)
+        }
     }
     
     func showViewController(_ viewController: UIViewController) {
@@ -105,6 +113,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        self.continueUserActivity(userActivity)
+    }
+
+    func continueUserActivity(_ userActivity: NSUserActivity) {
         guard let navigationController = self.tabBarViewController?.puzzleListNavigationController,
               let userId = self.settingsStorage.userId else { return }
 
