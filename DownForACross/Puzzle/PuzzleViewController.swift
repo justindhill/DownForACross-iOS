@@ -160,6 +160,7 @@ class PuzzleViewController: UIViewController {
                                                 target: self,
                                                 action: #selector(toggleSidebar))
         self.navigationItem.rightBarButtonItem = sideBarToggleItem
+        self.navigationItem.largeTitleDisplayMode = .never
 
         self.view.backgroundColor = .systemBackground
         self.view.addGestureRecognizer(self.swipeGestureRecognizer)

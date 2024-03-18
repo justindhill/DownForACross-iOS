@@ -16,6 +16,8 @@
 		3B011DFD2B30C02F00BDB732 /* ListPuzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFC2B30C02F00BDB732 /* ListPuzzle.swift */; };
 		3B011DFF2B30C03500BDB732 /* Puzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFE2B30C03500BDB732 /* Puzzle.swift */; };
 		3B011E012B30C04C00BDB732 /* PuzzleStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011E002B30C04C00BDB732 /* PuzzleStats.swift */; };
+		3B377BF22BA8739600DCC223 /* SettingsEditableTextCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B377BF12BA8739600DCC223 /* SettingsEditableTextCell.swift */; };
+		3B377BF42BA873D600DCC223 /* SettingsBaseCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B377BF32BA873D600DCC223 /* SettingsBaseCell.swift */; };
 		3B4D818F2B63F01A0098A5DA /* CheckEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */; };
 		3B581B132B7E61880084EC9B /* TabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B581B122B7E61880084EC9B /* TabBarViewController.swift */; };
 		3B581B152B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B581B142B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift */; };
@@ -74,6 +76,8 @@
 		3B011DFC2B30C02F00BDB732 /* ListPuzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPuzzle.swift; sourceTree = "<group>"; };
 		3B011DFE2B30C03500BDB732 /* Puzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Puzzle.swift; sourceTree = "<group>"; };
 		3B011E002B30C04C00BDB732 /* PuzzleStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleStats.swift; sourceTree = "<group>"; };
+		3B377BF12BA8739600DCC223 /* SettingsEditableTextCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsEditableTextCell.swift; sourceTree = "<group>"; };
+		3B377BF32BA873D600DCC223 /* SettingsBaseCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsBaseCell.swift; sourceTree = "<group>"; };
 		3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckEvent.swift; sourceTree = "<group>"; };
 		3B581B122B7E61880084EC9B /* TabBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarViewController.swift; sourceTree = "<group>"; };
 		3B581B142B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsOptionalEntryPropertyWrapper.swift; sourceTree = "<group>"; };
@@ -293,6 +297,8 @@
 			isa = PBXGroup;
 			children = (
 				3BB0FCEA2B76746900CD907C /* SettingsViewController.swift */,
+				3B377BF12BA8739600DCC223 /* SettingsEditableTextCell.swift */,
+				3B377BF32BA873D600DCC223 /* SettingsBaseCell.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -468,9 +474,11 @@
 				3B76C8CE2B9C061500E60AFD /* AccumulatingTapGestureRecognizer.swift in Sources */,
 				3B011DFA2B30BFF000BDB732 /* API.swift in Sources */,
 				3B4D818F2B63F01A0098A5DA /* CheckEvent.swift in Sources */,
+				3B377BF22BA8739600DCC223 /* SettingsEditableTextCell.swift in Sources */,
 				3BB0FCDD2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift in Sources */,
 				3B9003382B34CDA20088729C /* GameClient.swift in Sources */,
 				3B011DFF2B30C03500BDB732 /* Puzzle.swift in Sources */,
+				3B377BF42BA873D600DCC223 /* SettingsBaseCell.swift in Sources */,
 				3B73AD7F2B922746005DB5F8 /* OnboardingViewController.swift in Sources */,
 				3B011E012B30C04C00BDB732 /* PuzzleStats.swift in Sources */,
 				3B702AF52BA4819F00F89FB0 /* JoinGameCoordinator.swift in Sources */,

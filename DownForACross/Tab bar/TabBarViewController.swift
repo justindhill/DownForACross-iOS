@@ -22,12 +22,14 @@ class TabBarViewController: UITabBarController {
     lazy var puzzleListNavigationController: UINavigationController = {
         let nav = UINavigationController(rootViewController: self.puzzleListViewController)
         nav.tabBarItem = UITabBarItem(title: "Puzzles", image: UIImage(systemName: "cross"), tag: 0)
+        nav.navigationBar.prefersLargeTitles = true
         return nav
     }()
     
     lazy var settingsNavigationController: UINavigationController = {
         let nav = UINavigationController(rootViewController: self.settingsViewController)
         nav.tabBarItem = UITabBarItem(title: "Settings", image: UIImage(systemName: "gearshape"), tag: 1)
+        nav.navigationBar.prefersLargeTitles = true
         return nav
     }()
     

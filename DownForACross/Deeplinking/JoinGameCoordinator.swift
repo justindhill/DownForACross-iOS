@@ -122,7 +122,7 @@ extension JoinGameCoordinator: JoinConfirmationViewControllerDelegate {
                                                         settingsStorage: self.settingsStorage)
 
         self.navigationController.dismiss(animated: true)
-        var viewControllers = [self.navigationController.viewControllers[0], puzzleViewController]
+        let viewControllers = [self.navigationController.viewControllers[0], puzzleViewController]
         self.navigationController.setViewControllers(viewControllers, animated: true)
     }
 
