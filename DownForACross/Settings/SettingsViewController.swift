@@ -72,16 +72,4 @@ class SettingsViewController: UIViewController {
         }
     }
 
-
-
-//    func updateContent() {
-//        self.addSettingHeader(title: "Display name",
-//                              description: "How you will appear to other players in chat messages and the player list",
-//                              to: self.stackView)
-//        
-//        self.addSettingHeader(title: "Cursor color", description: "The cursor color that will represent you to other players", to: self.stackView)
-//        
-//        self.addSettingHeader(title: "Default input mode", description: "The input mode that will be initiallly selected when you start a game", to: self.stackView)
-//    }
-    
 }
