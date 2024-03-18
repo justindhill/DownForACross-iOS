@@ -106,6 +106,7 @@ class PuzzleViewController: UIViewController {
 
         self.gameClient.delegate = self
         self.sideBarViewController.messagesViewController.selfUserId = userId
+        self.hidesBottomBarWhenPushed = true
     }
 
     init(puzzle: Puzzle, puzzleId: String, userId: String, gameId: String? = nil, siteInteractor: SiteInteractor, api: API, settingsStorage: SettingsStorage) {
@@ -130,6 +131,7 @@ class PuzzleViewController: UIViewController {
 
         self.gameClient.delegate = self
         self.sideBarViewController.messagesViewController.selfUserId = userId
+        self.hidesBottomBarWhenPushed = true
     }
     
     lazy var contextMenuInteraction = UIContextMenuInteraction(delegate: self)
@@ -137,7 +139,6 @@ class PuzzleViewController: UIViewController {
     override func viewDidLoad() {
         self.sideBarViewController.delegate = self
         self.sideBarViewController.playersViewController.delegate = self
-        self.hidesBottomBarWhenPushed = true
         self.sideBarTapToDismissView.addGestureRecognizer(self.sideBarTapToDismissGestureRecognizer)
 
         self.sideBarViewController.clueListViewController.delegate = self
