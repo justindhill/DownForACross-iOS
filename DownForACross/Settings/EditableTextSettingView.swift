@@ -35,8 +35,11 @@ class EditableTextSettingView: BaseSettingView {
 extension EditableTextSettingView: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-        if let text = textField.text {
+        if let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty {
             self.settingsStorage[keyPath: self.keyPath] = text
+            textField.text = text
+        } else {
+            self.cancel()
         }
         return false
     }
