@@ -71,8 +71,12 @@ class SettingsViewController: UIViewController {
             updateHandler: { newValue in
                 self.view.window?.rootViewController?.view.overrideUserInterfaceStyle = newValue.userInterfaceStyle
             }))
-//
-//        self.addSettingHeader(title: "Default input mode", description: "The input mode that will be initiallly selected when you start a game", to: self.stackView)
+
+        self.stackView.addArrangedSubview(SingleSelectSettingView(
+            title: "Default input mode",
+            details: "The input mode that will be initiallly selected when you start a game",
+            settingsStorage: self.settingsStorage,
+            keyPath: \.defaultInputMode))
     }
 
     @objc func tappedInView() {

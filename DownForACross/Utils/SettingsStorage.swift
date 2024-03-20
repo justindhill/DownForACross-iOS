@@ -54,6 +54,9 @@ class SettingsStorage {
     @UserDefaultsEntry<Appearance>(key: "appearanceStyle")
     var appearanceStyle = .system
     
+    @UserDefaultsEntry<GameClient.InputMode>(key: "defaultInputMode")
+    var defaultInputMode = .normal
+
     var onboardingComplete: Bool {
         get { self.onboardingVersionComplete == self.currentOnboardingVersion }
     }

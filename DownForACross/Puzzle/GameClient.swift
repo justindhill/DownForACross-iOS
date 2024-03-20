@@ -37,7 +37,7 @@ class GameClient: NSObject, URLSessionDelegate {
         }
     }
     
-    enum InputMode: Int, CaseIterable {
+    enum InputMode: Int, Codable, CaseIterable, SettingsDisplayable {
         case normal
         case autocheck
         case pencil
@@ -57,7 +57,7 @@ class GameClient: NSObject, URLSessionDelegate {
     var defersJoining: Bool = false
     let reachability = try! Reachability()
     var isPuzzleSolved: Bool = false
-    var inputMode: InputMode = .normal
+    lazy var inputMode: InputMode = self.settingsStorage.defaultInputMode
     var puzzle: Puzzle
     let userId: String
     let settingsStorage: SettingsStorage
