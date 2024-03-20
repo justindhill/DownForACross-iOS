@@ -9,7 +9,7 @@ import UIKit
 
 class SettingsStorage {
     
-    enum Appearance: Int, Codable {
+    enum Appearance: Int, Codable, SettingsDisplayable {
         case system
         case light
         case dark
@@ -19,6 +19,14 @@ class SettingsStorage {
                 case .system: return .unspecified
                 case .light: return .light
                 case .dark: return .dark
+            }
+        }
+
+        var displayString: String {
+            switch self {
+                case .system: "System"
+                case .light: "Light"
+                case .dark: "Dark"
             }
         }
     }
