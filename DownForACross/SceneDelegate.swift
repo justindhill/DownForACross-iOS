@@ -38,7 +38,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window?.rootViewController = UIViewController()
         self.window?.isHidden = false
         
-        self.window?.rootViewController?.view.overrideUserInterfaceStyle = self.settingsStorage.appearanceStyle.userInterfaceStyle
+        self.window?.overrideUserInterfaceStyle = self.settingsStorage.appearanceStyle.userInterfaceStyle
         self.resolveLaunchRequirementsAndLaunch()
     }
     
@@ -165,7 +165,7 @@ extension SceneDelegate: OnboardingViewControllerDelegate {
     
     func onboardingViewControllerDidComplete(_ onboardingViewController: OnboardingViewController) {
         guard let userId = self.settingsStorage.userId else { fatalError("Onboarding completed before a user ID was resolved") }
-        self.window?.rootViewController?.view.overrideUserInterfaceStyle = self.settingsStorage.appearanceStyle.userInterfaceStyle
+        self.window?.overrideUserInterfaceStyle = self.settingsStorage.appearanceStyle.userInterfaceStyle
         self.showTabBarController(userId: userId)
     }
     

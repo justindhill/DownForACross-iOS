@@ -172,7 +172,11 @@ class OnboardingViewController: UIViewController {
         }
         
         self.settingsStorage.appearanceStyle = appearance
-        self.view.window?.rootViewController?.view.overrideUserInterfaceStyle = appearance.userInterfaceStyle
+
+        guard let window = self.view.window else { return }
+        UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
+            window.overrideUserInterfaceStyle = appearance.userInterfaceStyle
+        }
     }
     
     @objc func continueButtonTapped() {

@@ -9,6 +9,8 @@ import UIKit
 
 class BaseSettingView: UIView {
 
+    static let layoutMargins: UIEdgeInsets = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+
     var settingsStorage: SettingsStorage
     let title: String
     let details: String?
@@ -42,6 +44,8 @@ class BaseSettingView: UIView {
         accessoryView?.translatesAutoresizingMaskIntoConstraints = false
         super.init(frame: .zero)
 
+        self.layoutMargins = Self.layoutMargins
+
         self.titleLabel.text = title
         if let details {
             self.detailsLabel.text = details
@@ -65,7 +69,7 @@ class BaseSettingView: UIView {
             ])
         }
 
-        if let details {
+        if details != nil {
             self.addSubview(self.detailsLabel)
             constraints.append(contentsOf: [
                 self.detailsLabel.leadingAnchor.constraint(equalTo: self.layoutMarginsGuide.leadingAnchor),
@@ -76,6 +80,14 @@ class BaseSettingView: UIView {
         }
 
         NSLayoutConstraint.activate(constraints)
+    }
+
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        if self.bounds.contains(point) {
+            return accessoryView
+        }
+
+        return super.hitTest(point, with: event)
     }
 
     func cancel() {

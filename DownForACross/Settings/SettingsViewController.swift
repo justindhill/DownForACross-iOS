@@ -22,7 +22,6 @@ class SettingsViewController: UIViewController {
         self.settingsStorage = settingsStorage
         self.stackView = UIStackView()
         self.stackView.axis = .vertical
-        self.stackView.isLayoutMarginsRelativeArrangement = true
         self.stackView.translatesAutoresizingMaskIntoConstraints = false
         self.stackView.preservesSuperviewLayoutMargins = true
         self.scrollView = UIScrollView()
@@ -35,9 +34,15 @@ class SettingsViewController: UIViewController {
     }
 
     override func viewDidLoad() {
-        self.view.backgroundColor = .systemBackground
+        self.view.backgroundColor = .systemGroupedBackground
+        self.stackView.backgroundColor = .secondarySystemGroupedBackground
         self.view.addSubview(self.scrollView)
         self.scrollView.addSubview(self.stackView)
+        self.scrollView.insetsLayoutMarginsFromSafeArea = true
+        self.stackView.layer.cornerCurve = .continuous
+        self.stackView.layer.cornerRadius = 12
+        self.stackView.layer.masksToBounds = true
+        self.stackView.layoutMargins = UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(tappedInView))
         self.view.addGestureRecognizer(tap)
@@ -49,7 +54,7 @@ class SettingsViewController: UIViewController {
             self.scrollView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
             self.stackView.leadingAnchor.constraint(equalTo: self.scrollView.layoutMarginsGuide.leadingAnchor),
             self.stackView.trailingAnchor.constraint(equalTo: self.scrollView.layoutMarginsGuide.trailingAnchor),
-            self.stackView.topAnchor.constraint(equalTo: self.scrollView.contentLayoutGuide.topAnchor),
+            self.stackView.topAnchor.constraint(equalTo: self.scrollView.layoutMarginsGuide.topAnchor),
             self.stackView.bottomAnchor.constraint(equalTo: self.scrollView.contentLayoutGuide.bottomAnchor),
             self.scrollView.contentLayoutGuide.widthAnchor.constraint(equalTo: self.scrollView.widthAnchor)
         ])
@@ -64,19 +69,31 @@ class SettingsViewController: UIViewController {
             settingsStorage: self.settingsStorage,
             keyPath: \.userDisplayName))
 
-        self.stackView.addArrangedSubview(SingleSelectSettingView(
-            title: "Appearance",
-            settingsStorage: self.settingsStorage,
-            keyPath: \.appearanceStyle, 
-            updateHandler: { newValue in
-                self.view.window?.rootViewController?.view.overrideUserInterfaceStyle = newValue.userInterfaceStyle
-            }))
-
-        self.stackView.addArrangedSubview(SingleSelectSettingView(
+        self.addSetting(SingleSelectSettingView(
             title: "Default input mode",
             details: "The input mode that will be initiallly selected when you start a game",
             settingsStorage: self.settingsStorage,
             keyPath: \.defaultInputMode))
+
+        self.addSetting(SingleSelectSettingView(
+            title: "Appearance",
+            settingsStorage: self.settingsStorage,
+            keyPath: \.appearanceStyle,
+            updateHandler: { newValue in
+                guard let window = self.view.window else { return }
+                UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
+                    window.overrideUserInterfaceStyle = newValue.userInterfaceStyle
+                }
+            })
+        )
+    }
+
+    func addSetting(_ view: UIView) {
+        if self.stackView.arrangedSubviews.count > 0 {
+            self.stackView.addArrangedSubview(Separator())
+        }
+
+        self.stackView.addArrangedSubview(view)
     }
 
     @objc func tappedInView() {
@@ -84,6 +101,38 @@ class SettingsViewController: UIViewController {
             if let view = view as? BaseSettingView {
                 view.cancel()
             }
+        }
+    }
+
+    class Separator: UIView {
+        let lineLayer: CALayer = CALayer()
+
+        override func didMoveToWindow() {
+            if let screen = self.window?.screen {
+                self.heightConstraint.constant = 1 / screen.scale
+            }
+        }
+
+        lazy var heightConstraint: NSLayoutConstraint = self.heightAnchor.constraint(equalToConstant: 1)
+
+        required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+
+            self.layoutMargins = BaseSettingView.layoutMargins
+            NSLayoutConstraint.activate([
+                self.heightConstraint
+            ])
+
+            self.layer.addSublayer(self.lineLayer)
+        }
+
+        override func layoutSublayers(of layer: CALayer) {
+            self.lineLayer.backgroundColor = UIColor.systemFill.cgColor
+            self.lineLayer.frame = CGRect(x: self.layoutMargins.left,
+                                          y: 0, 
+                                          width: self.frame.size.width - self.layoutMargins.left,
+                                          height: self.frame.size.height)
         }
     }
 }

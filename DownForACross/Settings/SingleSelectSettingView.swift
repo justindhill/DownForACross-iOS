@@ -11,11 +11,11 @@ class SingleSelectSettingView<T: SettingsDisplayable>: BaseSettingView {
 
     let keyPath: WritableKeyPath<SettingsStorage, T>
     let updateHandler: ((T) -> Void)?
-    let button: UIButton = {
-        let button = UIButton(configuration: .plain())
+    let button: GreedyButton = {
+        let button = GreedyButton(configuration: .plain())
         button.showsMenuAsPrimaryAction = true
         button.configuration?.contentInsets = .zero
-        button.tintColor = .label
+        button.tintColor = .secondaryLabel
         return button
     }()
 
@@ -44,6 +44,14 @@ class SingleSelectSettingView<T: SettingsDisplayable>: BaseSettingView {
         attributedString += attachmentString
 
         return attributedString
+    }
+
+    class GreedyButton: UIButton {
+
+        override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+            return true
+        }
+
     }
 
 }

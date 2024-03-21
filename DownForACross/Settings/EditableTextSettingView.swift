@@ -21,12 +21,14 @@ class EditableTextSettingView: BaseSettingView {
         self.keyPath = keyPath
         super.init(title: title, details: details, settingsStorage: settingsStorage, accessoryView: self.textField)
         textField.text = settingsStorage[keyPath: keyPath]
+        textField.textColor = .secondaryLabel
         textField.returnKeyType = .done
         textField.delegate = self
     }
 
     override func cancel() {
         self.textField.resignFirstResponder()
+        self.textField.textColor = .secondaryLabel
         self.textField.text = self.settingsStorage[keyPath: keyPath]
     }
 
@@ -35,6 +37,7 @@ class EditableTextSettingView: BaseSettingView {
 extension EditableTextSettingView: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
+        textField.textColor = .secondaryLabel
         if let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty {
             self.settingsStorage[keyPath: self.keyPath] = text
             textField.text = text
@@ -42,5 +45,16 @@ extension EditableTextSettingView: UITextFieldDelegate {
             self.cancel()
         }
         return false
+    }
+
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        textField.textColor = .label
+
+        guard let text = textField.text else { return }
+
+        DispatchQueue.main.async {
+            textField.selectedTextRange = textField.textRange(from: textField.beginningOfDocument,
+                                                              to: textField.endOfDocument)
+        }
     }
 }
