@@ -23,11 +23,9 @@ class SettingsViewController: UIViewController {
         self.stackView = UIStackView()
         self.stackView.axis = .vertical
         self.stackView.translatesAutoresizingMaskIntoConstraints = false
-        self.stackView.preservesSuperviewLayoutMargins = true
         self.scrollView = UIScrollView()
         self.scrollView.translatesAutoresizingMaskIntoConstraints = false
-        self.scrollView.preservesSuperviewLayoutMargins = true
-        self.scrollView.contentInsetAdjustmentBehavior = .never
+        self.scrollView.alwaysBounceVertical = true
         super.init(nibName: nil, bundle: nil)
 
         self.navigationItem.title = "Settings"
@@ -38,7 +36,6 @@ class SettingsViewController: UIViewController {
         self.stackView.backgroundColor = .secondarySystemGroupedBackground
         self.view.addSubview(self.scrollView)
         self.scrollView.addSubview(self.stackView)
-        self.scrollView.insetsLayoutMarginsFromSafeArea = true
         self.stackView.layer.cornerCurve = .continuous
         self.stackView.layer.cornerRadius = 12
         self.stackView.layer.masksToBounds = true
@@ -48,15 +45,15 @@ class SettingsViewController: UIViewController {
         self.view.addGestureRecognizer(tap)
 
         NSLayoutConstraint.activate([
-            self.scrollView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-            self.scrollView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-            self.scrollView.topAnchor.constraint(equalTo: self.view.topAnchor),
-            self.scrollView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
-            self.stackView.leadingAnchor.constraint(equalTo: self.scrollView.layoutMarginsGuide.leadingAnchor),
-            self.stackView.trailingAnchor.constraint(equalTo: self.scrollView.layoutMarginsGuide.trailingAnchor),
-            self.stackView.topAnchor.constraint(equalTo: self.scrollView.layoutMarginsGuide.topAnchor),
-            self.stackView.bottomAnchor.constraint(equalTo: self.scrollView.contentLayoutGuide.bottomAnchor),
-            self.scrollView.contentLayoutGuide.widthAnchor.constraint(equalTo: self.scrollView.widthAnchor)
+            self.scrollView.frameLayoutGuide.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            self.scrollView.frameLayoutGuide.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            self.scrollView.frameLayoutGuide.topAnchor.constraint(equalTo: self.view.topAnchor),
+            self.scrollView.frameLayoutGuide.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            self.stackView.topAnchor.constraint(equalTo: self.scrollView.contentLayoutGuide.topAnchor, constant: 4),
+            self.stackView.leadingAnchor.constraint(equalTo: self.scrollView.contentLayoutGuide.leadingAnchor, constant: 16),
+            self.stackView.trailingAnchor.constraint(equalTo: self.scrollView.contentLayoutGuide.trailingAnchor, constant: -16),
+            self.stackView.bottomAnchor.constraint(equalTo: self.scrollView.contentLayoutGuide.bottomAnchor, constant: -4),
+            self.scrollView.contentLayoutGuide.widthAnchor.constraint(equalTo: self.view.widthAnchor),
         ])
 
         self.updateContent()

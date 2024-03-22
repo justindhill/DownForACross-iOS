@@ -161,7 +161,7 @@ class PuzzleViewController: UIViewController {
 
         self.subscriptions.append(self.sideBarViewController.messagesViewController.$hasUnreadMessages
             .didSet
-            .sink { [weak self] newValue in
+            .sink { [weak self] _ in
             self?.updateMenuContents()
         })
 
