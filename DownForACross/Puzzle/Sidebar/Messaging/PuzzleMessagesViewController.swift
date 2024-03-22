@@ -23,11 +23,7 @@ class PuzzleMessagesViewController: UIViewController {
     
     var selfUserId: String = ""
     
-    private var isVisible: Bool = false {
-        didSet {
-            print("messages visible: \(isVisible)")
-        }
-    }
+    private var isVisible: Bool = false
 
     @Published
     var hasUnreadMessages = false
@@ -83,10 +79,14 @@ class PuzzleMessagesViewController: UIViewController {
         ])
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.hasUnreadMessages = false
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.isVisible = true
-        self.hasUnreadMessages = false
     }
 
     override func viewDidDisappear(_ animated: Bool) {

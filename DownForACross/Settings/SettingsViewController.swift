@@ -76,7 +76,7 @@ class SettingsViewController: UIViewController {
             keyPath: \.defaultInputMode))
 
         self.addSetting(SingleSelectSettingView(
-            title: "Appearance",
+            title: "Theme",
             settingsStorage: self.settingsStorage,
             keyPath: \.appearanceStyle,
             updateHandler: { newValue in

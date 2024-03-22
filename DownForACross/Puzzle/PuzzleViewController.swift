@@ -8,6 +8,7 @@
 import UIKit
 import WebKit
 import Lottie
+import Combine
 
 class PuzzleViewController: UIViewController {
     
@@ -82,7 +83,9 @@ class PuzzleViewController: UIViewController {
     var isSidebarVisible: Bool {
         return self.sideBarLeadingConstraint.constant < 0
     }
-    
+
+    var subscriptions: [AnyCancellable] = []
+
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     // assumes that GameClient is connected and has done a bulk sync to get all of the necessary info from the create event
@@ -156,11 +159,15 @@ class PuzzleViewController: UIViewController {
             self.updateContentInsets()
         }
 
-        let sideBarToggleItem = UIBarButtonItem(image: UIImage(systemName: "sidebar.right"),
-                                                style: .plain,
-                                                target: self,
-                                                action: #selector(toggleSidebar))
-        self.navigationItem.rightBarButtonItem = sideBarToggleItem
+        self.subscriptions.append(self.sideBarViewController.messagesViewController.$hasUnreadMessages
+            .didSet
+            .sink { [weak self] newValue in
+            self?.updateMenuContents()
+        })
+
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "ellipsis.circle"))
+        self.updateMenuContents()
+
         self.navigationItem.largeTitleDisplayMode = .never
 
         self.view.backgroundColor = .systemBackground
@@ -375,6 +382,45 @@ class PuzzleViewController: UIViewController {
         self.gameClient.inputMode = newInputMode
         self.titleBarAnimator?.showPill(withText: newInputMode.displayString, icon: .pencil)
     }
+
+    func updateMenuContents() {
+        var messagesBadge: UIImage?
+        var newBarItemIcon: UIImage?
+        if self.sideBarViewController.messagesViewController.hasUnreadMessages {
+            messagesBadge = UIImage(systemName: "circle.fill",
+                                    withConfiguration: UIImage.SymbolConfiguration(paletteColors: [.systemRed]))
+            newBarItemIcon = UIImage.contextualmenuBadge
+                                    .applyingSymbolConfiguration(.init(paletteColors: [.systemRed, .systemBlue]))
+        } else {
+            newBarItemIcon = UIImage.contextualmenu
+                                    .applyingSymbolConfiguration(.init(paletteColors: [.systemRed, .systemBlue]))
+        }
+
+        if let newBarItemIcon {
+            self.navigationItem.rightBarButtonItem?.setSymbolImage(newBarItemIcon, contentTransition: .replace.byLayer)
+        }
+
+        self.navigationItem.rightBarButtonItem?.menu = UIMenu(children: [
+            UIAction(title: "Clues", handler: { _ in
+                self.sideBarViewController.setCurrentTab(.clues, animated: self.isSidebarVisible)
+                if !self.isSidebarVisible {
+                    self.toggleSidebar()
+                }
+            }),
+            UIAction(title: "Players", handler: { _ in
+                self.sideBarViewController.setCurrentTab(.players, animated: self.isSidebarVisible)
+                if !self.isSidebarVisible {
+                    self.toggleSidebar()
+                }
+            }),
+            UIAction(title: "Messages", image: messagesBadge, handler: { _ in
+                self.sideBarViewController.setCurrentTab(.messages, animated: self.isSidebarVisible)
+                if !self.isSidebarVisible {
+                    self.toggleSidebar()
+                }
+            })
+        ])
+    }
 }
 
 extension PuzzleViewController: GameClientDelegate {
@@ -391,6 +437,7 @@ extension PuzzleViewController: GameClientDelegate {
         guard !(gameClient.isPerformingBulkEventSync || self.isSidebarVisible) else { return }
         
         self.newMessageStackView.addChatMessage(message, from: from)
+        self.updateMenuContents()
 
         UIView.animate(withDuration: 0.2, delay: 0, options: [.curveEaseOut]) {
             self.view.layoutIfNeeded()

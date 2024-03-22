@@ -32,12 +32,8 @@ class PuzzleSideBarViewController: UIViewController {
                 return .messages
             }
         }
-        
-        set {
-            self.segmentedControl.selectedSegmentIndex = newValue.rawValue
-        }
     }
-    
+
     weak var delegate: PuzzleSideBarViewControllerDelegate?
     let clueListViewController: PuzzleClueListViewController
     let messagesViewController: PuzzleMessagesViewController
@@ -164,26 +160,35 @@ class PuzzleSideBarViewController: UIViewController {
     }
     
     @objc func selectedSegmentDidChange(_ sender: UISegmentedControl) {
+        self.updateVisibleTab(animated: true)
+    }
+
+    func setCurrentTab(_ tab: Tab, animated: Bool) {
+        self.segmentedControl.selectedSegmentIndex = tab.rawValue
+        self.updateVisibleTab(animated: animated)
+    }
+
+    func updateVisibleTab(animated: Bool) {
         switch self.currentTab {
             case .clues:
-                self.show(viewController: self.clueListViewController)
-                self.hide(viewController: self.messagesViewController)
-                self.hide(viewController: self.playersViewController)
+                self.show(viewController: self.clueListViewController, animated: animated)
+                self.hide(viewController: self.messagesViewController, animated: animated)
+                self.hide(viewController: self.playersViewController, animated: animated)
                 self.delegate?.sideBarViewController(self, didSwitchToTab: .clues)
             case .messages:
-                self.show(viewController: self.messagesViewController)
-                self.hide(viewController: self.clueListViewController)
-                self.hide(viewController: self.playersViewController)
+                self.show(viewController: self.messagesViewController, animated: animated)
+                self.hide(viewController: self.clueListViewController, animated: animated)
+                self.hide(viewController: self.playersViewController, animated: animated)
                 self.delegate?.sideBarViewController(self, didSwitchToTab: .messages)
             case .players:
-                self.hide(viewController: self.clueListViewController)
-                self.hide(viewController: self.messagesViewController)
-                self.show(viewController: self.playersViewController)
+                self.hide(viewController: self.clueListViewController, animated: animated)
+                self.hide(viewController: self.messagesViewController, animated: animated)
+                self.show(viewController: self.playersViewController, animated: animated)
                 self.delegate?.sideBarViewController(self, didSwitchToTab: .players)
         }
     }
 
-    func show(viewController: UIViewController) {
+    func show(viewController: UIViewController, animated: Bool) {
         if !viewController.view.isHidden {
             return
         }
@@ -192,12 +197,19 @@ class PuzzleSideBarViewController: UIViewController {
         viewController.willMove(toParent: self)
         self.addChild(viewController)
         viewController.didMove(toParent: self)
-        ShowHideAnimationHelpers.show(view: viewController.view) {
+
+        if animated {
+            ShowHideAnimationHelpers.show(view: viewController.view) {
+                viewController.endAppearanceTransition()
+            }
+        } else {
+            viewController.view.isHidden = false
+            viewController.view.alpha = 1
             viewController.endAppearanceTransition()
         }
     }
 
-    func hide(viewController: UIViewController) {
+    func hide(viewController: UIViewController, animated: Bool) {
         if viewController.view.isHidden {
             return
         }
@@ -206,7 +218,13 @@ class PuzzleSideBarViewController: UIViewController {
         viewController.willMove(toParent: nil)
         viewController.removeFromParent()
         viewController.didMove(toParent: nil)
-        ShowHideAnimationHelpers.hide(view: viewController.view) {
+
+        if animated {
+            ShowHideAnimationHelpers.hide(view: viewController.view) {
+                viewController.endAppearanceTransition()
+            }
+        } else {
+            viewController.view.isHidden = true
             viewController.endAppearanceTransition()
         }
     }

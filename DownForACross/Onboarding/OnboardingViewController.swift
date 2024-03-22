@@ -66,7 +66,7 @@ class OnboardingViewController: UIViewController {
     
     let appearanceLabel: UILabel = {
         let label = UILabel()
-        label.text = "Appearance mode"
+        label.text = "Theme"
         label.font = UIFont.preferredFont(forTextStyle: .caption1)
         label.textColor = .secondaryLabel
         

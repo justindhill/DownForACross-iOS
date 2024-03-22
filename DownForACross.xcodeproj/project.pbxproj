@@ -29,6 +29,7 @@
 		3B5BD0DE2BAA7A0A006DB214 /* BaseSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5BD0DD2BAA7A0A006DB214 /* BaseSettingView.swift */; };
 		3B5BD0E02BAB1D46006DB214 /* EditableTextSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5BD0DF2BAB1D46006DB214 /* EditableTextSettingView.swift */; };
 		3B5BD0E22BAB2004006DB214 /* SingleSelectSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5BD0E12BAB2004006DB214 /* SingleSelectSettingView.swift */; };
+		3B5BD0E42BAD2371006DB214 /* Publisher+DidSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5BD0E32BAD2371006DB214 /* Publisher+DidSet.swift */; };
 		3B702AF52BA4819F00F89FB0 /* JoinGameCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B702AF42BA4819F00F89FB0 /* JoinGameCoordinator.swift */; };
 		3B702AF72BA48DE800F89FB0 /* JoinConfirmationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B702AF62BA48DE800F89FB0 /* JoinConfirmationViewController.swift */; };
 		3B73AD7C2B921494005DB5F8 /* LaunchInterstitialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B73AD7B2B921494005DB5F8 /* LaunchInterstitialViewController.swift */; };
@@ -90,6 +91,7 @@
 		3B5BD0DD2BAA7A0A006DB214 /* BaseSettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseSettingView.swift; sourceTree = "<group>"; };
 		3B5BD0DF2BAB1D46006DB214 /* EditableTextSettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditableTextSettingView.swift; sourceTree = "<group>"; };
 		3B5BD0E12BAB2004006DB214 /* SingleSelectSettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleSelectSettingView.swift; sourceTree = "<group>"; };
+		3B5BD0E32BAD2371006DB214 /* Publisher+DidSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publisher+DidSet.swift"; sourceTree = "<group>"; };
 		3B702AF12BA3CDEC00F89FB0 /* Entitlements.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Entitlements.entitlements; sourceTree = "<group>"; };
 		3B702AF42BA4819F00F89FB0 /* JoinGameCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinGameCoordinator.swift; sourceTree = "<group>"; };
 		3B702AF62BA48DE800F89FB0 /* JoinConfirmationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinConfirmationViewController.swift; sourceTree = "<group>"; };
@@ -260,6 +262,7 @@
 				3B73AD822B93E3AB005DB5F8 /* DFACTextLayer.swift */,
 				3B76C8C92B9BECD700E60AFD /* UINavigationBar+TitleControl.swift */,
 				3B76C8D32B9F3F2C00E60AFD /* UIView+PartialSnapshot.swift */,
+				3B5BD0E32BAD2371006DB214 /* Publisher+DidSet.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -509,6 +512,7 @@
 				3B702AF72BA48DE800F89FB0 /* JoinConfirmationViewController.swift in Sources */,
 				3BB0FCED2B7E5AEB00CD907C /* UserDefaultsEntryPropertyWrapper.swift in Sources */,
 				3B5BD0D92BAA7984006DB214 /* PuzzleMessagesViewController.swift in Sources */,
+				3B5BD0E42BAD2371006DB214 /* Publisher+DidSet.swift in Sources */,
 				3B5BD0E02BAB1D46006DB214 /* EditableTextSettingView.swift in Sources */,
 				3BB0FCEB2B76746900CD907C /* SettingsViewController.swift in Sources */,
 				3B5BD0DA2BAA7984006DB214 /* PuzzleClueListViewController.swift in Sources */,
