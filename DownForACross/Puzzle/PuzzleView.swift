@@ -44,6 +44,10 @@ class PuzzleView: UIView {
         }
     }
     
+    var isPlayerAttributionEnabled: Bool = false {
+        didSet { self.setNeedsLayout() }
+    }
+    
     var userCursorColor: UIColor = .gray
     var isDarkMode: Bool { self.traitCollection.userInterfaceStyle == .dark }
     var isSolved: Bool = false
@@ -84,10 +88,9 @@ class PuzzleView: UIView {
     var backgroundView: UIView = UIView()
     var cursorIndicatorLayers: [String: CALayer] = [:]
     var numberTextLayers: [CATextLayer] = []
-    var fillTextLayers: [CATextLayer] = []
+    var fillTextLayers: [DFACTextLayer] = []
     var separatorLayers: [CALayer] = []
     var circleLayers: [CAShapeLayer] = []
-    var incorrectCheckLayers: [CAShapeLayer] = []
     var referenceIndicatorLayers: [CALayer] = []
     
     var _needsTextLayout: Bool = true
@@ -172,10 +175,12 @@ class PuzzleView: UIView {
     
     override func layoutSubviews() {
         // cache these because apparently bridging to CGColor is really expensive
+        let numberLayerColor = Theme.fillNormal.cgColor
+        let textBorderColor = Theme.attributedBorder.cgColor
         let emptySpaceBackgroundColor = Theme.emptySpaceBackground.cgColor
         let clearBackgroundColor = UIColor.clear.cgColor
-        let normalFillColor = Theme.fillNormal.cgColor
-        let correctFillColor = Theme.fillCorrect.cgColor
+        let normalFillColor = self.isPlayerAttributionEnabled ? Theme.attributedFillNormal.cgColor : Theme.fillNormal.cgColor
+        let correctFillColor = self.isPlayerAttributionEnabled ? Theme.attributedFillCorrect.cgColor : Theme.fillCorrect.cgColor
         let revealedFillColor = Theme.fillRevealed.cgColor
         let incorrectSlashColor = Theme.incorrectSlash.cgColor
         let circleColor = Theme.circle.cgColor
@@ -183,7 +188,6 @@ class PuzzleView: UIView {
         
         let cellSideLength = self.cellSideLength
         let separatorWidth = self.separatorWidth
-        let slashLineWidth = (cellSideLength * 0.1)
         let circleLineWidth = (cellSideLength * 0.05)
         let letterIndicatorWidth = (cellSideLength * 0.07)
                 
@@ -246,16 +250,21 @@ class PuzzleView: UIView {
             path.addLine(to: CGPoint(x: cellSideLength - separatorWidth, y: 0))
             return path.cgPath
         }()
-        
+        DFACTextLayer.incorrectSlashPath = incorrectCheckSlashPath
+        DFACTextLayer.incorrectSlashColor = incorrectSlashColor
+
         var textLayerIndex = 0
         var circleIndex = 0
-        var incorrectIndex = 0
         var cellNumber = 1
         
         var acrossSequence: [SequenceEntry] = []
         var downSequence: [SequenceEntry] = []
         var acrossCellNumberToCoordinatesMap: [Int: CellCoordinates] = [:]
         var downCellNumberToCoordinatesMap: [Int: CellCoordinates] = [:]
+        var userIdToCGColorMap: [String: CGColor] = [:]
+        if self.isPlayerAttributionEnabled {
+            userIdToCGColorMap = self.cursors.mapValues(\.player.color.cgColor)
+        }
 
         for (rowIndex, row) in self.grid.enumerated() {
             for (itemIndex, item) in row.enumerated() {
@@ -309,7 +318,9 @@ class PuzzleView: UIView {
                                          width: cellSideLength,
                                          height: cellSideLength).adjusted(forSeparatorWidth: separatorWidth)
                 }
-                
+
+                layer.drawsIncorrectSlash = false
+
                 if item == "." {
                     layer.backgroundColor = emptySpaceBackgroundColor
                     layer.string = nil
@@ -336,15 +347,28 @@ class PuzzleView: UIView {
                                     layer.foregroundColor = revealedFillColor
                                 case .incorrect:
                                     layer.foregroundColor = normalFillColor
-                                    let markerLayer = self.createOrReuseIncorrectCheckMarker(atIndex: incorrectIndex)
-                                    markerLayer.frame = layer.frame
-                                    markerLayer.path = incorrectCheckSlashPath
-                                    markerLayer.strokeColor = incorrectSlashColor
-                                    markerLayer.lineWidth = slashLineWidth
-                                    incorrectIndex += 1
+                                    layer.drawsIncorrectSlash = true
                             }
                         } else {
                             layer.foregroundColor = normalFillColor
+                        }
+
+                        if self.isPlayerAttributionEnabled {
+                            let borderedString = NSAttributedString(string: solutionEntry.value, attributes: [
+                                .foregroundColor: layer.foregroundColor!,
+                                .font: fillFont,
+                                .strokeColor: textBorderColor,
+                                .strokeWidth: -4
+                            ])
+                            layer.string = borderedString
+
+                            if let playerColor = userIdToCGColorMap[solutionEntry.userId] {
+                                layer.backgroundColor = playerColor
+                            } else {
+                                layer.backgroundColor = self.userCursorColor.cgColor
+                            }
+                        } else {
+                            layer.borderWidth = 0
                         }
                     } else {
                         layer.string = nil
@@ -447,9 +471,8 @@ class PuzzleView: UIView {
             }
         }
         
-        self.numberTextLayers.forEach({ $0.foregroundColor = normalFillColor })
-        self.trimIncorrectMarkerLayers(toCount: incorrectIndex)
-        
+        self.numberTextLayers.forEach({ $0.foregroundColor = numberLayerColor })
+
         // don't cache this color because this code path is rarely hit
         self.referenceIndicatorLayers.forEach({ $0.backgroundColor = Theme.referenceBackground.cgColor })
         
@@ -489,30 +512,6 @@ class PuzzleView: UIView {
         return layer
     }
     
-    func createOrReuseIncorrectCheckMarker(atIndex index: Int) -> CAShapeLayer {
-        if index < self.incorrectCheckLayers.count {
-            return self.incorrectCheckLayers[index]
-        } else {
-            let layer = CAShapeLayer()
-            layer.lineWidth = 2
-            layer.masksToBounds = true
-            layer.actions = [
-                "bounds": NSNull(),
-                "position": NSNull(),
-                "size": NSNull()
-            ]
-            self.incorrectCheckLayers.append(layer)
-            self.puzzleContainerView.layer.insertSublayer(layer, at: 0)
-            return layer
-        }
-    }
-    
-    func trimIncorrectMarkerLayers(toCount count: Int) {
-        while count < self.incorrectCheckLayers.count {
-            self.incorrectCheckLayers.removeLast().removeFromSuperlayer()
-        }
-    }
-    
     func syncCursorLayerCount() {
         for userId in self.cursors.keys {
             if self.cursorIndicatorLayers[userId] == nil {
@@ -534,7 +533,8 @@ class PuzzleView: UIView {
                 layer.anchorPoint = CGPoint(x: 0.5, y: 0.5)
                 layer.actions = [
                     "contents": NSNull(),
-                    "foregroundColor": NSNull()
+                    "foregroundColor": NSNull(),
+                    "backgroundColor": NSNull()
                 ]
                 
                 self.puzzleContainerView.layer.addSublayer(layer)
@@ -839,7 +839,20 @@ class PuzzleView: UIView {
             }
         }
     }
-    
+
+    func findAllLetterCellCoordinates() -> [CellCoordinates] {
+        var coordinates: [CellCoordinates] = []
+        for (rowIndex, rowContent) in self.grid.enumerated() {
+            for (cellIndex, cellContent) in rowContent.enumerated() {
+                if cellContent != "." {
+                    coordinates.append(CellCoordinates(row: rowIndex, cell: cellIndex))
+                }
+            }
+        }
+
+        return coordinates
+    }
+
     func findCurrentWordExtent() -> NSRange {
         return self.findExtentOfWord(atCoordinates: self.userCursor.coordinates, direction: self.userCursor.direction)
     }

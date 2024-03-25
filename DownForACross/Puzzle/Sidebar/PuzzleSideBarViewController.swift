@@ -20,6 +20,22 @@ class PuzzleSideBarViewController: UIViewController {
         case clues
         case players
         case messages
+
+        var image: UIImage {
+            switch self {
+                case .clues: UIImage(systemName: "list.bullet.rectangle")!
+                case .players: UIImage(systemName: "person.2")!
+                case .messages: UIImage(systemName: "message")!
+            }
+        }
+
+        var badgedImage: UIImage? {
+            switch self {
+                case .messages: UIImage(systemName: "message.badge",
+                                        withConfiguration: UIImage.SymbolConfiguration(paletteColors: [.systemRed, .label, .label]))!
+                default: nil
+            }
+        }
     }
     
     var currentTab: Tab {
@@ -63,9 +79,9 @@ class PuzzleSideBarViewController: UIViewController {
     }()
     
     let segmentedControl = UISegmentedControl(items: [
-        UIImage(systemName: "list.bullet.rectangle")!,
-        UIImage(systemName: "person.2")!,
-        UIImage(systemName: "message")!
+        Tab.clues.image,
+        Tab.players.image,
+        Tab.messages.image
     ])
 
     var gameClient: GameClient {
@@ -84,12 +100,9 @@ class PuzzleSideBarViewController: UIViewController {
 
         self.subscriptions.append(self.messagesViewController.$hasUnreadMessages.sink(receiveValue: { hasUnreadMessages in
             if hasUnreadMessages {
-                let config = UIImage.SymbolConfiguration(paletteColors: [.red, .label, .label])
-                self.segmentedControl.setImage(UIImage(systemName: "message.badge", withConfiguration: config),
-                                               forSegmentAt: Tab.messages.rawValue)
+                self.segmentedControl.setImage(Tab.messages.badgedImage, forSegmentAt: Tab.messages.rawValue)
             } else {
-                self.segmentedControl.setImage(UIImage(systemName: "message"),
-                                               forSegmentAt: Tab.messages.rawValue)
+                self.segmentedControl.setImage(Tab.messages.image, forSegmentAt: Tab.messages.rawValue)
             }
         }))
     }
@@ -164,8 +177,19 @@ class PuzzleSideBarViewController: UIViewController {
     }
 
     func setCurrentTab(_ tab: Tab, animated: Bool) {
-        self.segmentedControl.selectedSegmentIndex = tab.rawValue
-        self.updateVisibleTab(animated: animated)
+        let work = {
+            self.segmentedControl.selectedSegmentIndex = tab.rawValue
+            self.updateVisibleTab(animated: animated)
+        }
+
+        if animated {
+            work()
+        } else {
+            UIView.performWithoutAnimation {
+                work()
+                self.segmentedControl.layoutIfNeeded()
+            }
+        }
     }
 
     func updateVisibleTab(animated: Bool) {

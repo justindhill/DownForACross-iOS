@@ -8,8 +8,12 @@
 import UIKit
 
 class ShowHideAnimationHelpers {
-    
-    static func hide(view: UIView, duration: TimeInterval = 0.1, completion: (() -> Void)? = nil) {
+
+    static let DefaultAnimationDuration: TimeInterval = 0.1
+
+    static func hide(view: UIView,
+                     duration: TimeInterval = ShowHideAnimationHelpers.DefaultAnimationDuration,
+                     completion: (() -> Void)? = nil) {
         if view.isHidden {
             return
         }
@@ -45,7 +49,9 @@ class ShowHideAnimationHelpers {
         CATransaction.commit()
     }
     
-    static func show(view: UIView, duration: TimeInterval = 0.1, completion: (() -> Void)? = nil) {
+    static func show(view: UIView,
+                     duration: TimeInterval = ShowHideAnimationHelpers.DefaultAnimationDuration,
+                     completion: (() -> Void)? = nil) {
         if !view.isHidden {
             return
         }

@@ -285,26 +285,40 @@ class GameClient: NSObject, URLSessionDelegate {
                         self.players[event.userId] = player
                     }
                 } else if type == "check" {
-                    guard self.solution.count > 0 else { continue }
                     let event = try CheckEvent(payload: payload)
+                    guard self.solution.count > 0, !event.cells.isEmpty else { continue }
                     applyClosure = {
+                        var intermediateSolution = self.solution
                         for cell in event.cells {
-                            let correctness = self.correctness(forEntryAt: cell)
-                            self.solution[cell.row][cell.cell]?.correctness = correctness
+                            let correctness = self.correctness(forEntryAt: cell, in: intermediateSolution)
+                            intermediateSolution[cell.row][cell.cell]?.correctness = correctness
                         }
+                        self.solution = intermediateSolution
+                    }
+                } else if type == "reset" {
+                    let event = try ResetEvent(payload: payload)
+                    guard self.solution.count > 0, !event.cells.isEmpty else { continue }
+                    applyClosure = {
+                        var intermediateSolution = self.solution
+                        for cell in event.cells {
+                            intermediateSolution[cell.row][cell.cell] = nil
+                        }
+                        self.solution = intermediateSolution
                     }
                 } else if type == "reveal" {
-                    guard self.solution.count > 0 else { continue }
                     let event = try RevealEvent(payload: payload)
+                    guard self.solution.count > 0, !event.cells.isEmpty else { continue }
                     applyClosure = {
+                        var intermediateSolution = self.solution
                         for cell in event.cells {
                             let correctValue = self.puzzle.grid[cell.row][cell.cell]
-                            if correctValue != ".", self.solution[cell.row][cell.cell]?.correctness != .correct {
-                                self.solution[cell.row][cell.cell] = CellEntry(userId: "REVEALED",
-                                                                               value: correctValue,
-                                                                               correctness: .revealed)
+                            if correctValue != ".", intermediateSolution[cell.row][cell.cell]?.correctness != .correct {
+                                intermediateSolution[cell.row][cell.cell] = CellEntry(userId: "REVEALED",
+                                                                                      value: correctValue,
+                                                                                      correctness: .revealed)
                             }
                         }
+                        self.solution = intermediateSolution
                     }
                 } else if type == "updateDisplayName" {
                     let event = try UpdateDisplayNameEvent(payload: payload)
@@ -408,8 +422,8 @@ class GameClient: NSObject, URLSessionDelegate {
         return event
     }
     
-    func correctness(forEntryAt at: CellCoordinates) -> Correctness? {
-        guard let playerEntry = self.solution[at.row][at.cell] else {
+    func correctness(forEntryAt at: CellCoordinates, in solution: [[CellEntry?]]) -> Correctness? {
+        guard let playerEntry = solution[at.row][at.cell] else {
             return nil
         }
         return correctness(forEntry: playerEntry.value, at: at)
@@ -501,7 +515,13 @@ class GameClient: NSObject, URLSessionDelegate {
         self.emitWithAckNoOp(event)
         self.handleGameEvents([event.eventPayload()])
     }
-    
+
+    func reset(cells: [CellCoordinates]) {
+        let event = ResetEvent(gameId: self.gameId, cells: cells)
+        self.emitWithAckNoOp(event)
+        self.handleGameEvents([event.eventPayload()])
+    }
+
 }
 
 extension GameClient {

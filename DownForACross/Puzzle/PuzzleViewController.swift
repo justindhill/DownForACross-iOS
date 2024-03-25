@@ -165,9 +165,7 @@ class PuzzleViewController: UIViewController {
             self?.updateMenuContents()
         })
 
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "ellipsis.circle"))
-        self.updateMenuContents()
-
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage.contextualmenu)
         self.navigationItem.largeTitleDisplayMode = .never
 
         self.view.backgroundColor = .systemBackground
@@ -242,6 +240,7 @@ class PuzzleViewController: UIViewController {
             self.newMessageStackView.bottomAnchor.constraint(equalTo: self.keyboardToolbar.topAnchor, constant: -8)
         ])
                 
+        self.updateMenuContents()
         self.interactable = false
     }
     
@@ -384,14 +383,14 @@ class PuzzleViewController: UIViewController {
     }
 
     func updateMenuContents() {
-        var messagesBadge: UIImage?
+        var messagesIcon: UIImage?
         var newBarItemIcon: UIImage?
         if self.sideBarViewController.messagesViewController.hasUnreadMessages {
-            messagesBadge = UIImage(systemName: "circle.fill",
-                                    withConfiguration: UIImage.SymbolConfiguration(paletteColors: [.systemRed]))
+            messagesIcon = PuzzleSideBarViewController.Tab.messages.badgedImage
             newBarItemIcon = UIImage.contextualmenuBadge
                                     .applyingSymbolConfiguration(.init(paletteColors: [.systemRed, .systemBlue]))
         } else {
+            messagesIcon = PuzzleSideBarViewController.Tab.messages.image
             newBarItemIcon = UIImage.contextualmenu
                                     .applyingSymbolConfiguration(.init(paletteColors: [.systemRed, .systemBlue]))
         }
@@ -400,26 +399,142 @@ class PuzzleViewController: UIViewController {
             self.navigationItem.rightBarButtonItem?.setSymbolImage(newBarItemIcon, contentTransition: .replace.byLayer)
         }
 
-        self.navigationItem.rightBarButtonItem?.menu = UIMenu(children: [
-            UIAction(title: "Clues", handler: { _ in
+        var menuElements: [UIMenuElement] = [
+            UIAction(title: "Clues", image: PuzzleSideBarViewController.Tab.clues.image, handler: { _ in
                 self.sideBarViewController.setCurrentTab(.clues, animated: self.isSidebarVisible)
                 if !self.isSidebarVisible {
                     self.toggleSidebar()
                 }
             }),
-            UIAction(title: "Players", handler: { _ in
+            UIAction(title: "Players", image: PuzzleSideBarViewController.Tab.players.image, handler: { _ in
                 self.sideBarViewController.setCurrentTab(.players, animated: self.isSidebarVisible)
                 if !self.isSidebarVisible {
                     self.toggleSidebar()
                 }
             }),
-            UIAction(title: "Messages", image: messagesBadge, handler: { _ in
+            UIAction(title: "Messages", image: messagesIcon, handler: { _ in
                 self.sideBarViewController.setCurrentTab(.messages, animated: self.isSidebarVisible)
                 if !self.isSidebarVisible {
                     self.toggleSidebar()
                 }
+            }),
+            UIAction(title: "Color attribution",
+                     image: self.puzzleView.isPlayerAttributionEnabled 
+                        ? UIImage(systemName: "checkmark.square")
+                        : UIImage(systemName: "square"),
+                     handler: { [weak self] _ in
+                guard let self else { return }
+                self.puzzleView.isPlayerAttributionEnabled = !self.puzzleView.isPlayerAttributionEnabled
+                self.updateMenuContents()
+            }),
+            UIMenu(title: "Input mode", image: UIImage(systemName: "pencil"), children: GameClient.InputMode.allCases.map({ inputMode in
+                let isCurrent = inputMode == self.gameClient.inputMode
+                return UIAction(title: inputMode.displayString,
+                         image: isCurrent ? UIImage(systemName: "checkmark") : nil,
+                         handler: { [weak self] _ in
+                    guard let self else { return }
+                    self.gameClient.inputMode = inputMode
+                    self.updateMenuContents()
+                })
+            }))
+        ]
+
+        menuElements.append(contentsOf: self.checkRevealResetMenus(includingFullPuzzleOption: true))
+
+        menuElements.append(UIAction(title: "Invite others", image: UIImage(systemName: "square.and.arrow.up"), handler: { [weak self] action in
+            guard let self, let sender = action.sender as? UIBarButtonItem else { return }
+            self.presentShareSheet(fromView: nil, orBarButtonItem: sender)
+        }))
+
+        self.navigationItem.rightBarButtonItem?.menu = UIMenu(children: menuElements)
+    }
+
+    func presentShareSheet(fromView view: UIView?, orBarButtonItem item: UIBarButtonItem?) {
+        if view == nil && item == nil {
+            assertionFailure("View or item must be populated!")
+        }
+
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "dfac.link"
+        components.path = "/beta/game/\(self.gameClient.gameId)"
+
+        #if targetEnvironment(simulator)
+        let url = components.url!.absoluteString
+        #else
+        let url = components.url!
+        #endif
+
+        let text = "Join my crossword on DownForACross!"
+
+        let activityViewController = UIActivityViewController(activityItems: [text, url], applicationActivities: nil)
+        activityViewController.popoverPresentationController?.sourceView = view
+        activityViewController.popoverPresentationController?.sourceItem = item
+        self.present(activityViewController, animated: true)
+    }
+
+    func checkRevealResetMenus(includingFullPuzzleOption puzzle: Bool) -> [UIMenu] {
+        var checkMenuActions: [UIAction] = [
+            UIAction(title: "Cell", handler: { [weak self] _ in
+                guard let self else { return }
+                self.gameClient.check(cells: [self.puzzleView.userCursor.coordinates])
+            }),
+            UIAction(title: "Word", handler: { [weak self] _ in
+                guard let self else { return }
+                self.gameClient.check(cells: self.puzzleView.findCurrentWordCellCoordinates())
             })
-        ])
+        ]
+
+        if puzzle {
+            checkMenuActions.append(UIAction(title: "Puzzle", handler: { [weak self] _ in
+                guard let self else { return }
+                self.gameClient.check(cells: self.puzzleView.findAllLetterCellCoordinates())
+            }))
+        }
+
+        var revealMenuActions: [UIAction] = [
+            UIAction(title: "Cell", handler: { [weak self] _ in
+                guard let self else { return }
+                self.gameClient.reveal(cells: [self.puzzleView.userCursor.coordinates])
+            }),
+            UIAction(title: "Word", handler: { [weak self] _ in
+                guard let self else { return }
+                self.gameClient.reveal(cells: self.puzzleView.findCurrentWordCellCoordinates())
+            })
+        ]
+
+        if puzzle {
+            revealMenuActions.append(UIAction(title: "Puzzle", handler: { [weak self] _ in
+                guard let self else { return }
+                self.gameClient.reveal(cells: self.puzzleView.findAllLetterCellCoordinates())
+            }))
+        }
+
+        var resetMenuActions: [UIAction] = [
+            UIAction(title: "Cell", handler: { [weak self] _ in
+                guard let self else { return }
+                self.gameClient.reset(cells: [self.puzzleView.userCursor.coordinates])
+            }),
+            UIAction(title: "Word", handler: { [weak self] _ in
+                guard let self else { return }
+                self.gameClient.reset(cells: self.puzzleView.findCurrentWordCellCoordinates())
+            })
+        ]
+
+        if puzzle {
+            resetMenuActions.append(UIAction(title: "Puzzle", handler: { [weak self] _ in
+                guard let self else { return }
+                self.gameClient.reset(cells: self.puzzleView.findAllLetterCellCoordinates())
+            }))
+        }
+
+        let checkMenu = UIMenu(title: "Check", identifier: nil, options: [], preferredElementSize: .automatic, children: checkMenuActions)
+
+        var revealMenu = UIMenu(title: "Reveal", identifier: nil, options: [], preferredElementSize: .automatic, children: revealMenuActions)
+        var resetMenu = UIMenu(title: "Reset", identifier: nil, options: [], preferredElementSize: .automatic, children: resetMenuActions)
+
+
+        return [checkMenu, revealMenu, resetMenu]
     }
 }
 
@@ -577,23 +692,7 @@ extension PuzzleViewController: PuzzleToolbarViewDelegate {
 extension PuzzleViewController: PuzzlePlayersViewControllerDelegate {
     
     func playersViewControllerDidSelectSendInvite(_ playersViewController: PuzzlePlayersViewController, sourceView: UIView) {
-        var components = URLComponents()
-        components.scheme = "https"
-        components.host = "dfac.link"
-        components.path = "/beta/game/\(self.gameClient.gameId)"
-
-        #if targetEnvironment(simulator)
-        let url = components.url!.absoluteString
-        #else
-        let url = components.url! 
-        #endif
-
-        let text = "Join my crossword on DownForACross!"
-
-        let activityViewController = UIActivityViewController(activityItems: [text, url], applicationActivities: nil)
-        activityViewController.popoverPresentationController?.sourceView = sourceView
-        self.present(activityViewController, animated: true)
-
+        self.presentShareSheet(fromView: sourceView, orBarButtonItem: nil)
     }
     
 }
@@ -602,31 +701,13 @@ extension PuzzleViewController: UIContextMenuInteractionDelegate {
     
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(actionProvider: { _ in
-            UIMenu(title: "", image: nil, identifier: .root, options: [.displayInline], children: [
-                        UIMenu(title: "Check", identifier: nil, options: [], preferredElementSize: .automatic, children: [
-                            UIAction(title: "Cell", handler: { [weak self] _ in
-                                guard let self else { return }
-                                self.gameClient.check(cells: [self.puzzleView.userCursor.coordinates])
-                            }),
-                            UIAction(title: "Word", handler: { [weak self] _ in
-                                guard let self else { return }
-                                self.gameClient.check(cells: self.puzzleView.findCurrentWordCellCoordinates())
-                            })
-                        ]),
-                        UIMenu(title: "Reveal", identifier: nil, options: [], preferredElementSize: .automatic, children: [
-                            UIAction(title: "Cell", handler: { [weak self] _ in
-                                guard let self else { return }
-                                self.gameClient.reveal(cells: [self.puzzleView.userCursor.coordinates])
-                            }),
-                            UIAction(title: "Word", handler: { [weak self] _ in
-                                guard let self else { return }
-                                self.gameClient.reveal(cells: self.puzzleView.findCurrentWordCellCoordinates())
-                            })
-                        ])
-                    ]
-                )
-            }
-        )
+            UIMenu(title: "",
+                   image: nil,
+                   identifier: .root,
+                   options: [.displayInline],
+                   children: self.checkRevealResetMenus(includingFullPuzzleOption: false)
+            )
+        })
     }
     
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, highlightPreviewForItemWithIdentifier identifier: any NSCopying) -> UITargetedPreview? {
