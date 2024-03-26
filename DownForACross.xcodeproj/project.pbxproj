@@ -11,11 +11,11 @@
 		3B011DE82B30BED400BDB732 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DE72B30BED400BDB732 /* SceneDelegate.swift */; };
 		3B011DEA2B30BED400BDB732 /* PuzzleListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DE92B30BED400BDB732 /* PuzzleListViewController.swift */; };
 		3B011DEF2B30BED500BDB732 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B011DEE2B30BED500BDB732 /* Assets.xcassets */; };
-		3B011DF22B30BED500BDB732 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B011DF02B30BED500BDB732 /* LaunchScreen.storyboard */; };
 		3B011DFA2B30BFF000BDB732 /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DF92B30BFF000BDB732 /* API.swift */; };
 		3B011DFD2B30C02F00BDB732 /* ListPuzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFC2B30C02F00BDB732 /* ListPuzzle.swift */; };
 		3B011DFF2B30C03500BDB732 /* Puzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFE2B30C03500BDB732 /* Puzzle.swift */; };
 		3B011E012B30C04C00BDB732 /* PuzzleStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011E002B30C04C00BDB732 /* PuzzleStats.swift */; };
+		3B19A8772BB31FAB004F2D0D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B19A8762BB31FAB004F2D0D /* LaunchScreen.storyboard */; };
 		3B19D1162BB06D4E000AC250 /* ResetEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B19D1152BB06D4E000AC250 /* ResetEvent.swift */; };
 		3B19D1182BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */; };
 		3B4D818F2B63F01A0098A5DA /* CheckEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */; };
@@ -74,12 +74,12 @@
 		3B011DE72B30BED400BDB732 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		3B011DE92B30BED400BDB732 /* PuzzleListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleListViewController.swift; sourceTree = "<group>"; };
 		3B011DEE2B30BED500BDB732 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		3B011DF12B30BED500BDB732 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3B011DF32B30BED500BDB732 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3B011DF92B30BFF000BDB732 /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
 		3B011DFC2B30C02F00BDB732 /* ListPuzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPuzzle.swift; sourceTree = "<group>"; };
 		3B011DFE2B30C03500BDB732 /* Puzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Puzzle.swift; sourceTree = "<group>"; };
 		3B011E002B30C04C00BDB732 /* PuzzleStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleStats.swift; sourceTree = "<group>"; };
+		3B19A8762BB31FAB004F2D0D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3B19D1152BB06D4E000AC250 /* ResetEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetEvent.swift; sourceTree = "<group>"; };
 		3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableViewDiffableDataSource+LastIndex.swift"; sourceTree = "<group>"; };
 		3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckEvent.swift; sourceTree = "<group>"; };
@@ -335,7 +335,7 @@
 			isa = PBXGroup;
 			children = (
 				3B011DEE2B30BED500BDB732 /* Assets.xcassets */,
-				3B011DF02B30BED500BDB732 /* LaunchScreen.storyboard */,
+				3B19A8762BB31FAB004F2D0D /* LaunchScreen.storyboard */,
 				3B011DF32B30BED500BDB732 /* Info.plist */,
 				3B702AF12BA3CDEC00F89FB0 /* Entitlements.entitlements */,
 			);
@@ -420,7 +420,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3B011DF22B30BED500BDB732 /* LaunchScreen.storyboard in Resources */,
+				3B19A8772BB31FAB004F2D0D /* LaunchScreen.storyboard in Resources */,
 				3BB0FCE02B6C9A9A00CD907C /* confetti.json in Resources */,
 				3B011DEF2B30BED500BDB732 /* Assets.xcassets in Resources */,
 			);
@@ -533,17 +533,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		3B011DF02B30BED500BDB732 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				3B011DF12B30BED500BDB732 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		3B011DF42B30BED500BDB732 /* Debug */ = {
@@ -674,23 +663,25 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "${SRCROOT}/DownForACross/Supporting/Entitlements.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development: Justin Hill (2C45PT62RN)";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6ET9AKX465;
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6ET9AKX465;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DownForACross/Supporting/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.justinhill.DownForACross;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "DFAC Development";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "DFAC Development";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -704,26 +695,25 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "${SRCROOT}/DownForACross/Supporting/Entitlements.entitlements";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Distribution: Justin Hill (6ET9AKX465)";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6ET9AKX465;
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6ET9AKX465;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DownForACross/Supporting/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.justinhill.DownForACross;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "DFAC Development";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "DFAC Development";
+				PROVISIONING_PROFILE_SPECIFIER = "DFAC Distribution";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "DFAC Distribution";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -802,24 +792,26 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "${SRCROOT}/DownForACross/Supporting/Entitlements.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development: Justin Hill (2C45PT62RN)";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6ET9AKX465;
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6ET9AKX465;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DownForACross/Supporting/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				OTHER_SWIFT_FLAGS = "-D COCOAPODS $(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.justinhill.DownForACross;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "DFAC Development";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "DFAC Development";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
