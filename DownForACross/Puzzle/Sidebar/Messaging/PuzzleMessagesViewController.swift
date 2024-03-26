@@ -122,6 +122,10 @@ class PuzzleMessagesViewController: UIViewController {
     }
 
     override func viewWillAppear(_ animated: Bool) {
+        if self.needsContentOffsetAdjustment {
+            self.view.setNeedsLayout()
+        }
+        
         super.viewWillAppear(animated)
         self.hasUnreadMessages = false
         self.isVisible = true

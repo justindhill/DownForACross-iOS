@@ -77,7 +77,11 @@ class PuzzleNewMessageStackView: UIView {
         self.stackView.addArrangedSubview(bubbleView)
         self.layoutIfNeeded()
         self.heightConstraint.constant = self.stackView.frame.size.height
-        
+
+        UIView.animate(withDuration: 0.2, delay: 0, options: [.curveEaseOut]) {
+            self.superview?.layoutIfNeeded()
+        }
+
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { _ in
             if bubbleView.superview != nil {
                 self.remove(view: bubbleView, animated: true)
@@ -86,7 +90,11 @@ class PuzzleNewMessageStackView: UIView {
     }
     
     func addSystemMessage(_ message: String) {
-        
+        let event = ChatEvent(gameId: "", senderId: "", senderName: "", message: message)
+        event.messageId = UUID().uuidString
+
+        self.addChatMessage(event,
+                            from: Player(userId: "SYSTEM", displayName: "Pro tip!", color: UIColor.systemBlue))
     }
     
     func remove(view: UIView, animated: Bool) {

@@ -57,6 +57,9 @@ class SettingsStorage {
     @UserDefaultsEntry<GameClient.InputMode>(key: "defaultInputMode")
     var defaultInputMode = .normal
 
+    @UserDefaultsEntry<Bool>(key: "hasSeenInputModeQuickswitchTooltip")
+    var hasSeenInputModeQuickswitchTooltip = false
+
     var onboardingComplete: Bool {
         get { self.onboardingVersionComplete == self.currentOnboardingVersion }
     }

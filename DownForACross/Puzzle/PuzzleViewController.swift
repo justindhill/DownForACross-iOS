@@ -383,6 +383,10 @@ class PuzzleViewController: UIViewController {
         guard let newInputMode = GameClient.InputMode(rawValue: newIndex) else { return }
         self.gameClient.inputMode = newInputMode
         self.titleBarAnimator?.showPill(withText: newInputMode.displayString, icon: .pencil)
+
+        if newInputMode == .pencil {
+            self.newMessageStackView.addSystemMessage("Pencil mode isn't implemented yet!")
+        }
     }
 
     func updateMenuContents() {
@@ -438,6 +442,12 @@ class PuzzleViewController: UIViewController {
                     guard let self else { return }
                     self.gameClient.inputMode = inputMode
                     self.updateMenuContents()
+
+                    if inputMode == .pencil {
+                        self.newMessageStackView.addSystemMessage("Pencil mode isn't implemented yet.")
+                    } else {
+                        self.showInputModeQuickswitchTooltipIfNecessary()
+                    }
                 })
             }))
         ]
@@ -538,6 +548,13 @@ class PuzzleViewController: UIViewController {
 
         return [checkMenu, revealMenu, resetMenu]
     }
+
+    func showInputModeQuickswitchTooltipIfNecessary() {
+        if !self.settingsStorage.hasSeenInputModeQuickswitchTooltip {
+            self.newMessageStackView.addSystemMessage("Tap the puzzle with three fingers to quickly switch between input modes!")
+            self.settingsStorage.hasSeenInputModeQuickswitchTooltip = true
+        }
+    }
 }
 
 extension PuzzleViewController: GameClientDelegate {
@@ -555,10 +572,6 @@ extension PuzzleViewController: GameClientDelegate {
         
         self.newMessageStackView.addChatMessage(message, from: from)
         self.updateMenuContents()
-
-        UIView.animate(withDuration: 0.2, delay: 0, options: [.curveEaseOut]) {
-            self.view.layoutIfNeeded()
-        }
     }
     
     func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isBulkUpdate: Bool, isSolved: Bool) {
