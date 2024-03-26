@@ -93,7 +93,7 @@ class PuzzleSideBarViewController: UIViewController {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     init(puzzle: Puzzle, gameClient: GameClient) {
         self.clueListViewController = PuzzleClueListViewController(clues: puzzle.clues)
-        self.messagesViewController = PuzzleMessagesViewController()
+        self.messagesViewController = PuzzleMessagesViewController(gameClient: gameClient)
         self.playersViewController = PuzzlePlayersViewController(gameClient: gameClient)
         self.gameClient = gameClient
         super.init(nibName: nil, bundle: nil)

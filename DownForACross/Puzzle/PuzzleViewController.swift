@@ -343,7 +343,7 @@ class PuzzleViewController: UIViewController {
         
         UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut, animations: {
             self.sideBarTapToDismissView.backgroundColor = self.isSidebarVisible
-                ? UIColor.black.withAlphaComponent(0.3)
+                ? UIColor.black.withAlphaComponent(0.4)
                 : UIColor.clear
             self.view.layoutIfNeeded()
         }) { _ in
@@ -532,9 +532,8 @@ class PuzzleViewController: UIViewController {
         }
 
         let checkMenu = UIMenu(title: "Check", identifier: nil, options: [], preferredElementSize: .automatic, children: checkMenuActions)
-
-        var revealMenu = UIMenu(title: "Reveal", identifier: nil, options: [], preferredElementSize: .automatic, children: revealMenuActions)
-        var resetMenu = UIMenu(title: "Reset", identifier: nil, options: [], preferredElementSize: .automatic, children: resetMenuActions)
+        let revealMenu = UIMenu(title: "Reveal", identifier: nil, options: [], preferredElementSize: .automatic, children: revealMenuActions)
+        let resetMenu = UIMenu(title: "Reset", identifier: nil, options: [], preferredElementSize: .automatic, children: resetMenuActions)
 
 
         return [checkMenu, revealMenu, resetMenu]
@@ -550,8 +549,8 @@ extension PuzzleViewController: GameClientDelegate {
     
     func gameClient(_ client: GameClient, didReceiveNewChatMessage message: ChatEvent, from: Player) {
         self.sideBarViewController.messagesViewController.addMessage(
-            MessageAndPlayer(message: message, player: from))
-        
+            MessageAndPlayer(message: message, playerId: from.userId))
+
         guard !(gameClient.isPerformingBulkEventSync || self.isSidebarVisible) else { return }
         
         self.newMessageStackView.addChatMessage(message, from: from)
@@ -682,11 +681,8 @@ extension PuzzleViewController: PuzzleToolbarViewDelegate {
     
     func toolbarView(_ toolbarView: PuzzleToolbarView, didSendMessage message: String) {
         let sentEvent = self.gameClient.sendMessage(message)
-        
-        // player object doesn't matter because it's not used for messages sent by the user, only for messages
-        // sent by others
         let messageAndPlayer = MessageAndPlayer(message: sentEvent,
-                                                player: Player(userId: self.gameClient.userId, displayName: "", color: .black))
+                                                playerId: self.gameClient.userId)
         self.sideBarViewController.messagesViewController.addMessage(messageAndPlayer)
     }
     

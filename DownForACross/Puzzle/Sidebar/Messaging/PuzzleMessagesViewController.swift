@@ -27,7 +27,6 @@ class PuzzleMessagesViewController: UIViewController {
     var hasUnreadMessages = false
 
     lazy var goToBottomButton: UIView = {
-        let view = UIVisualEffectView(effect: UIBlurEffect(style: .systemChromeMaterial))
         let button = UIButton(configuration: .plain())
         button.translatesAutoresizingMaskIntoConstraints = false
         button.configuration?.image = UIImage(systemName: "chevron.down")
@@ -56,6 +55,12 @@ class PuzzleMessagesViewController: UIViewController {
     private var isVisible: Bool = false
     private var messagesNeedingAnimation: [MessageAndPlayer] = []
     private var messageIds: Set<String> = Set()
+    private var playersSubscription: AnyCancellable?
+    private var players: [String: Player] = [:] {
+        didSet {
+            self.tableView.reloadData()
+        }
+    }
 
     private var messages: [MessageAndPlayer] = [] {
         didSet {
@@ -79,6 +84,13 @@ class PuzzleMessagesViewController: UIViewController {
         
         return label
     }()
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    init(gameClient: GameClient) {
+        super.init(nibName: nil, bundle: nil)
+        self.playersSubscription = gameClient.$players.assign(to: \.players, on: self)
+    }
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -138,8 +150,15 @@ class PuzzleMessagesViewController: UIViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: self.messageCellReuseIdentifier, for: indexPath) as! PuzzleMessageCell
         cell.mode = (messageAndPlayer.message.senderId == self.selfUserId) ? .sentBySelf : .sentByOther
         cell.messageLabel.text = messageAndPlayer.message.message
-        cell.senderLabel.text = messageAndPlayer.player.displayName
-        cell.senderLabel.textColor = messageAndPlayer.player.color
+        
+        if let player = self.players[messageAndPlayer.playerId] {
+            cell.senderLabel.text = player.displayName
+            cell.senderLabel.textColor = player.color
+        } else {
+            cell.senderLabel.text = "Unknown player"
+            cell.senderLabel.textColor = UIColor.lightGray
+        }
+
         if self.messagesNeedingAnimation.contains(messageAndPlayer) {
             cell.bubbleView.isHidden = true
             cell.bubbleView.layer.opacity = 0
@@ -151,7 +170,7 @@ class PuzzleMessagesViewController: UIViewController {
     func addMessage(_ message: MessageAndPlayer) {
         guard !self.messageIds.contains(message.id) else { return }
 
-        if !self.isVisible {
+        if !(self.isVisible && self.isFollowingBottom) {
             self.hasUnreadMessages = true
         }
 
@@ -160,7 +179,7 @@ class PuzzleMessagesViewController: UIViewController {
         self.messageIds.insert(message.id)
         
         // start following the bottom again if the user is the sender
-        self.isFollowingBottom = self.isFollowingBottom || message.player.userId == self.selfUserId
+        self.isFollowingBottom = self.isFollowingBottom || message.playerId == self.selfUserId
 
         if self.isFollowingBottom, let insertedIndexPath = self.dataSource.indexPath(for: message) {
             self.tableView.scrollToRow(at: insertedIndexPath, at: .bottom, animated: true)
@@ -208,6 +227,10 @@ extension PuzzleMessagesViewController: UITableViewDelegate {
 
         if self.isLastIndexPath(indexPath) {
             ShowHideAnimationHelpers.hide(view: self.goToBottomButton)
+
+            if self.isVisible {
+                self.hasUnreadMessages = false
+            }
         }
     }
 

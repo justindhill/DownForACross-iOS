@@ -103,8 +103,10 @@ class GameClient: NSObject, URLSessionDelegate {
             self.cursors = cursors
 
             if !self.isPerformingBulkEventSync {
-                let newPlayers = Set(players.values).filter({ $0.isComplete })
-                    .subtracting(Set(oldValue.values).filter({ $0.isComplete }))
+                let oldPlayerIds = Set(oldValue.values)
+                    .filter({ $0.isComplete })
+                    .map(\.userId)
+                let newPlayers = Set(players.values).filter({ $0.isComplete && !oldPlayerIds.contains($0.userId) })
                 for newPlayer in newPlayers {
                     if newPlayer.userId != self.userId {
                         self.delegate?.gameClient(self, newPlayerJoined: newPlayer)

@@ -51,14 +51,6 @@ struct Player: Hashable, Identifiable {
     var isComplete: Bool {
         !((self.displayName == Self.defaultDisplayName) || (self.color == Self.defaultColor))
     }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(self.userId)
-    }
-
-    static func == (lhs: Player, rhs: Player) -> Bool {
-        return lhs.userId == rhs.userId
-    }
 }
 
 struct Cursor {
@@ -80,8 +72,8 @@ enum Direction {
 
 struct MessageAndPlayer: Hashable, Identifiable {
     let message: ChatEvent
-    let player: Player
-    
+    let playerId: String
+
     static func == (lhs: MessageAndPlayer, rhs: MessageAndPlayer) -> Bool {
         return lhs.id == rhs.id
     }

@@ -11,10 +11,18 @@ class DFACTextLayer: CATextLayer {
     
     static var incorrectSlashPath: CGPath?
     static var incorrectSlashColor: CGColor?
-    var drawsIncorrectSlash: Bool = false
+    
+    var drawsIncorrectSlash: Bool = false {
+        didSet { self.setNeedsDisplay() }
+    }
 
-    var textStrokeColor: CGColor?
-    var textStrokeWidth: CGFloat = 2
+    var textStrokeColor: CGColor? {
+        didSet { self.setNeedsDisplay() }
+    }
+
+    var textStrokeWidth: CGFloat = 2 {
+        didSet { self.setNeedsDisplay() }
+    }
 
     override func draw(in context: CGContext) {
         guard let font else {
