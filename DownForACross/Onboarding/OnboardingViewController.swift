@@ -181,6 +181,7 @@ class OnboardingViewController: UIViewController {
     
     @objc func continueButtonTapped() {
         self.settingsStorage.setOnboardingComplete()
+        self.displayNameTextField.resignFirstResponder()
         self.delegate?.onboardingViewControllerDidComplete(self)
     }
     
