@@ -232,8 +232,8 @@ class PuzzleViewController: UIViewController {
             self.sideBarViewController.view.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.67),
             self.sideBarLeadingConstraint,
             self.sideBarTapToDismissView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-            self.sideBarTapToDismissView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-            self.sideBarTapToDismissView.topAnchor.constraint(equalTo: self.view.topAnchor),
+            self.sideBarTapToDismissView.trailingAnchor.constraint(equalTo: self.sideBarViewController.view.leadingAnchor),
+            self.sideBarTapToDismissView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             self.sideBarTapToDismissView.bottomAnchor.constraint(equalTo: self.keyboardToolbar.topAnchor),
             self.newMessageStackView.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.67),
             self.newMessageStackView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -8),
@@ -342,6 +342,9 @@ class PuzzleViewController: UIViewController {
         }
         
         UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut, animations: {
+            self.sideBarTapToDismissView.backgroundColor = self.isSidebarVisible
+                ? UIColor.black.withAlphaComponent(0.3)
+                : UIColor.clear
             self.view.layoutIfNeeded()
         }) { _ in
             self.sideBarViewController.endAppearanceTransition()
