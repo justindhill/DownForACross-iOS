@@ -354,13 +354,8 @@ class PuzzleView: UIView {
                         }
 
                         if self.isPlayerAttributionEnabled {
-                            let borderedString = NSAttributedString(string: solutionEntry.value, attributes: [
-                                .foregroundColor: layer.foregroundColor!,
-                                .font: fillFont,
-                                .strokeColor: textBorderColor,
-                                .strokeWidth: -4
-                            ])
-                            layer.string = borderedString
+                            layer.textStrokeColor = textBorderColor
+                            layer.textStrokeWidth = 2
 
                             if let playerColor = userIdToCGColorMap[solutionEntry.userId] {
                                 layer.backgroundColor = playerColor
@@ -368,7 +363,7 @@ class PuzzleView: UIView {
                                 layer.backgroundColor = self.userCursorColor.cgColor
                             }
                         } else {
-                            layer.borderWidth = 0
+                            layer.textStrokeColor = nil
                         }
                     } else {
                         layer.string = nil
@@ -437,8 +432,13 @@ class PuzzleView: UIView {
         // user cursor letter indicator
         if self.userCursorLetterIndicatorLayer.superlayer == nil {
             self.puzzleContainerView.layer.addSublayer(self.userCursorLetterIndicatorLayer)
-            self.userCursorLetterIndicatorLayer.borderColor = self.userCursorColor.cgColor
             self.userCursorLetterIndicatorLayer.borderWidth = letterIndicatorWidth
+        }
+
+        if self.isPlayerAttributionEnabled && self.solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell] != nil {
+            self.userCursorLetterIndicatorLayer.borderColor = UIColor.white.withAlphaComponent(0.7).cgColor
+        } else {
+            self.userCursorLetterIndicatorLayer.borderColor = self.userCursorColor.cgColor
         }
         self.userCursorLetterIndicatorLayer.frame = CGRect(x: CGFloat(self.userCursor.coordinates.cell) * cellSideLength,
                                                            y: CGFloat(self.userCursor.coordinates.row) * cellSideLength,
@@ -588,7 +588,8 @@ class PuzzleView: UIView {
         layer.actions = [
             "bounds": NSNull(),
             "position": NSNull(),
-            "size": NSNull()
+            "size": NSNull(),
+            "borderColor": NSNull()
         ]
         
         return layer

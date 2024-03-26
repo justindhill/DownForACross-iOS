@@ -44,8 +44,8 @@ class ShowHideAnimationHelpers {
         group.fillMode = .forwards
         group.isRemovedOnCompletion = false
 
-        view.layer.add(group, forKey: "outGroup")
-        
+        view.layer.add(group, forKey: "ShowHideGroup")
+
         CATransaction.commit()
     }
     
@@ -85,7 +85,7 @@ class ShowHideAnimationHelpers {
         group.fillMode = .forwards
         group.isRemovedOnCompletion = false
         
-        view.layer.add(group, forKey: "inGroup")
+        view.layer.add(group, forKey: "ShowHideGroup")
         
         CATransaction.commit()
     }

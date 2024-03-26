@@ -13,21 +13,14 @@ class DFACTextLayer: CATextLayer {
     static var incorrectSlashColor: CGColor?
     var drawsIncorrectSlash: Bool = false
 
+    var textStrokeColor: CGColor?
+    var textStrokeWidth: CGFloat = 2
+
     override func draw(in context: CGContext) {
         guard let font else {
             super.draw(in: context)
             return
         }
-        
-        let ascenderAdjustment = (font.lineHeight - font.capHeight + font.descender - font.leading)
-        let yCenterOffset = (self.frame.size.height - font.capHeight) / 2
-        let yDiff = yCenterOffset - ascenderAdjustment
-        
-
-        context.saveGState()
-        context.translateBy(x: 0, y: yDiff)
-        super.draw(in: context)
-        context.restoreGState()
 
         if self.drawsIncorrectSlash, let path = DFACTextLayer.incorrectSlashPath, let color = DFACTextLayer.incorrectSlashColor {
             let slashLineWidth = (self.frame.size.width * 0.1)
@@ -37,6 +30,26 @@ class DFACTextLayer: CATextLayer {
             context.addPath(path)
             context.strokePath()
         }
+
+        let spaceSurroundingCaps = font.lineHeight - font.capHeight - font.descender
+        let sideRatio = (font.lineHeight - font.capHeight) / -font.descender
+        let yDiff = (self.frame.size.height - font.lineHeight) * (1 / sideRatio)
+
+        context.saveGState()
+        context.translateBy(x: 0, y: yDiff)
+
+        if let textStrokeColor = self.textStrokeColor {
+            context.saveGState()
+            context.setLineWidth(self.textStrokeWidth)
+            context.setStrokeColor(textStrokeColor)
+            context.setTextDrawingMode(.stroke)
+            super.draw(in: context)
+            context.restoreGState()
+        }
+
+        context.setTextDrawingMode(.fill)
+        super.draw(in: context)
+        context.restoreGState()
     }
     
 }

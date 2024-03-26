@@ -22,14 +22,41 @@ class PuzzleMessagesViewController: UIViewController {
     }()
     
     var selfUserId: String = ""
-    
-    private var isVisible: Bool = false
 
     @Published
     var hasUnreadMessages = false
 
+    lazy var goToBottomButton: UIView = {
+        let view = UIVisualEffectView(effect: UIBlurEffect(style: .systemChromeMaterial))
+        let button = UIButton(configuration: .plain())
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.configuration?.image = UIImage(systemName: "chevron.down")
+        button.configuration?.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
+        button.addTarget(self, action: #selector(goToBottomButtonTapped), for: .primaryActionTriggered)
+        button.layer.cornerRadius = 19
+        button.layer.masksToBounds = true
+        button.layer.borderColor = UIColor.ChatMessage.borderOther.cgColor
+        button.layer.borderWidth = 1
+        button.backgroundColor = UIColor.ChatMessage.backgroundOther
+        button.isHidden = true
+
+        NSLayoutConstraint.activate([
+            button.widthAnchor.constraint(equalToConstant: 38),
+            button.heightAnchor.constraint(equalToConstant: 38)
+        ])
+        return button
+    }()
+
+    var tableViewBottomContentOffset: CGFloat {
+        return self.tableView.contentSize.height - self.tableView.frame.size.height + self.tableView.contentInset.bottom
+    }
+
+    private var needsContentOffsetAdjustment = true
+    private var isFollowingBottom = true
+    private var isVisible: Bool = false
     private var messagesNeedingAnimation: [MessageAndPlayer] = []
     private var messageIds: Set<String> = Set()
+
     private var messages: [MessageAndPlayer] = [] {
         didSet {
             self.startTheConversationLabel.isHidden = messages.count > 0
@@ -53,7 +80,6 @@ class PuzzleMessagesViewController: UIViewController {
         return label
     }()
 
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -66,7 +92,8 @@ class PuzzleMessagesViewController: UIViewController {
 
         self.view.addSubview(self.tableView)
         self.view.addSubview(self.startTheConversationLabel)
-        
+        self.view.addSubview(self.goToBottomButton)
+
         NSLayoutConstraint.activate([
             self.tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             self.tableView.topAnchor.constraint(equalTo: self.view.topAnchor),
@@ -75,23 +102,36 @@ class PuzzleMessagesViewController: UIViewController {
             
             self.startTheConversationLabel.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
             self.startTheConversationLabel.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 8),
-            self.startTheConversationLabel.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -8)
+            self.startTheConversationLabel.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -8),
+
+            self.goToBottomButton.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -8),
+            self.goToBottomButton.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -8)
         ])
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.hasUnreadMessages = false
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
         self.isVisible = true
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         self.isVisible = false
+        self.needsContentOffsetAdjustment = true
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        if self.isVisible {
+            if self.needsContentOffsetAdjustment && self.isFollowingBottom {
+                self.tableView.contentOffset.y = self.tableViewBottomContentOffset
+            }
+            self.needsContentOffsetAdjustment = false
+        }
+
+        self.goToBottomButton.layer.borderColor = UIColor.ChatMessage.borderOther.cgColor
     }
 
     func createCell(tableView: UITableView, indexPath: IndexPath, messageAndPlayer: MessageAndPlayer) -> UITableViewCell {
@@ -115,29 +155,68 @@ class PuzzleMessagesViewController: UIViewController {
             self.hasUnreadMessages = true
         }
 
-        let isAtBottom = (self.tableView.contentSize.height - self.tableView.frame.size.height - self.tableView.contentOffset.y) < 20
         self.messagesNeedingAnimation.append(message)
         self.messages.append(message)
         self.messageIds.insert(message.id)
         
-        if isAtBottom, let insertedIndexPath = self.dataSource.indexPath(for: message) {
+        // start following the bottom again if the user is the sender
+        self.isFollowingBottom = self.isFollowingBottom || message.player.userId == self.selfUserId
+
+        if self.isFollowingBottom, let insertedIndexPath = self.dataSource.indexPath(for: message) {
             self.tableView.scrollToRow(at: insertedIndexPath, at: .bottom, animated: true)
         }
     }
-    
+
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        let willEndAtBottom = (abs(targetContentOffset.pointee.y - self.tableViewBottomContentOffset) < 1)
+
+        // this is a reasonable proxy since the go to bottom button is only visible when the last cell is visible
+        let lastCellVisible = self.goToBottomButton.isHidden
+
+        self.isFollowingBottom = (willEndAtBottom || lastCellVisible)
+    }
+
+    @objc func goToBottomButtonTapped() {
+        guard let lastIndexPath = self.dataSource.lastIndexPath(in: self.tableView) else { return }
+        self.tableView.scrollToRow(at: lastIndexPath, at: .bottom, animated: true)
+    }
+
+    func scrollViewDidScrollToTop(_ scrollView: UIScrollView) {
+        self.isFollowingBottom = false
+    }
+
+    func isLastIndexPath(_ indexPath: IndexPath) -> Bool {
+        guard let lastIndexPath = self.dataSource.lastIndexPath(in: self.tableView) else { return false }
+        return indexPath == lastIndexPath
+    }
+
 }
 
 extension PuzzleMessagesViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if let message = self.dataSource.itemIdentifier(for: indexPath),
-           let animationIndex = self.messagesNeedingAnimation.firstIndex(of: message),
-           let cell = cell as? PuzzleMessageCell {
-            ShowHideAnimationHelpers.show(view: cell.bubbleView, duration: 0.3)
-            self.messagesNeedingAnimation.remove(at: animationIndex)
+        if let cell = cell as? PuzzleMessageCell {
+            if let message = self.dataSource.itemIdentifier(for: indexPath),
+               let animationIndex = self.messagesNeedingAnimation.firstIndex(of: message) {
+                ShowHideAnimationHelpers.show(view: cell.bubbleView, duration: 0.3)
+                self.messagesNeedingAnimation.remove(at: animationIndex)
+            } else {
+                cell.bubbleView.isHidden = false
+                cell.bubbleView.layer.opacity = 1
+            }
+        }
+
+        if self.isLastIndexPath(indexPath) {
+            ShowHideAnimationHelpers.hide(view: self.goToBottomButton)
         }
     }
-    
+
+    func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if self.isLastIndexPath(indexPath) {
+            ShowHideAnimationHelpers.show(view: self.goToBottomButton)
+        }
+    }
+
     func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
         return false
     }

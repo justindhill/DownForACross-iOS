@@ -17,6 +17,7 @@
 		3B011DFF2B30C03500BDB732 /* Puzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFE2B30C03500BDB732 /* Puzzle.swift */; };
 		3B011E012B30C04C00BDB732 /* PuzzleStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011E002B30C04C00BDB732 /* PuzzleStats.swift */; };
 		3B19D1162BB06D4E000AC250 /* ResetEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B19D1152BB06D4E000AC250 /* ResetEvent.swift */; };
+		3B19D1182BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */; };
 		3B4D818F2B63F01A0098A5DA /* CheckEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */; };
 		3B581B132B7E61880084EC9B /* TabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B581B122B7E61880084EC9B /* TabBarViewController.swift */; };
 		3B581B152B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B581B142B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift */; };
@@ -80,6 +81,7 @@
 		3B011DFE2B30C03500BDB732 /* Puzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Puzzle.swift; sourceTree = "<group>"; };
 		3B011E002B30C04C00BDB732 /* PuzzleStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleStats.swift; sourceTree = "<group>"; };
 		3B19D1152BB06D4E000AC250 /* ResetEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetEvent.swift; sourceTree = "<group>"; };
+		3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableViewDiffableDataSource+LastIndex.swift"; sourceTree = "<group>"; };
 		3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckEvent.swift; sourceTree = "<group>"; };
 		3B581B122B7E61880084EC9B /* TabBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarViewController.swift; sourceTree = "<group>"; };
 		3B581B142B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsOptionalEntryPropertyWrapper.swift; sourceTree = "<group>"; };
@@ -265,6 +267,7 @@
 				3B76C8C92B9BECD700E60AFD /* UINavigationBar+TitleControl.swift */,
 				3B76C8D32B9F3F2C00E60AFD /* UIView+PartialSnapshot.swift */,
 				3B5BD0E32BAD2371006DB214 /* Publisher+DidSet.swift */,
+				3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -488,6 +491,7 @@
 				3BC761B62BA0C422003ACF81 /* RevealEvent.swift in Sources */,
 				3B5BD0D82BAA7984006DB214 /* PuzzleMessageCell.swift in Sources */,
 				3B73AD7C2B921494005DB5F8 /* LaunchInterstitialViewController.swift in Sources */,
+				3B19D1182BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift in Sources */,
 				3B76C8CC2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift in Sources */,
 				3B73AD832B93E3AB005DB5F8 /* DFACTextLayer.swift in Sources */,
 				3BAD21272B98BBBB00839504 /* EmptyStateView.swift in Sources */,
