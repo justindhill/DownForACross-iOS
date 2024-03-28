@@ -240,21 +240,9 @@ class PuzzleView: UIView {
         self.updateTextLayerCount(target: cellCount, font: baseFillFont)
         self.updateSeparatorCount(target: separatorCount)
 
-        let incorrectCheckSlashPath: CGPath = {
-            let path = UIBezierPath()
-            path.move(to: CGPoint(x: 0, y: cellSideLength - separatorWidth))
-            path.addLine(to: CGPoint(x: cellSideLength - separatorWidth, y: 0))
-            return path.cgPath
-        }()
-        DFACTextLayer.incorrectSlashPath = incorrectCheckSlashPath
         DFACTextLayer.incorrectSlashColor = incorrectSlashColor
         DFACTextLayer.circleColor = Theme.circle.cgColor
-
-        var circleRect = CGRect(x: 0, y: 0, width: cellSideLength,height: cellSideLength)
-            .adjusted(forSeparatorWidth: separatorWidth)
-        circleRect.origin = .zero
-        circleRect = circleRect.insetBy(dx: cellSideLength * 0.1, dy: cellSideLength * 0.1)
-        DFACTextLayer.circlePath = UIBezierPath(ovalIn: circleRect).cgPath
+        DFACTextLayer.updateDrawingPaths(sideLength: cellSideLength, separatorWidth: separatorWidth)
 
         var textLayerIndex = 0
         var cellNumber = 1

@@ -52,7 +52,6 @@ class DFACTextLayer: CATextLayer {
 
         if self.drawsIncorrectSlash, let color = DFACTextLayer.incorrectSlashColor {
             let lineWidth = (self.frame.size.width * 0.1)
-            let offset = lineWidth * 0.5
 
             context.saveGState()
 
@@ -64,7 +63,6 @@ class DFACTextLayer: CATextLayer {
             context.restoreGState()
         }
 
-        let spaceSurroundingCaps = font.lineHeight - font.capHeight - font.descender
         let sideRatio = (font.lineHeight - font.capHeight) / -font.descender
         let yDiff = (self.frame.size.height - font.lineHeight) * (1 / sideRatio)
 
@@ -84,5 +82,18 @@ class DFACTextLayer: CATextLayer {
         super.draw(in: context)
         context.restoreGState()
     }
-    
+
+    static func updateDrawingPaths(sideLength: CGFloat, separatorWidth: CGFloat) {
+        var circleRect = CGRect(x: 0, y: 0, width: sideLength,height: sideLength)
+            .adjusted(forSeparatorWidth: separatorWidth)
+        circleRect.origin = .zero
+        circleRect = circleRect.insetBy(dx: sideLength * 0.1, dy: sideLength * 0.1)
+        self.circlePath = UIBezierPath(ovalIn: circleRect).cgPath
+
+        let incorrectCheckSlashPath = UIBezierPath()
+        incorrectCheckSlashPath.move(to: CGPoint(x: 0, y: sideLength - separatorWidth))
+        incorrectCheckSlashPath.addLine(to: CGPoint(x: sideLength - separatorWidth, y: 0))
+        DFACTextLayer.incorrectSlashPath = incorrectCheckSlashPath.cgPath
+    }
+
 }
