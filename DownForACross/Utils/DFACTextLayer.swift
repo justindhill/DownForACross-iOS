@@ -9,10 +9,16 @@ import UIKit
 
 class DFACTextLayer: CATextLayer {
     
-    static var incorrectSlashPath: CGPath?
+    static var incorrectSlashPath: CGPath = CGPath(rect: .zero, transform: nil)
     static var incorrectSlashColor: CGColor?
-    
+    static var circlePath: CGPath = CGPath(rect: .zero, transform: nil)
+    static var circleColor: CGColor?
+
     var drawsIncorrectSlash: Bool = false {
+        didSet { self.setNeedsDisplay() }
+    }
+
+    var drawsCircle: Bool = false {
         didSet { self.setNeedsDisplay() }
     }
 
@@ -30,13 +36,32 @@ class DFACTextLayer: CATextLayer {
             return
         }
 
-        if self.drawsIncorrectSlash, let path = DFACTextLayer.incorrectSlashPath, let color = DFACTextLayer.incorrectSlashColor {
-            let slashLineWidth = (self.frame.size.width * 0.1)
+        if self.drawsCircle, let color = DFACTextLayer.circleColor {
+            let lineWidth = (self.frame.size.width * 0.05)
+
+            context.saveGState()
 
             context.setStrokeColor(color)
-            context.setLineWidth(slashLineWidth)
-            context.addPath(path)
+            context.setLineWidth(lineWidth)
+            context.addPath(DFACTextLayer.circlePath)
             context.strokePath()
+
+            context.restoreGState()
+
+        }
+
+        if self.drawsIncorrectSlash, let color = DFACTextLayer.incorrectSlashColor {
+            let lineWidth = (self.frame.size.width * 0.1)
+            let offset = lineWidth * 0.5
+
+            context.saveGState()
+
+            context.setStrokeColor(color)
+            context.setLineWidth(lineWidth)
+            context.addPath(DFACTextLayer.incorrectSlashPath)
+            context.strokePath()
+
+            context.restoreGState()
         }
 
         let spaceSurroundingCaps = font.lineHeight - font.capHeight - font.descender

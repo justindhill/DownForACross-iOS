@@ -90,7 +90,6 @@ class PuzzleView: UIView {
     var numberTextLayers: [CATextLayer] = []
     var fillTextLayers: [DFACTextLayer] = []
     var separatorLayers: [CALayer] = []
-    var circleLayers: [CAShapeLayer] = []
     var referenceIndicatorLayers: [CALayer] = []
     
     var _needsTextLayout: Bool = true
@@ -183,12 +182,10 @@ class PuzzleView: UIView {
         let correctFillColor = self.isPlayerAttributionEnabled ? Theme.attributedFillCorrect.cgColor : Theme.fillCorrect.cgColor
         let revealedFillColor = Theme.fillRevealed.cgColor
         let incorrectSlashColor = Theme.incorrectSlash.cgColor
-        let circleColor = Theme.circle.cgColor
         let separatorColor = Theme.separator.cgColor
         
         let cellSideLength = self.cellSideLength
         let separatorWidth = self.separatorWidth
-        let circleLineWidth = (cellSideLength * 0.05)
         let letterIndicatorWidth = (cellSideLength * 0.07)
                 
         self.puzzleContainerView.layer.borderWidth = separatorWidth
@@ -242,8 +239,7 @@ class PuzzleView: UIView {
         let separatorCount = self.grid.count * self.grid[0].count - 2
         self.updateTextLayerCount(target: cellCount, font: baseFillFont)
         self.updateSeparatorCount(target: separatorCount)
-        self.updateCircleCount(target: self.circles.count)
-        
+
         let incorrectCheckSlashPath: CGPath = {
             let path = UIBezierPath()
             path.move(to: CGPoint(x: 0, y: cellSideLength - separatorWidth))
@@ -252,9 +248,15 @@ class PuzzleView: UIView {
         }()
         DFACTextLayer.incorrectSlashPath = incorrectCheckSlashPath
         DFACTextLayer.incorrectSlashColor = incorrectSlashColor
+        DFACTextLayer.circleColor = Theme.circle.cgColor
+
+        var circleRect = CGRect(x: 0, y: 0, width: cellSideLength,height: cellSideLength)
+            .adjusted(forSeparatorWidth: separatorWidth)
+        circleRect.origin = .zero
+        circleRect = circleRect.insetBy(dx: cellSideLength * 0.1, dy: cellSideLength * 0.1)
+        DFACTextLayer.circlePath = UIBezierPath(ovalIn: circleRect).cgPath
 
         var textLayerIndex = 0
-        var circleIndex = 0
         var cellNumber = 1
         
         var acrossSequence: [SequenceEntry] = []
@@ -271,7 +273,7 @@ class PuzzleView: UIView {
                 let layer = self.fillTextLayers[textLayerIndex]
                 
                 let ltrCellIndex = (rowIndex * row.count) + itemIndex
-                let hasCircle = self.circles.contains(ltrCellIndex)
+                layer.drawsCircle = self.circles.contains(ltrCellIndex)
                 if self._needsTextLayout {
                     if self.itemRequiresNumberLabel(item, atRow: rowIndex, index: itemIndex) {
                         let numberTextLayer: CATextLayer
@@ -371,20 +373,6 @@ class PuzzleView: UIView {
                 }
                 
                 textLayerIndex += 1
-                
-                if hasCircle {
-                    let circleLayer = self.circleLayers[circleIndex]
-                    circleLayer.strokeColor = circleColor
-                    circleIndex += 1
-                    
-                    let rect = layer.frame.insetBy(dx: cellSideLength * 0.1, dy: cellSideLength * 0.1)
-                    circleLayer.lineWidth = circleLineWidth
-                    circleLayer.frame = rect
-                    circleLayer.path = UIBezierPath(ovalIn: CGRect(x: 0,
-                                                                   y: 0,
-                                                                   width: rect.size.width,
-                                                                   height: rect.size.height)).cgPath
-                }
             }
         }
         
@@ -553,19 +541,6 @@ class PuzzleView: UIView {
                 self.separatorLayers.append(layer)
             } else {
                 self.separatorLayers.removeLast().removeFromSuperlayer()
-            }
-        }
-    }
-    
-    func updateCircleCount(target: Int) {
-        while self.circleLayers.count != target {
-            if self.circleLayers.count < target {
-                let layer = CAShapeLayer()
-                layer.fillColor = UIColor.clear.cgColor
-                self.puzzleContainerView.layer.addSublayer(layer)
-                self.circleLayers.append(layer)
-            } else {
-                self.circleLayers.removeLast().removeFromSuperlayer()
             }
         }
     }
