@@ -39,6 +39,13 @@ struct CellEntry: Equatable, Codable {
     var userId: String
     var value: String
     var correctness: Correctness?
+
+    var isWritable: Bool {
+        switch self.correctness {
+            case .none: true
+            case .some(let correctness): correctness.isWritable
+        }
+    }
 }
 
 enum Correctness: Equatable, Codable {
@@ -46,16 +53,12 @@ enum Correctness: Equatable, Codable {
     case incorrect
     case revealed
     
-    var writable: Bool {
+    fileprivate var isWritable: Bool {
         switch self {
             case .correct, .revealed: return false
             case .incorrect: return true
         }
     }
-}
-
-extension Optional where Wrapped == Correctness {
-
 }
 
 struct Player: Hashable, Identifiable {
