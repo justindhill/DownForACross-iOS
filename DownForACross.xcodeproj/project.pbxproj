@@ -18,6 +18,7 @@
 		3B19A8772BB31FAB004F2D0D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B19A8762BB31FAB004F2D0D /* LaunchScreen.storyboard */; };
 		3B19D1162BB06D4E000AC250 /* ResetEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B19D1152BB06D4E000AC250 /* ResetEvent.swift */; };
 		3B19D1182BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */; };
+		3B31D97D2BB58FE20073EBE1 /* Array+Coordinates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B31D97C2BB58FE20073EBE1 /* Array+Coordinates.swift */; };
 		3B4D818F2B63F01A0098A5DA /* CheckEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */; };
 		3B581B132B7E61880084EC9B /* TabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B581B122B7E61880084EC9B /* TabBarViewController.swift */; };
 		3B581B152B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B581B142B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift */; };
@@ -82,6 +83,7 @@
 		3B19A8762BB31FAB004F2D0D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3B19D1152BB06D4E000AC250 /* ResetEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetEvent.swift; sourceTree = "<group>"; };
 		3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableViewDiffableDataSource+LastIndex.swift"; sourceTree = "<group>"; };
+		3B31D97C2BB58FE20073EBE1 /* Array+Coordinates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Coordinates.swift"; sourceTree = "<group>"; };
 		3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckEvent.swift; sourceTree = "<group>"; };
 		3B581B122B7E61880084EC9B /* TabBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarViewController.swift; sourceTree = "<group>"; };
 		3B581B142B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsOptionalEntryPropertyWrapper.swift; sourceTree = "<group>"; };
@@ -268,6 +270,7 @@
 				3B76C8D32B9F3F2C00E60AFD /* UIView+PartialSnapshot.swift */,
 				3B5BD0E32BAD2371006DB214 /* Publisher+DidSet.swift */,
 				3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */,
+				3B31D97C2BB58FE20073EBE1 /* Array+Coordinates.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -480,6 +483,7 @@
 				3B011DEA2B30BED400BDB732 /* PuzzleListViewController.swift in Sources */,
 				3BB0FCE62B7661A200CD907C /* Config.swift in Sources */,
 				3B90033D2B35D5960088729C /* UpdateCellEvent.swift in Sources */,
+				3B31D97D2BB58FE20073EBE1 /* Array+Coordinates.swift in Sources */,
 				3BC12A402B62A9380060C29F /* UIColor+HSL.swift in Sources */,
 				3BB0FCD92B6C5CB300CD907C /* ChatEvent.swift in Sources */,
 				3B011DE62B30BED400BDB732 /* AppDelegate.swift in Sources */,

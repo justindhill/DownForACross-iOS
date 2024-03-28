@@ -24,6 +24,7 @@ class PuzzleView: UIView {
     
     enum Constant {
         static let otherPlayerCursorOpacity: CGFloat = 0.3
+        static let wordBoundary: String = "."
     }
     
     weak var delegate: PuzzleViewDelegate?
@@ -128,8 +129,8 @@ class PuzzleView: UIView {
     init(puzzle: Puzzle) {
         self.grid = puzzle.grid
         self.solution = Array(repeating: Array(repeating: nil,
-                                               count: puzzle.grid[0].count),
-                              count: self.grid.count)
+                                               count: puzzle.grid.columnCount),
+                              count: self.grid.rowCount)
         self.cursors = [:]
         self.circles = Set(puzzle.circles)
         super.init(frame: .zero)
@@ -141,8 +142,8 @@ class PuzzleView: UIView {
     }
     
     var cellCount: Int {
-        guard self.grid.count > 0 && self.grid[0].count > 0 else { return 0 }
-        return self.grid.count * self.grid[0].count
+        guard self.grid.rowCount > 0 && self.grid.columnCount > 0 else { return 0 }
+        return self.grid.rowCount * self.grid.columnCount
     }
     
     var nativePixelWidth: CGFloat {
@@ -152,7 +153,7 @@ class PuzzleView: UIView {
     
     var separatorWidth: CGFloat {
         let nativePixelWidth = self.nativePixelWidth
-        if nativePixelWidth < 0.5 && self.grid[0].count < 20{
+        if nativePixelWidth < 0.5 && self.grid.columnCount < 20 {
             return nativePixelWidth * 2
         } else {
             return nativePixelWidth
@@ -162,7 +163,7 @@ class PuzzleView: UIView {
     var cellSideLength: CGFloat {
         guard self.cellCount > 0 else { return 0 }
         
-        let unclippedWidth = self.frame.size.width / CGFloat(self.grid[0].count)
+        let unclippedWidth = self.frame.size.width / CGFloat(self.grid.columnCount)
         let clippedWidth = unclippedWidth - unclippedWidth.truncatingRemainder(dividingBy: self.nativePixelWidth)
         return clippedWidth
     }
@@ -192,14 +193,14 @@ class PuzzleView: UIView {
         self.puzzleContainerView.layer.borderColor = separatorColor
         self.backgroundView.backgroundColor = Theme.separator
         
-        guard self.grid.count > 0 && self.grid[0].count > 0 else { return }
-        
+        guard self.grid.rowCount > 0 && self.grid.columnCount > 0 else { return }
+
         self.scrollView.frame = self.bounds
             
         var unscaledPuzzleContainerFrame = CGRect(x: 0,
                                                   y: 0,
-                                                  width: self.cellSideLength * CGFloat(self.grid[0].count),
-                                                  height: self.cellSideLength * CGFloat(self.grid.count) +  separatorWidth)
+                                                  width: self.cellSideLength * CGFloat(self.grid.columnCount),
+                                                  height: self.cellSideLength * CGFloat(self.grid.rowCount) +  separatorWidth)
         var borderWidth = (self.frame.size.width - unscaledPuzzleContainerFrame.size.width) / 2
         borderWidth = borderWidth - borderWidth.truncatingRemainder(dividingBy: self.nativePixelWidth)
         unscaledPuzzleContainerFrame.origin = CGPoint(x: borderWidth, y: borderWidth)
@@ -236,7 +237,7 @@ class PuzzleView: UIView {
         let oldWordIndicatorFrame = self.userCursorWordIndicatorLayer.frame
         self.userCursorWordIndicatorLayer.frame = self.boundingBoxOfCurrentWord(cellSideLength: cellSideLength)
         
-        let separatorCount = self.grid.count * self.grid[0].count - 2
+        let separatorCount = self.grid.rowCount * self.grid.columnCount - 2
         self.updateTextLayerCount(target: cellCount, font: baseFillFont)
         self.updateSeparatorCount(target: separatorCount)
 
@@ -259,7 +260,8 @@ class PuzzleView: UIView {
         for (rowIndex, row) in self.grid.enumerated() {
             for (itemIndex, item) in row.enumerated() {
                 let layer = self.fillTextLayers[textLayerIndex]
-                
+                let coords = CellCoordinates(row: rowIndex, cell: itemIndex)
+
                 let ltrCellIndex = (rowIndex * row.count) + itemIndex
                 layer.drawsCircle = self.circles.contains(ltrCellIndex)
                 if self._needsTextLayout {
@@ -279,25 +281,21 @@ class PuzzleView: UIView {
                                                        height: numberFont.lineHeight)
                         
                         if  // at the beginning or the previous one is a word boundary
-                            (rowIndex == 0 || (self.grid[rowIndex - 1][itemIndex] == ".")) &&
-                                // not at the end
-                                (rowIndex < self.grid.count - 1 &&
-                                 // next one isn't a word boundary
-                                 self.grid[rowIndex + 1][itemIndex] != ".") {
-                            let coordinates = CellCoordinates(row: rowIndex, cell: itemIndex)
-                            downSequence.append((cellNumber, coordinates))
-                            downCellNumberToCoordinatesMap[cellNumber] = coordinates
+                            (coords.isFirstRow || (self.grid[coords.previous(.down)] == Constant.wordBoundary)) &&
+                            // not at the end and next one isn't a word boundary
+                            (coords.row < self.grid.rowCount - 1 && self.grid[coords.next(.down)] != Constant.wordBoundary) {
+
+                            downSequence.append((cellNumber, coords))
+                            downCellNumberToCoordinatesMap[cellNumber] = coords
                         }
                         
                         if  // previous one is a word boundary or the beginning of the row
-                            (itemIndex == 0 || self.grid[rowIndex][itemIndex - 1] == ".") &&
-                                // not at the end
-                                (itemIndex < self.grid[rowIndex].count - 1 &&
-                                 // next one isn't a word boundary
-                                 self.grid[rowIndex][itemIndex + 1] != ".") {
-                            let coordinates = CellCoordinates(row: rowIndex, cell: itemIndex)
-                            acrossSequence.append((cellNumber, coordinates))
-                            acrossCellNumberToCoordinatesMap[cellNumber] = coordinates
+                            (coords.isFirstColumn || self.grid[coords.previous(.across)] == Constant.wordBoundary) &&
+                            // not at the end and next one isn't a word boundary
+                            (coords.cell < self.grid[rowIndex].count - 1 && self.grid[coords.next(.across)] != Constant.wordBoundary) {
+
+                            acrossSequence.append((cellNumber, coords))
+                            acrossCellNumberToCoordinatesMap[cellNumber] = coords
                         }
                         
                         cellNumber += 1
@@ -311,7 +309,7 @@ class PuzzleView: UIView {
 
                 layer.drawsIncorrectSlash = false
 
-                if item == "." {
+                if item == Constant.wordBoundary {
                     layer.backgroundColor = emptySpaceBackgroundColor
                     layer.string = nil
                 } else {
@@ -379,15 +377,15 @@ class PuzzleView: UIView {
         }
         
         // separators
-        for i in 0..<self.grid.count - 1 {
+        for i in 0..<self.grid.rowCount - 1 {
             let horizontal = self.separatorLayers[i]
             let offset = CGFloat(i + 1) * cellSideLength
             horizontal.frame = CGRect(x: 0, y: offset, width: self.frame.size.width, height: separatorWidth)
             horizontal.backgroundColor = separatorColor
         }
-        for i in (self.grid.count)..<self.grid.count + self.grid[0].count - 1 {
+        for i in (self.grid.rowCount)..<self.grid.rowCount + self.grid.columnCount - 1 {
             let vertical = self.separatorLayers[i]
-            let offset = CGFloat(i - self.grid.count + 1) * cellSideLength
+            let offset = CGFloat(i - self.grid.rowCount + 1) * cellSideLength
             let newHeight = self.puzzleContainerView.frame.size.height * self.scrollView.zoomScale
             vertical.frame = CGRect(x: offset, y: 0, width: separatorWidth, height: newHeight)
             vertical.backgroundColor = separatorColor
@@ -411,7 +409,7 @@ class PuzzleView: UIView {
             self.userCursorLetterIndicatorLayer.borderWidth = letterIndicatorWidth
         }
 
-        if self.isPlayerAttributionEnabled && self.solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell] != nil {
+        if self.isPlayerAttributionEnabled && self.solution[self.userCursor.coordinates] != nil {
             self.userCursorLetterIndicatorLayer.borderColor = UIColor.white.withAlphaComponent(0.7).cgColor
         } else {
             self.userCursorLetterIndicatorLayer.borderColor = self.userCursorColor.cgColor
@@ -457,21 +455,21 @@ class PuzzleView: UIView {
     }
     
     func itemRequiresNumberLabel(_ item: String?, atRow row: Int, index: Int) -> Bool {
-        let dueToFirstCell = (row == 0 || index == 0) && item != "."
+        let dueToFirstCell = (row == 0 || index == 0) && item != Constant.wordBoundary
         let dueToDown = 
             // previous row is an empty space
-            (row > 0 && self.grid[row - 1][index] == ".") &&
+            (row > 0 && self.grid[row - 1][index] == Constant.wordBoundary) &&
             // this row is not an empty space
-            item != "." &&
+            item != Constant.wordBoundary &&
             // next row is not an empty space
-            (row < self.grid.count - 1 && self.grid[row + 1][index] != ".")
+            (row < self.grid.rowCount - 1 && self.grid[row + 1][index] != Constant.wordBoundary)
         let dueToAcross =
             // previous column is an empty space
-            (index > 0 && self.grid[row][index - 1] == ".") &&
+            (index > 0 && self.grid[row][index - 1] == Constant.wordBoundary) &&
             // this column is not an empty space
-            item != "." &&
+            item != Constant.wordBoundary &&
             // next column is not an empty space
-            (index < self.grid[row].count - 1 && self.grid[row][index + 1] != ".")
+            (index < self.grid[row].count - 1 && self.grid[row][index + 1] != Constant.wordBoundary)
         
         return dueToFirstCell || dueToDown || dueToAcross
     }
@@ -563,18 +561,16 @@ class PuzzleView: UIView {
         func nextCandidate(after lastCandidate: CellCoordinates) -> CellCoordinates {
             switch self.userCursor.direction {
                 case .across:
-                    if lastCandidate.cell + 1 >= self.grid[0].count {
+                    if lastCandidate.cell + 1 >= self.grid.columnCount {
                         return current
-                    } else {
-                        return CellCoordinates(row: lastCandidate.row, cell: lastCandidate.cell + 1)
                     }
                 case .down:
-                    if lastCandidate.row + 1 >= self.grid.count {
+                    if lastCandidate.row + 1 >= self.grid.rowCount {
                         return current
-                    } else {
-                        return CellCoordinates(row: lastCandidate.row + 1, cell: lastCandidate.cell)
                     }
             }
+
+            return lastCandidate.next(self.userCursor.direction)
         }
         
         var candidate = nextCandidate(after: current)
@@ -582,7 +578,7 @@ class PuzzleView: UIView {
             return
         }
         
-        while self.grid[candidate.row][candidate.cell] == "." || self.solution[candidate.row][candidate.cell]?.correctness?.writable == false {
+        while self.grid[candidate] == Constant.wordBoundary || self.solution[candidate]?.correctness?.writable == false {
             candidate = nextCandidate(after: candidate)
             if candidate == current {
                 return
@@ -598,25 +594,23 @@ class PuzzleView: UIView {
             switch self.userCursor.direction {
                 case .across:
                     if lastCandidate.cell - 1 < 0 ||
-                        lastCandidate.cell == self.solution[lastCandidate.row].count - 1 && self.solution[lastCandidate.row][lastCandidate.cell] != nil {
+                        lastCandidate.cell == self.solution[lastCandidate.row].count - 1 && self.solution[lastCandidate] != nil {
                         return current
-                    } else {
-                        return CellCoordinates(row: lastCandidate.row, cell: lastCandidate.cell - 1)
                     }
                 case .down:
                     if lastCandidate.row - 1 < 0 ||
-                        lastCandidate.row == self.solution.count - 1 && self.solution[lastCandidate.row][lastCandidate.cell]?.value != nil {
+                        lastCandidate.row == self.solution.count - 1 && self.solution[lastCandidate]?.value != nil {
                         return current
-                    } else {
-                        return CellCoordinates(row: lastCandidate.row - 1, cell: lastCandidate.cell)
                     }
             }
+
+            return lastCandidate.previous(self.userCursor.direction)
         }
         
         
         var candidate = nextCandidate(after: current)
         
-        while self.grid[candidate.row][candidate.cell] == "." || self.solution[candidate.row][candidate.cell]?.correctness?.writable == false {
+        while self.grid[candidate] == Constant.wordBoundary || self.solution[candidate]?.correctness?.writable == false {
             candidate = nextCandidate(after: candidate)
             if candidate == current {
                 return
@@ -679,7 +673,7 @@ class PuzzleView: UIView {
     
     func currentWordIsFullAndPotentiallyCorrect() -> Bool {
         return self.findCurrentWordCellCoordinates().reduce(into: true) { partialResult, coords in
-            let value = self.solution[coords.row][coords.cell]
+            let value = self.solution[coords]
             partialResult = partialResult && value != nil && value?.correctness?.writable == false
         }
     }
@@ -725,7 +719,7 @@ class PuzzleView: UIView {
         } else if trailingEdge {
             let newWordExtent = self.findCurrentWordCellCoordinates()
             if let lastNonCorrectCell = newWordExtent.reversed().first(where: {
-                (self.solution[$0.row][$0.cell]?.correctness?.writable ?? true) == true }
+                (self.solution[$0]?.correctness?.writable ?? true) == true }
             ) {
                 self.userCursor.coordinates = lastNonCorrectCell
             }
@@ -745,9 +739,9 @@ class PuzzleView: UIView {
                     // at end of row
                     coordinates.cell == self.solution[coordinates.row].count - 1 ||
                     // at the end of the word
-                    self.grid[coordinates.row][coordinates.cell + 1] == "." ||
+                    self.grid[coordinates.next(.across)] == Constant.wordBoundary ||
                     // remainder of the word is checked and correct
-                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness?.writable == false })
+                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1]?.correctness?.writable == false })
                     
             case .down:
                 // cells in the word after the current cell
@@ -755,11 +749,11 @@ class PuzzleView: UIView {
                 
                 return
                     // at end of column
-                    coordinates.row == self.grid.count - 1 ||
+                    coordinates.row == self.grid.rowCount - 1 ||
                     // at the end of the word
-                    self.grid[coordinates.row + 1][coordinates.cell] == "." ||
+                    self.grid[coordinates.next(.down)] == Constant.wordBoundary ||
                     // remainder of the word is checked and correct
-                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness?.writable == false })
+                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1]?.correctness?.writable == false })
         }
     }
     
@@ -772,11 +766,11 @@ class PuzzleView: UIView {
 
                 return
                     // at beginning of row
-                    coordinates.cell == 0 ||
+                    coordinates.isFirstColumn ||
                     // at the beginning of the word
-                    self.grid[coordinates.row][coordinates.cell - 1] == "." ||
+                    self.grid[coordinates.previous(.across)] == Constant.wordBoundary ||
                     // cells of the word before this one are checked and correct
-                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness?.writable == false })
+                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1]?.correctness?.writable == false })
                     
             case .down:
                 // cells in the word after the current cell
@@ -784,11 +778,11 @@ class PuzzleView: UIView {
                 
                 return
                     // at beginning of column
-                    coordinates.row == 0 ||
+                    coordinates.isFirstRow ||
                     // at the beginning of the word
-                    self.grid[coordinates.row - 1][coordinates.cell] == "." ||
+                    self.grid[coordinates.previous(.down)] == Constant.wordBoundary ||
                     // remainder of the word is checked and correct
-                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1.row][$1.cell]?.correctness?.writable == false })
+                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1]?.correctness?.writable == false })
         }
     }
     
@@ -808,7 +802,7 @@ class PuzzleView: UIView {
         var coordinates: [CellCoordinates] = []
         for (rowIndex, rowContent) in self.grid.enumerated() {
             for (cellIndex, cellContent) in rowContent.enumerated() {
-                if cellContent != "." {
+                if cellContent != Constant.wordBoundary {
                     coordinates.append(CellCoordinates(row: rowIndex, cell: cellIndex))
                 }
             }
@@ -859,14 +853,14 @@ class PuzzleView: UIView {
                     switch direction {
                         case .across:
                             let candidateCell = self.grid[coordinates.row][firstLetterIndex - 1]
-                            if candidateCell == "." {
+                            if candidateCell == Constant.wordBoundary {
                                 firstLetterFound = true
                             } else {
                                 firstLetterIndex -= 1
                             }
                         case .down:
                             let candidateCell = self.grid[firstLetterIndex - 1][coordinates.cell]
-                            if candidateCell == "." {
+                            if candidateCell == Constant.wordBoundary {
                                 firstLetterFound = true
                             } else {
                                 firstLetterIndex -= 1
@@ -876,22 +870,22 @@ class PuzzleView: UIView {
             }
             
             if !lastLetterFound {
-                if direction == .across && lastLetterIndex + 1 > self.grid[0].count - 1 {
+                if direction == .across && lastLetterIndex + 1 > self.grid.columnCount - 1 {
                     lastLetterFound = true
-                } else if direction == .down && lastLetterIndex + 1 > self.grid.count - 1 {
+                } else if direction == .down && lastLetterIndex + 1 > self.grid.rowCount - 1 {
                     lastLetterFound = true
                 } else {
                     switch direction {
                         case .across:
                             let candidateCell = self.grid[coordinates.row][lastLetterIndex + 1]
-                            if candidateCell == "." {
+                            if candidateCell == Constant.wordBoundary {
                                 lastLetterFound = true
                             } else {
                                 lastLetterIndex += 1
                             }
                         case .down:
                             let candidateCell = self.grid[lastLetterIndex + 1][coordinates.cell]
-                            if candidateCell == "." {
+                            if candidateCell == Constant.wordBoundary {
                                 lastLetterFound = true
                             } else {
                                 lastLetterIndex += 1
@@ -916,9 +910,9 @@ class PuzzleView: UIView {
         let cellCoords = CellCoordinates(row: Int(pointCoords.y / sideLength),
                                          cell: Int(pointCoords.x / sideLength))
         
-        let item = self.grid[cellCoords.row][cellCoords.cell]
+        let item = self.grid[cellCoords]
 
-        if item == "." {
+        if item == Constant.wordBoundary {
             return
         } else if cellCoords == self.userCursor.coordinates {
             self.toggleDirection()
@@ -1068,7 +1062,7 @@ extension PuzzleView: UIKeyInput {
                 self.toggleDirection()
             }
             return
-        } else if text == "\n" || self.solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.correctness?.writable == false {
+        } else if text == "\n" || self.solution[self.userCursor.coordinates]?.correctness?.writable == false {
             advance()
         } else {
             self.delegate?.puzzleView(self, didEnterText: text.uppercased(), atCoordinates: self.userCursor.coordinates)
@@ -1077,7 +1071,7 @@ extension PuzzleView: UIKeyInput {
     }
     
     func deleteBackward() {
-        if let currentCellEntry = self.solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell],
+        if let currentCellEntry = self.solution[self.userCursor.coordinates],
             currentCellEntry.correctness?.writable == true {
             
             self.delegate?.puzzleView(self, didEnterText: nil, atCoordinates: self.userCursor.coordinates)

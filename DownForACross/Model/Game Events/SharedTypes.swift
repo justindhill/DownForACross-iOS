@@ -11,6 +11,28 @@ import UIKit
 struct CellCoordinates: Equatable {
     var row: Int
     var cell: Int
+
+    var isFirstColumn: Bool {
+        return self.cell == 0
+    }
+
+    var isFirstRow: Bool {
+        return self.row == 0
+    }
+
+    func next(_ direction: Direction) -> CellCoordinates {
+        switch direction {
+            case .across: CellCoordinates(row: self.row, cell: self.cell + 1)
+            case .down: CellCoordinates(row: self.row + 1, cell: self.cell)
+        }
+    }
+
+    func previous(_ direction: Direction) -> CellCoordinates {
+        switch direction {
+            case .across: CellCoordinates(row: self.row, cell: self.cell - 1)
+            case .down: CellCoordinates(row: self.row - 1, cell: self.cell)
+        }
+    }
 }
 
 struct CellEntry: Equatable, Codable {
