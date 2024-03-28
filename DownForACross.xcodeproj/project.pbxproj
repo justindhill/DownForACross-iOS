@@ -18,7 +18,10 @@
 		3B19A8772BB31FAB004F2D0D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B19A8762BB31FAB004F2D0D /* LaunchScreen.storyboard */; };
 		3B19D1162BB06D4E000AC250 /* ResetEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B19D1152BB06D4E000AC250 /* ResetEvent.swift */; };
 		3B19D1182BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */; };
+		3B2682502BB5B2AD003FE7A4 /* SharedGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B26824F2BB5B2AD003FE7A4 /* SharedGame.swift */; };
+		3B2682522BB5C7A8003FE7A4 /* SharedGameCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B2682512BB5C7A8003FE7A4 /* SharedGameCell.swift */; };
 		3B31D97D2BB58FE20073EBE1 /* Array+Coordinates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B31D97C2BB58FE20073EBE1 /* Array+Coordinates.swift */; };
+		3B31D9802BB5AF5D0073EBE1 /* SharedWithYouViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B31D97F2BB5AF5D0073EBE1 /* SharedWithYouViewController.swift */; };
 		3B4D818F2B63F01A0098A5DA /* CheckEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */; };
 		3B581B132B7E61880084EC9B /* TabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B581B122B7E61880084EC9B /* TabBarViewController.swift */; };
 		3B581B152B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B581B142B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift */; };
@@ -83,7 +86,10 @@
 		3B19A8762BB31FAB004F2D0D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3B19D1152BB06D4E000AC250 /* ResetEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetEvent.swift; sourceTree = "<group>"; };
 		3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableViewDiffableDataSource+LastIndex.swift"; sourceTree = "<group>"; };
+		3B26824F2BB5B2AD003FE7A4 /* SharedGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedGame.swift; sourceTree = "<group>"; };
+		3B2682512BB5C7A8003FE7A4 /* SharedGameCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedGameCell.swift; sourceTree = "<group>"; };
 		3B31D97C2BB58FE20073EBE1 /* Array+Coordinates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Coordinates.swift"; sourceTree = "<group>"; };
+		3B31D97F2BB5AF5D0073EBE1 /* SharedWithYouViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedWithYouViewController.swift; sourceTree = "<group>"; };
 		3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckEvent.swift; sourceTree = "<group>"; };
 		3B581B122B7E61880084EC9B /* TabBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarViewController.swift; sourceTree = "<group>"; };
 		3B581B142B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsOptionalEntryPropertyWrapper.swift; sourceTree = "<group>"; };
@@ -177,6 +183,7 @@
 				3BB0FCDE2B6C9A8E00CD907C /* Animations */,
 				3B7AD2682B597BD8004DEC1A /* Utils */,
 				3B9003432B3628680088729C /* Puzzle list */,
+				3B31D97E2BB5AF4B0073EBE1 /* Shared with you */,
 				3B9003422B3628530088729C /* Puzzle */,
 				3B011DFB2B30C01F00BDB732 /* Model */,
 				3BC761B72BA3BE1B003ACF81 /* Supporting */,
@@ -197,6 +204,16 @@
 				3B011E002B30C04C00BDB732 /* PuzzleStats.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		3B31D97E2BB5AF4B0073EBE1 /* Shared with you */ = {
+			isa = PBXGroup;
+			children = (
+				3B31D97F2BB5AF5D0073EBE1 /* SharedWithYouViewController.swift */,
+				3B26824F2BB5B2AD003FE7A4 /* SharedGame.swift */,
+				3B2682512BB5C7A8003FE7A4 /* SharedGameCell.swift */,
+			);
+			path = "Shared with you";
 			sourceTree = "<group>";
 		};
 		3B581B112B7E61760084EC9B /* Tab bar */ = {
@@ -503,6 +520,7 @@
 				3BF367322B313675005BB41E /* PuzzleView.swift in Sources */,
 				3B90033F2B35D5D90088729C /* SharedTypes.swift in Sources */,
 				3B7AD26A2B597BF0004DEC1A /* SocketIOClient+Utils.swift in Sources */,
+				3B31D9802BB5AF5D0073EBE1 /* SharedWithYouViewController.swift in Sources */,
 				3B19D1162BB06D4E000AC250 /* ResetEvent.swift in Sources */,
 				3B76C8CE2B9C061500E60AFD /* AccumulatingTapGestureRecognizer.swift in Sources */,
 				3B5BD0DB2BAA7984006DB214 /* PuzzlePlayersViewController.swift in Sources */,
@@ -528,6 +546,8 @@
 				3B5BD0E02BAB1D46006DB214 /* EditableTextSettingView.swift in Sources */,
 				3BB0FCEB2B76746900CD907C /* SettingsViewController.swift in Sources */,
 				3B5BD0DA2BAA7984006DB214 /* PuzzleClueListViewController.swift in Sources */,
+				3B2682502BB5B2AD003FE7A4 /* SharedGame.swift in Sources */,
+				3B2682522BB5C7A8003FE7A4 /* SharedGameCell.swift in Sources */,
 				3BC12A3E2B613B730060C29F /* PuzzleToolbarView.swift in Sources */,
 				3B90033B2B34E9AF0088729C /* UpdateCursorEvent.swift in Sources */,
 				3B5BD0DC2BAA7984006DB214 /* PuzzleSideBarViewController.swift in Sources */,

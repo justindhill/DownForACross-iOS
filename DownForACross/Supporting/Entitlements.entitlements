@@ -7,5 +7,7 @@
 		<string>applinks:dfac.link</string>
 		<string>webcredentials:dfac.link</string>
 	</array>
+	<key>com.apple.developer.shared-with-you</key>
+	<true/>
 </dict>
 </plist>
