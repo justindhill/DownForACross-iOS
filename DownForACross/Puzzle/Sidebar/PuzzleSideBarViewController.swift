@@ -98,7 +98,8 @@ class PuzzleSideBarViewController: UIViewController {
         self.gameClient = gameClient
         super.init(nibName: nil, bundle: nil)
 
-        self.subscriptions.append(self.messagesViewController.$hasUnreadMessages.sink(receiveValue: { hasUnreadMessages in
+        self.subscriptions.append(self.messagesViewController.$hasUnreadMessages.sink(receiveValue: { [weak self] hasUnreadMessages in
+            guard let self else { return }
             if hasUnreadMessages {
                 self.segmentedControl.setImage(Tab.messages.badgedImage, forSegmentAt: Tab.messages.rawValue)
             } else {

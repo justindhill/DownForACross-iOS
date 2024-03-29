@@ -37,7 +37,7 @@ class PuzzleClueListViewController: UIViewController {
     
     static let reuseIdentifier = "ReuseIdentifier"
     
-    var delegate: PuzzleClueListViewControllerDelegate?
+    weak var delegate: PuzzleClueListViewControllerDelegate?
     
     lazy var dataSource = DataSource<Direction, ListEntry>(tableView: self.tableView, cellProvider: { tableView, indexPath, itemIdentifier in
         let cell = tableView.dequeueReusableCell(withIdentifier: Self.reuseIdentifier, for: indexPath)

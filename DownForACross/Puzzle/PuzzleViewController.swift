@@ -146,18 +146,14 @@ class PuzzleViewController: UIViewController {
 
         self.sideBarViewController.clueListViewController.delegate = self
 
-        NotificationCenter.default.addObserver(forName: UIControl.keyboardWillShowNotification, object: nil, queue: nil) { [weak self] note in
-            guard let self, let userInfo = note.userInfo else { return }
-            let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue.size
-            self.currentKeyboardHeight = keyboardSize.height
-            self.updateContentInsets()
-        }
-
-        NotificationCenter.default.addObserver(forName: UIControl.keyboardWillHideNotification, object: nil, queue: nil) { [weak self] note in
-            guard let self else { return }
-            self.currentKeyboardHeight = 0
-            self.updateContentInsets()
-        }
+        NotificationCenter.default.addObserver(self, 
+                                               selector: #selector(keyboardWillShow(_:)),
+                                               name: UIControl.keyboardWillShowNotification,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self, 
+                                               selector: #selector(keyboardWillHide(_:)),
+                                               name: UIControl.keyboardWillHideNotification,
+                                               object: nil)
 
         self.subscriptions.append(self.sideBarViewController.messagesViewController.$hasUnreadMessages
             .didSet
@@ -265,7 +261,8 @@ class PuzzleViewController: UIViewController {
             self.gameClient.connect()
         } else {
             self.titleBarAnimator?.showPill(withText: "Creating game", timeout: nil, icon: .spinner, animated: false)
-            self.siteInteractor.createGame(puzzleId: self.puzzleId) { gameId in
+            self.siteInteractor.createGame(puzzleId: self.puzzleId) { [weak self] gameId in
+                guard let self else { return }
                 guard let gameId else {
                     let alert = UIAlertController(title: "Couldn't create game", message: "We couldn't create the game on DownForACross. Try again later.", preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "Ok", style: .default) { [weak self] _ in
@@ -300,7 +297,19 @@ class PuzzleViewController: UIViewController {
         super.viewDidLayoutSubviews()
         self.updateContentInsets()
     }
-    
+
+    @objc func keyboardWillShow(_ note: Notification) {
+        guard let userInfo = note.userInfo else { return }
+        let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue.size
+        self.currentKeyboardHeight = keyboardSize.height
+        self.updateContentInsets()
+    }
+
+    @objc func keyboardWillHide(_ note: Notification) {
+        self.currentKeyboardHeight = 0
+        self.updateContentInsets()
+    }
+
     func updateContentInsets() {
         if !self.previewImageView.isHidden {
             // the keyboard gets hidden when a context menu is open, which can cause content offset to shift when adjusting insets
@@ -407,19 +416,22 @@ class PuzzleViewController: UIViewController {
         }
 
         var menuElements: [UIMenuElement] = [
-            UIAction(title: "Clues", image: PuzzleSideBarViewController.Tab.clues.image, handler: { _ in
+            UIAction(title: "Clues", image: PuzzleSideBarViewController.Tab.clues.image, handler: { [weak self] _ in
+                guard let self else { return }
                 self.sideBarViewController.setCurrentTab(.clues, animated: self.isSidebarVisible)
                 if !self.isSidebarVisible {
                     self.toggleSidebar()
                 }
             }),
-            UIAction(title: "Players", image: PuzzleSideBarViewController.Tab.players.image, handler: { _ in
+            UIAction(title: "Players", image: PuzzleSideBarViewController.Tab.players.image, handler: { [weak self] _ in
+                guard let self else { return }
                 self.sideBarViewController.setCurrentTab(.players, animated: self.isSidebarVisible)
                 if !self.isSidebarVisible {
                     self.toggleSidebar()
                 }
             }),
-            UIAction(title: "Messages", image: messagesIcon, handler: { _ in
+            UIAction(title: "Messages", image: messagesIcon, handler: { [weak self] _ in
+                guard let self else { return }
                 self.sideBarViewController.setCurrentTab(.messages, animated: self.isSidebarVisible)
                 if !self.isSidebarVisible {
                     self.toggleSidebar()
@@ -712,8 +724,9 @@ extension PuzzleViewController: PuzzlePlayersViewControllerDelegate {
 extension PuzzleViewController: UIContextMenuInteractionDelegate {
     
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(actionProvider: { _ in
-            UIMenu(title: "",
+        return UIContextMenuConfiguration(actionProvider: { [weak self] _ in
+            guard let self else { return nil }
+            return UIMenu(title: "",
                    image: nil,
                    identifier: .root,
                    options: [.displayInline],
