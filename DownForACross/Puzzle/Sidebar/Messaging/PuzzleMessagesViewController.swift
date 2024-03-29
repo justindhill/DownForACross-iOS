@@ -13,8 +13,11 @@ class PuzzleMessagesViewController: UIViewController {
     let messageCellReuseIdentifier: String = "messageCellReuseIdentifier"
     lazy var dataSource = UITableViewDiffableDataSource<Int, MessageAndPlayer>(
         tableView: self.tableView,
-        cellProvider: self.createCell)
-    
+        cellProvider: { [weak self] tableView, indexPath, item in
+            guard let self else { return nil }
+            return self.createCell(tableView: tableView, indexPath: indexPath, messageAndPlayer: item)
+        })
+
     lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -88,9 +91,10 @@ class PuzzleMessagesViewController: UIViewController {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     init(gameClient: GameClient) {
         super.init(nibName: nil, bundle: nil)
-        self.playersSubscription = gameClient.$players.assign(to: \.players, on: self)
+        self.playersSubscription = gameClient.$players.sink(receiveValue: { [weak self] newValue in
+            self?.players = newValue
+        })
     }
-    
 
     override func viewDidLoad() {
         super.viewDidLoad()

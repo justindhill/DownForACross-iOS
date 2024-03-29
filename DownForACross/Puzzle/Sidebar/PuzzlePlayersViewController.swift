@@ -33,7 +33,8 @@ class PuzzlePlayersViewController: UIViewController {
     }()
     
     lazy var dataSource: DataSource<Int, Player> = {
-        let dataSource = DataSource<Int, Player>(tableView: self.tableView) { tableView, indexPath, itemIdentifier in
+        let dataSource = DataSource<Int, Player>(tableView: self.tableView) { [weak self] tableView, indexPath, itemIdentifier in
+            guard let self else { return nil }
             return self.tableView(tableView, cellForRow: indexPath, item: itemIdentifier)
         }
         dataSource.defaultRowAnimation = .fade
@@ -62,7 +63,8 @@ class PuzzlePlayersViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
         self.playersSubscription = gameClient.$players
             .map(\.values)
-            .sink(receiveValue: { values in
+            .sink(receiveValue: { [weak self] values in
+                guard let self else { return }
                 self.players = Array(values)
                     .filter({ $0.isComplete })
                     .sorted(by: { first, second in
