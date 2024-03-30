@@ -49,6 +49,7 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
                     var config = cell.defaultContentConfiguration()
                     config.text = puzzle.content.info.title
                     config.secondaryText = puzzle.content.info.author
+                    config.secondaryTextProperties.color = .secondaryLabel
                     cell.contentConfiguration = config
                     return cell
                 case .loadMore:

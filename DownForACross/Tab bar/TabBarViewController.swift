@@ -33,7 +33,10 @@ class TabBarViewController: UITabBarController {
         return nav
     }()
 
-    lazy var sharedWithYouViewController: SharedWithYouViewController = SharedWithYouViewController(settingsStorage: self.settingsStorage)
+    lazy var sharedWithYouViewController: SharedWithYouViewController = SharedWithYouViewController(userId: self.userId,
+                                                                                                    siteInteractor: self.siteInteractor,
+                                                                                                    api: self.api,
+                                                                                                    settingsStorage: self.settingsStorage)
     lazy var sharedWithYouNavigationController: UINavigationController = {
         let nav = UINavigationController(rootViewController: self.sharedWithYouViewController)
         nav.tabBarItem = UITabBarItem(title: "Shared", image: UIImage(systemName: "shared.with.you"), tag: 0)

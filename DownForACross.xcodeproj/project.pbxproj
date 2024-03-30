@@ -20,6 +20,7 @@
 		3B19D1182BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */; };
 		3B2682502BB5B2AD003FE7A4 /* SharedGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B26824F2BB5B2AD003FE7A4 /* SharedGame.swift */; };
 		3B2682522BB5C7A8003FE7A4 /* SharedGameCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B2682512BB5C7A8003FE7A4 /* SharedGameCell.swift */; };
+		3B2682542BB713F7003FE7A4 /* SharedGameInfoResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B2682532BB713F7003FE7A4 /* SharedGameInfoResolver.swift */; };
 		3B31D97D2BB58FE20073EBE1 /* Array+Coordinates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B31D97C2BB58FE20073EBE1 /* Array+Coordinates.swift */; };
 		3B31D9802BB5AF5D0073EBE1 /* SharedWithYouViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B31D97F2BB5AF5D0073EBE1 /* SharedWithYouViewController.swift */; };
 		3B4D818F2B63F01A0098A5DA /* CheckEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */; };
@@ -88,6 +89,7 @@
 		3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableViewDiffableDataSource+LastIndex.swift"; sourceTree = "<group>"; };
 		3B26824F2BB5B2AD003FE7A4 /* SharedGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedGame.swift; sourceTree = "<group>"; };
 		3B2682512BB5C7A8003FE7A4 /* SharedGameCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedGameCell.swift; sourceTree = "<group>"; };
+		3B2682532BB713F7003FE7A4 /* SharedGameInfoResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedGameInfoResolver.swift; sourceTree = "<group>"; };
 		3B31D97C2BB58FE20073EBE1 /* Array+Coordinates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Coordinates.swift"; sourceTree = "<group>"; };
 		3B31D97F2BB5AF5D0073EBE1 /* SharedWithYouViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedWithYouViewController.swift; sourceTree = "<group>"; };
 		3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckEvent.swift; sourceTree = "<group>"; };
@@ -212,6 +214,7 @@
 				3B31D97F2BB5AF5D0073EBE1 /* SharedWithYouViewController.swift */,
 				3B26824F2BB5B2AD003FE7A4 /* SharedGame.swift */,
 				3B2682512BB5C7A8003FE7A4 /* SharedGameCell.swift */,
+				3B2682532BB713F7003FE7A4 /* SharedGameInfoResolver.swift */,
 			);
 			path = "Shared with you";
 			sourceTree = "<group>";
@@ -548,6 +551,7 @@
 				3B5BD0DA2BAA7984006DB214 /* PuzzleClueListViewController.swift in Sources */,
 				3B2682502BB5B2AD003FE7A4 /* SharedGame.swift in Sources */,
 				3B2682522BB5C7A8003FE7A4 /* SharedGameCell.swift in Sources */,
+				3B2682542BB713F7003FE7A4 /* SharedGameInfoResolver.swift in Sources */,
 				3BC12A3E2B613B730060C29F /* PuzzleToolbarView.swift in Sources */,
 				3B90033B2B34E9AF0088729C /* UpdateCursorEvent.swift in Sources */,
 				3B5BD0DC2BAA7984006DB214 /* PuzzleSideBarViewController.swift in Sources */,

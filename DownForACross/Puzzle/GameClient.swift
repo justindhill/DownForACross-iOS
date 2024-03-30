@@ -188,7 +188,7 @@ class GameClient: NSObject, URLSessionDelegate {
         socket.on(clientEvent: .disconnect) { [weak self] data, ack in
             guard let self else { return }
             self.connectionState = .connecting
-            print(data)
+            print("GameClient<\(self.gameId)> disconnected")
         }
         
         socket.on(clientEvent: .reconnect) { [weak self] data, ack in
@@ -209,6 +209,10 @@ class GameClient: NSObject, URLSessionDelegate {
         }
         
         socket.connect()
+    }
+
+    func disconnect() {
+        self.socketManager.defaultSocket.disconnect()
     }
 
     func performBulkSync() {
@@ -338,12 +342,10 @@ class GameClient: NSObject, URLSessionDelegate {
                         } else {
                             print("Received a chat message from an unknown player")
                         }
-                        print("CHAT: \(event.senderName) \(event.message)")
                     }
                 } else if type == "create" {
                     applyClosure = {
                         if self.puzzle.grid.count == 0 {
-                            print("Handling create event")
                             do {
                                 let puzzleListEntry = try PuzzleListEntry(createEventPayload: payload)
                                 self.puzzle = puzzleListEntry.content
@@ -352,8 +354,6 @@ class GameClient: NSObject, URLSessionDelegate {
                             } catch {
                                 fatalError("Need to handle wonkiness happening here")
                             }
-                        } else {
-                            print("Skipping create event because the grid isn't empty")
                         }
                     }
                 } else if type == "sendChatMessage" {

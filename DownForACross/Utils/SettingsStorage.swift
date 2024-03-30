@@ -60,6 +60,9 @@ class SettingsStorage {
     @UserDefaultsEntry<Bool>(key: "hasSeenInputModeQuickswitchTooltip")
     var hasSeenInputModeQuickswitchTooltip = false
 
+    @UserDefaultsEntry<[String: ResolvedSharedGame]>(key: "cachedSharedGameInfo")
+    var cachedSharedGameInfo = [:]
+
     var onboardingComplete: Bool {
         get { self.onboardingVersionComplete == self.currentOnboardingVersion }
     }
