@@ -63,6 +63,9 @@ class SettingsStorage {
     @UserDefaultsEntry<[String: ResolvedSharedGame]>(key: "cachedSharedGameInfo")
     var cachedSharedGameInfo = [:]
 
+    @UserDefaultsEntry<[RecentlyOpenedSharedGame]>(key: "recentlyOpenedSharedGames")
+    var recentlyOpenedSharedGames = []
+
     var onboardingComplete: Bool {
         get { self.onboardingVersionComplete == self.currentOnboardingVersion }
     }

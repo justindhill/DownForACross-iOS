@@ -24,6 +24,32 @@ enum SharedGame: Hashable {
         }
     }
 
+    var highlight: SWHighlight? {
+        get {
+            switch self {
+                case .resolved(let game): game.highlight
+                case .stub(let game): game.highlight
+            }
+        }
+        set {
+            switch self {
+                case .resolved(var game):
+                    game.highlight = newValue
+                    self = .resolved(game)
+                case .stub(var game):
+                    game.highlight = newValue
+                    self = .stub(game)
+            }
+        }
+    }
+
+}
+
+struct RecentlyOpenedSharedGame: Codable {
+
+    let gameId: String
+    let lastOpened: Date
+
 }
 
 struct StubSharedGame: Hashable {
@@ -45,13 +71,11 @@ struct ResolvedSharedGame: Hashable, Codable {
 
     var gameId: String
     var puzzle: Puzzle
-    var lastOpened: Date? = nil
-    var highlight: SWHighlight? = nil
+    var highlight: SWHighlight?
 
     enum CodingKeys: CodingKey {
         case gameId
         case puzzle
-        case lastOpened
     }
 
 }

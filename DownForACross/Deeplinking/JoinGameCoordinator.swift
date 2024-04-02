@@ -116,6 +116,17 @@ extension JoinGameCoordinator: JoinConfirmationViewControllerDelegate {
     func joinConfirmationViewControllerDidSelectJoin(_ viewController: JoinConfirmationViewController) {
         self.joinConfirmationViewController = nil
 
+        if self.settingsStorage.cachedSharedGameInfo[self.gameId] == nil {
+            let cachedInfo = ResolvedSharedGame(gameId: self.gameId, puzzle: self.gameClient.puzzle)
+        }
+
+        let recentlyOpenedItem = RecentlyOpenedSharedGame(gameId: self.gameId, lastOpened: Date())
+        if let recentlyOpenedItemIndex = self.settingsStorage.recentlyOpenedSharedGames.firstIndex(where: { $0.gameId == self.gameId}) {
+            self.settingsStorage.recentlyOpenedSharedGames[recentlyOpenedItemIndex] = recentlyOpenedItem
+        } else {
+            self.settingsStorage.recentlyOpenedSharedGames.append(recentlyOpenedItem)
+        }
+
         let puzzleViewController = PuzzleViewController(gameClient: gameClient,
                                                         siteInteractor: self.siteInteractor,
                                                         api: self.api,

@@ -18,9 +18,9 @@ class SharedWithYouViewController: UIViewController {
         return tableView
     }()
 
-    lazy var dataSource: UITableViewDiffableDataSource<Int, String> = {
-        let dataSource = UITableViewDiffableDataSource<Int, String>(tableView: self.tableView,
-                                                                        cellProvider: { [weak self] tableView, indexPath, identifier in
+    lazy var dataSource: SharedWithYouDataSource<Int, String> = {
+        let dataSource = SharedWithYouDataSource<Int, String>(tableView: self.tableView,
+                                                              cellProvider: { [weak self] tableView, indexPath, identifier in
             guard let self else { return UITableViewCell() }
             return self.tableView(tableView, cellForRowAt: indexPath, identifier: identifier)
         })
@@ -71,6 +71,11 @@ class SharedWithYouViewController: UIViewController {
         ])
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.refreshContent()
+    }
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath, identifier: String) -> UITableViewCell? {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: self.reuseIdentifier, for: indexPath) as? SharedGameCell,
               let item = self.models[identifier] else {
@@ -96,23 +101,46 @@ class SharedWithYouViewController: UIViewController {
     func refreshContent() {
         var models: [String: SharedGame] = [:]
         var snapshot = NSDiffableDataSourceSnapshot<Int, String>()
-        snapshot.appendSections([0])
+        snapshot.appendSections([0, 1])
 
-        snapshot.appendItems(self.highlightCenter.highlights.map { highlight in
+        func updateAfterResolvingGameInfo(_ result: Result<ResolvedSharedGame, NSError>) {
+            switch result {
+                case .success(var resolvedGame):
+                    let highlight = self.models[resolvedGame.gameId]?.highlight
+                    resolvedGame.highlight = highlight
+                    self.updateItem(resolvedGame)
+                case .failure:
+                    break
+            }
+        }
+
+        let recentlyOpenedSharedGames = settingsStorage.recentlyOpenedSharedGames.sorted(using: KeyPathComparator(\.lastOpened, order: .reverse))
+        snapshot.appendItems(recentlyOpenedSharedGames.map { recentlyOpened in
+            let item = self.gameInfoResolver.gameInfo(gameId: recentlyOpened.gameId, highlight: nil) { result in
+                updateAfterResolvingGameInfo(result)
+            }
+            models[recentlyOpened.gameId] = item
+
+            return recentlyOpened.gameId
+        }, toSection: 0)
+
+        snapshot.appendItems(self.highlightCenter.highlights.compactMap { highlight in
             let gameId = highlight.url.lastPathComponent
+
+            if var existingModel = models[gameId] {
+                existingModel.highlight = highlight
+                models[gameId] = existingModel
+                return nil
+            }
+
             let item = self.gameInfoResolver.gameInfo(gameId: gameId, highlight: highlight, resolutionCompletion: { result in
-                switch result {
-                    case .success(let resolvedGame):
-                        self.updateItem(resolvedGame)
-                    case .failure:
-                        break
-                }
+                updateAfterResolvingGameInfo(result)
             })
 
             models[gameId] = item
 
             return gameId
-        }, toSection: 0)
+        }, toSection: 1)
 
         // build the snapshot so the puzzle info gets resolved even if the view isn't loaded yet
         guard self.isViewLoaded else {
@@ -154,6 +182,12 @@ extension SharedWithYouViewController: UITableViewDelegate {
               let sharedGame = self.models[identifier],
               case .resolved(let resolvedGame) = sharedGame else { return }
 
+        let recentlyOpenedItem = RecentlyOpenedSharedGame(gameId: resolvedGame.gameId, lastOpened: Date())
+        if let recentlyOpenedItemIndex = self.settingsStorage.recentlyOpenedSharedGames.firstIndex(where: { $0.gameId == resolvedGame.gameId}) {
+            self.settingsStorage.recentlyOpenedSharedGames[recentlyOpenedItemIndex] = recentlyOpenedItem
+        } else {
+            self.settingsStorage.recentlyOpenedSharedGames.append(recentlyOpenedItem)
+        }
 
         let vc = PuzzleViewController(puzzle: resolvedGame.puzzle,
                                       puzzleId: "",
@@ -163,6 +197,22 @@ extension SharedWithYouViewController: UITableViewDelegate {
                                       api: self.api,
                                       settingsStorage: self.settingsStorage)
         self.navigationController?.pushViewController(vc, animated: true)
+    }
+
+}
+
+class SharedWithYouDataSource<SectionIdentifierType: Hashable, ItemIdentifierType: Hashable>: UITableViewDiffableDataSource<SectionIdentifierType, ItemIdentifierType> {
+
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if self.tableView(tableView, numberOfRowsInSection: 0) > 0 {
+            if section == 0 {
+                return "Recently opened"
+            } else if section == 1 {
+                return "From Messages"
+            }
+        }
+
+        return nil
     }
 
 }

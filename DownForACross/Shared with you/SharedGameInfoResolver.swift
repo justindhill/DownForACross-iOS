@@ -18,8 +18,11 @@ class SharedGameInfoResolver {
     let userId: String
     let settingsStorage: SettingsStorage
     var cachedGameInfo: [String: ResolvedSharedGame] {
-        didSet {
-            self.settingsStorage.cachedSharedGameInfo = cachedGameInfo
+        get {
+            return self.settingsStorage.cachedSharedGameInfo
+        }
+        set {
+            self.settingsStorage.cachedSharedGameInfo = newValue
         }
     }
     var completions: [String: (ResolvedSharedGame) -> Void] = [:]
