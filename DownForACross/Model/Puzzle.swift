@@ -98,9 +98,9 @@ struct PuzzleInfo: Codable, Hashable {
 
     init(type: String?, title: String, author: String, description: String) {
         self.type = type
-        self.title = title
-        self.author = author
-        self.description = description
+        self.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.author = author.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.description = description.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     init(createEventPayload: [String: String]) throws {
@@ -111,9 +111,17 @@ struct PuzzleInfo: Codable, Hashable {
         }
 
         self.type = createEventPayload["type"]
-        self.title = title
-        self.author = author
-        self.description = description
+        self.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.author = author.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.description = description.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: .type)
+        self.title = try container.decode(String.self, forKey: .title).trimmingCharacters(in: .whitespacesAndNewlines)
+        self.author = try container.decode(String.self, forKey: .author).trimmingCharacters(in: .whitespacesAndNewlines)
+        self.description = try container.decode(String.self, forKey: .description).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 
