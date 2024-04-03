@@ -69,6 +69,12 @@ class SettingsStorage {
     @UserDefaultsEntry<Bool>(key: "skipFilledCells")
     var skipFilledCells = true
 
+    @UserDefaultsEntry<Bool>(key: "showUnreadMessageBadges")
+    var showUnreadMessageBadges = true
+
+    @UserDefaultsEntry<Bool>(key: "showMessagePreviews")
+    var showMessagePreviews = true
+
     var onboardingComplete: Bool {
         get { self.onboardingVersionComplete == self.currentOnboardingVersion }
     }

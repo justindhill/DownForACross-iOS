@@ -88,6 +88,16 @@ class SettingsViewController: UIViewController {
                                           details: "When moving the cursor, skip over cells that have been filled regardless of whether they are checked for correctness",
                                           settingsStorage: self.settingsStorage,
                                           keyPath: \.skipFilledCells))
+
+        self.addSetting(SwitchSettingView(title: "Unread messages badge",
+                                          details: "Show a badge when there are chat messages you haven't seen yet",
+                                          settingsStorage: self.settingsStorage,
+                                          keyPath: \.showUnreadMessageBadges))
+
+        self.addSetting(SwitchSettingView(title: "Chat message previews",
+                                          details: "Show a message preview over the puzzle when new messages are received",
+                                          settingsStorage: self.settingsStorage,
+                                          keyPath: \.showMessagePreviews))
     }
 
     func addSetting(_ view: UIView) {

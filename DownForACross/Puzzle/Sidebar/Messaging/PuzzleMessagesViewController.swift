@@ -53,6 +53,7 @@ class PuzzleMessagesViewController: UIViewController {
         return self.tableView.contentSize.height - self.tableView.frame.size.height + self.tableView.contentInset.bottom
     }
 
+    private let settingsStorage: SettingsStorage
     private var needsContentOffsetAdjustment = true
     private var isFollowingBottom = true
     private var isVisible: Bool = false
@@ -89,7 +90,8 @@ class PuzzleMessagesViewController: UIViewController {
     }()
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    init(gameClient: GameClient) {
+    init(gameClient: GameClient, settingsStorage: SettingsStorage) {
+        self.settingsStorage = settingsStorage
         super.init(nibName: nil, bundle: nil)
         self.playersSubscription = gameClient.$players.sink(receiveValue: { [weak self] newValue in
             self?.players = newValue
@@ -178,7 +180,7 @@ class PuzzleMessagesViewController: UIViewController {
     func addMessage(_ message: MessageAndPlayer) {
         guard !self.messageIds.contains(message.id) else { return }
 
-        if !(self.isVisible && self.isFollowingBottom) {
+        if !(self.isVisible && self.isFollowingBottom) && self.settingsStorage.showUnreadMessageBadges {
             self.hasUnreadMessages = true
         }
 

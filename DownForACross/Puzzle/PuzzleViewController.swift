@@ -48,7 +48,7 @@ class PuzzleViewController: UIViewController {
     }()
      
     lazy var sideBarViewController: PuzzleSideBarViewController = {
-        return PuzzleSideBarViewController(puzzle: self.puzzle, gameClient: self.gameClient)
+        return PuzzleSideBarViewController(puzzle: self.puzzle, gameClient: self.gameClient, settingsStorage: self.settingsStorage)
     }()
     
     var sideBarTapToDismissView: UIView = {
@@ -612,7 +612,10 @@ extension PuzzleViewController: GameClientDelegate {
 
         guard !(gameClient.isPerformingBulkEventSync || self.isSidebarVisible) else { return }
         
-        self.newMessageStackView.addChatMessage(message, from: from)
+        if self.settingsStorage.showMessagePreviews {
+            self.newMessageStackView.addChatMessage(message, from: from)
+        }
+        
         self.updateMenuContents()
     }
     
