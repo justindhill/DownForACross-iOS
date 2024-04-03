@@ -500,7 +500,7 @@ class PuzzleViewController: UIViewController {
 
     func checkRevealResetMenus(includingFullPuzzleOption puzzle: Bool) -> [UIMenu] {
         var checkMenuActions: [UIAction] = [
-            UIAction(title: "Cell", handler: { [weak self] _ in
+            UIAction(title: "Square", handler: { [weak self] _ in
                 guard let self else { return }
                 self.gameClient.check(cells: [self.puzzleView.userCursor.coordinates])
             }),
@@ -518,25 +518,40 @@ class PuzzleViewController: UIViewController {
         }
 
         var revealMenuActions: [UIAction] = [
-            UIAction(title: "Cell", handler: { [weak self] _ in
+            UIAction(title: "Square", handler: { [weak self] _ in
                 guard let self else { return }
-                self.gameClient.reveal(cells: [self.puzzleView.userCursor.coordinates])
+                self.showConfirmationAlert(title: "Reveal the square?",
+                                           message: "The correct letter will be filled in for all players.",
+                                           confirmActionTitle: "Reveal") { [weak self] in
+                    guard let self else { return }
+                    self.gameClient.reveal(cells: [self.puzzleView.userCursor.coordinates])
+                }
             }),
             UIAction(title: "Word", handler: { [weak self] _ in
                 guard let self else { return }
-                self.gameClient.reveal(cells: self.puzzleView.findCurrentWordCellCoordinates())
+                self.showConfirmationAlert(title: "Reveal the word?",
+                                           message: "The correct letters will be filled in for all players.",
+                                           confirmActionTitle: "Reveal") { [weak self] in
+                    guard let self else { return }
+                    self.gameClient.reveal(cells: self.puzzleView.findCurrentWordCellCoordinates())
+                }
             })
         ]
 
         if puzzle {
             revealMenuActions.append(UIAction(title: "Puzzle", handler: { [weak self] _ in
                 guard let self else { return }
-                self.gameClient.reveal(cells: self.puzzleView.findAllLetterCellCoordinates())
+                self.showConfirmationAlert(title: "Reveal the whole puzzle?", 
+                                           message: "The correct letters will be filled in for all players.",
+                                           confirmActionTitle: "Reveal") { [weak self] in
+                    guard let self else { return }
+                    self.gameClient.reveal(cells: self.puzzleView.findAllLetterCellCoordinates())
+                }
             }))
         }
 
         var resetMenuActions: [UIAction] = [
-            UIAction(title: "Cell", handler: { [weak self] _ in
+            UIAction(title: "Square", handler: { [weak self] _ in
                 guard let self else { return }
                 self.gameClient.reset(cells: [self.puzzleView.userCursor.coordinates])
             }),
@@ -549,14 +564,18 @@ class PuzzleViewController: UIViewController {
         if puzzle {
             resetMenuActions.append(UIAction(title: "Puzzle", handler: { [weak self] _ in
                 guard let self else { return }
-                self.gameClient.reset(cells: self.puzzleView.findAllLetterCellCoordinates())
+                self.showConfirmationAlert(title: "Reset the whole puzzle?",
+                                           message: "The entire puzzle will be cleared out for all players.",
+                                           confirmActionTitle: "Reset") { [weak self] in
+                    guard let self else { return }
+                    self.gameClient.reset(cells: self.puzzleView.findAllLetterCellCoordinates())
+                }
             }))
         }
 
         let checkMenu = UIMenu(title: "Check", identifier: nil, options: [], preferredElementSize: .automatic, children: checkMenuActions)
         let revealMenu = UIMenu(title: "Reveal", identifier: nil, options: [], preferredElementSize: .automatic, children: revealMenuActions)
         let resetMenu = UIMenu(title: "Reset", identifier: nil, options: [], preferredElementSize: .automatic, children: resetMenuActions)
-
 
         return [checkMenu, revealMenu, resetMenu]
     }
@@ -566,6 +585,16 @@ class PuzzleViewController: UIViewController {
             self.newMessageStackView.addSystemMessage("Tap the puzzle with three fingers to quickly switch between input modes!")
             self.settingsStorage.hasSeenInputModeQuickswitchTooltip = true
         }
+    }
+
+    func showConfirmationAlert(title: String, message: String, confirmActionTitle: String, confirmBlock: @escaping (() -> Void)) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Reveal", style: .destructive, handler: { _ in
+            confirmBlock()
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        self.present(alert, animated: true)
     }
 }
 
