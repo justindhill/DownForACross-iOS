@@ -32,7 +32,7 @@ class ChatEvent: GameEvent {
         
         self.senderId = senderId
         self.senderName = senderName
-        self.message = message
+        self.message = message.trimmingCharacters(in: .whitespacesAndNewlines)
         self.messageId = messageId
         self.clientSideMessageId = params["clientSideMessageId"] as? String
     }
@@ -40,7 +40,7 @@ class ChatEvent: GameEvent {
     init(gameId: String, senderId: String, senderName: String, message: String) {
         self.senderId = senderId
         self.senderName = senderName
-        self.message = message
+        self.message = message.trimmingCharacters(in: .whitespacesAndNewlines)
         self.gameId = gameId
         self.messageId = ""
         self.clientSideMessageId = UUID().uuidString
