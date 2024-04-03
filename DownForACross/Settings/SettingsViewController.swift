@@ -83,6 +83,11 @@ class SettingsViewController: UIViewController {
                 }
             })
         )
+
+        self.addSetting(SwitchSettingView(title: "Skip filled squares",
+                                          details: "When moving the cursor, skip over cells that have been filled regardless of whether they are checked for correctness",
+                                          settingsStorage: self.settingsStorage,
+                                          keyPath: \.skipFilledCells))
     }
 
     func addSetting(_ view: UIView) {

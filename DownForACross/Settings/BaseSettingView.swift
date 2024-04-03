@@ -14,7 +14,7 @@ class BaseSettingView: UIView {
     var settingsStorage: SettingsStorage
     let title: String
     let details: String?
-    let labelSpacing: CGFloat = 4.0
+    let labelSpacing: CGFloat = 8.0
 
     private let accessoryView: UIView?
     private lazy var titleLabel: UILabel = {
@@ -63,10 +63,15 @@ class BaseSettingView: UIView {
         if let accessoryView {
             self.addSubview(accessoryView)
             constraints.append(contentsOf: [
-                accessoryView.lastBaselineAnchor.constraint(equalTo: self.titleLabel.lastBaselineAnchor),
                 accessoryView.trailingAnchor.constraint(equalTo: self.layoutMarginsGuide.trailingAnchor),
                 self.titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: accessoryView.leadingAnchor)
             ])
+
+            if accessoryView is UILabel || accessoryView is UIButton {
+                constraints.append(accessoryView.lastBaselineAnchor.constraint(equalTo: self.titleLabel.lastBaselineAnchor))
+            } else {
+                constraints.append(accessoryView.centerYAnchor.constraint(equalTo: self.titleLabel.centerYAnchor))
+            }
         }
 
         if details != nil {
@@ -80,14 +85,6 @@ class BaseSettingView: UIView {
         }
 
         NSLayoutConstraint.activate(constraints)
-    }
-
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        if self.bounds.contains(point) {
-            return accessoryView
-        }
-
-        return super.hitTest(point, with: event)
     }
 
     func cancel() {

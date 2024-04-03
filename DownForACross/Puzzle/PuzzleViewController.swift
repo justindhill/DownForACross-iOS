@@ -170,6 +170,7 @@ class PuzzleViewController: UIViewController {
         self.puzzleView = PuzzleView(puzzle: self.puzzle)
         self.puzzleView.solution = self.gameClient.solution
         self.puzzleView.isSolved = self.gameClient.isPuzzleSolved
+        self.puzzleView.skipFilledCells = self.settingsStorage.skipFilledCells
         self.puzzleView.translatesAutoresizingMaskIntoConstraints = false
         self.puzzleView.delegate = self
         self.puzzleView.addGestureRecognizer(self.inputModeToggleTapGestureRecognizer)

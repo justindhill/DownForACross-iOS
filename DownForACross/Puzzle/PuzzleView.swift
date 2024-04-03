@@ -49,6 +49,7 @@ class PuzzleView: UIView {
         didSet { self.setNeedsLayout() }
     }
     
+    var skipFilledCells: Bool = false
     var userCursorColor: UIColor = .gray
     var isDarkMode: Bool { self.traitCollection.userInterfaceStyle == .dark }
     var isSolved: Bool = false
@@ -581,8 +582,8 @@ class PuzzleView: UIView {
         if candidate == current {
             return
         }
-        
-        while self.grid[candidate] == Constant.wordBoundary || self.solution[candidate]?.isWritable == false {
+
+        while self.shouldSkip(cell: candidate) {
             candidate = nextCandidate(after: candidate)
             if candidate == current {
                 return
@@ -613,8 +614,8 @@ class PuzzleView: UIView {
         
         
         var candidate = nextCandidate(after: current)
-        
-        while self.grid[candidate] == Constant.wordBoundary || self.solution[candidate]?.isWritable == false {
+
+        while self.shouldSkip(cell: candidate) {
             candidate = nextCandidate(after: candidate)
             if candidate == current {
                 return
@@ -623,7 +624,14 @@ class PuzzleView: UIView {
         
         self.userCursor = UserCursor(coordinates: candidate, direction: self.userCursor.direction)
     }
-    
+
+    func shouldSkip(cell: CellCoordinates) -> Bool {
+        return
+            self.grid[cell] == Constant.wordBoundary ||
+            self.solution[cell]?.isWritable == false ||
+            (self.solution[cell] != nil && self.skipFilledCells)
+    }
+
     func advanceUserCursorToNextWord() {
         let wordExtent = self.findCurrentWordExtent()
         switch self.userCursor.direction {
@@ -669,7 +677,7 @@ class PuzzleView: UIView {
         if !self.isSolved {
             if isCurrentWordFullAndPotentiallyCorrect {
                 self.advanceUserCursorToNextWord()
-            } else if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.isWritable == false {
+            } else if self.shouldSkip(cell: self.userCursor.coordinates) {
                 self.advanceUserCursorToNextLetter()
             }
         }
@@ -677,8 +685,7 @@ class PuzzleView: UIView {
     
     func currentWordIsFullAndPotentiallyCorrect() -> Bool {
         return self.findCurrentWordCellCoordinates().reduce(into: true) { partialResult, coords in
-            let value = self.solution[coords]
-            partialResult = partialResult && value != nil && value?.isWritable == false
+            partialResult = partialResult && self.shouldSkip(cell: coords)
         }
     }
     
@@ -727,7 +734,7 @@ class PuzzleView: UIView {
             ) {
                 self.userCursor.coordinates = lastNonCorrectCell
             }
-        } else if solution[self.userCursor.coordinates.row][self.userCursor.coordinates.cell]?.isWritable == false {
+        } else if self.shouldSkip(cell: self.userCursor.coordinates) {
             self.advanceUserCursorToNextLetter()
         }
     }

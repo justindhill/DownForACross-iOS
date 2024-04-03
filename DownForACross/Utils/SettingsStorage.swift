@@ -66,6 +66,9 @@ class SettingsStorage {
     @UserDefaultsEntry<[RecentlyOpenedSharedGame]>(key: "recentlyOpenedSharedGames")
     var recentlyOpenedSharedGames = []
 
+    @UserDefaultsEntry<Bool>(key: "skipFilledCells")
+    var skipFilledCells = true
+
     var onboardingComplete: Bool {
         get { self.onboardingVersionComplete == self.currentOnboardingVersion }
     }

@@ -55,6 +55,7 @@
 		3B90033F2B35D5D90088729C /* SharedTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B90033E2B35D5D90088729C /* SharedTypes.swift */; };
 		3B9003412B3627CC0088729C /* SiteInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9003402B3627CC0088729C /* SiteInteractor.swift */; };
 		3B9003452B3630D70088729C /* UpdateDisplayNameEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9003442B3630D70088729C /* UpdateDisplayNameEvent.swift */; };
+		3B926AE02BBD8E8B009BF228 /* SwitchSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B926ADF2BBD8E8B009BF228 /* SwitchSettingView.swift */; };
 		3BAD21272B98BBBB00839504 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BAD21262B98BBBB00839504 /* EmptyStateView.swift */; };
 		3BB0FCD92B6C5CB300CD907C /* ChatEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCD82B6C5CB300CD907C /* ChatEvent.swift */; };
 		3BB0FCDD2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCDC2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift */; };
@@ -125,6 +126,7 @@
 		3B90033E2B35D5D90088729C /* SharedTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedTypes.swift; sourceTree = "<group>"; };
 		3B9003402B3627CC0088729C /* SiteInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteInteractor.swift; sourceTree = "<group>"; };
 		3B9003442B3630D70088729C /* UpdateDisplayNameEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateDisplayNameEvent.swift; sourceTree = "<group>"; };
+		3B926ADF2BBD8E8B009BF228 /* SwitchSettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchSettingView.swift; sourceTree = "<group>"; };
 		3BAD21262B98BBBB00839504 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		3BB0FCD82B6C5CB300CD907C /* ChatEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatEvent.swift; sourceTree = "<group>"; };
 		3BB0FCDC2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleNewMessageStackView.swift; sourceTree = "<group>"; };
@@ -350,6 +352,7 @@
 				3B5BD0DD2BAA7A0A006DB214 /* BaseSettingView.swift */,
 				3B5BD0DF2BAB1D46006DB214 /* EditableTextSettingView.swift */,
 				3B5BD0E12BAB2004006DB214 /* SingleSelectSettingView.swift */,
+				3B926ADF2BBD8E8B009BF228 /* SwitchSettingView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -507,6 +510,7 @@
 				3BC12A402B62A9380060C29F /* UIColor+HSL.swift in Sources */,
 				3BB0FCD92B6C5CB300CD907C /* ChatEvent.swift in Sources */,
 				3B011DE62B30BED400BDB732 /* AppDelegate.swift in Sources */,
+				3B926AE02BBD8E8B009BF228 /* SwitchSettingView.swift in Sources */,
 				3B9003412B3627CC0088729C /* SiteInteractor.swift in Sources */,
 				3BB0FCEF2B7E5B6A00CD907C /* SettingsStorage.swift in Sources */,
 				3B581B152B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift in Sources */,

@@ -26,6 +26,14 @@ class EditableTextSettingView: BaseSettingView {
         textField.delegate = self
     }
 
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        if self.bounds.contains(point) {
+            return self.textField
+        }
+
+        return super.hitTest(point, with: event)
+    }
+
     override func cancel() {
         self.textField.resignFirstResponder()
         self.textField.textColor = .secondaryLabel
