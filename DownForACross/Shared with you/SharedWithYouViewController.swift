@@ -199,6 +199,27 @@ extension SharedWithYouViewController: UITableViewDelegate {
         self.navigationController?.pushViewController(vc, animated: true)
     }
 
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        if indexPath.section == 0 {
+            return UISwipeActionsConfiguration(actions: [
+                UIContextualAction(style: .destructive, title: "Remove", handler: { [weak self] _, _, completion in
+                    guard let self,
+                          let item = self.dataSource.itemIdentifier(for: indexPath),
+                          let index = self.settingsStorage.recentlyOpenedSharedGames.firstIndex(where: { $0.gameId == item }) else {
+                        completion(false)
+                        return
+                    }
+                    
+                    self.settingsStorage.recentlyOpenedSharedGames.remove(at: index)
+                    self.refreshContent()
+                    completion(true)
+                })
+            ])
+        }
+
+        return nil
+    }
+
 }
 
 class SharedWithYouDataSource<SectionIdentifierType: Hashable, ItemIdentifierType: Hashable>: UITableViewDiffableDataSource<SectionIdentifierType, ItemIdentifierType> {
