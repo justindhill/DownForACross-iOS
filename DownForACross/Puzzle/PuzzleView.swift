@@ -44,7 +44,16 @@ class PuzzleView: UIView {
             }
         }
     }
-    
+
+    override var keyCommands: [UIKeyCommand]? {[
+        UIKeyCommand(input: UIKeyCommand.inputUpArrow, modifierFlags: [], action: #selector(handleUpArrow)),
+        UIKeyCommand(input: UIKeyCommand.inputDownArrow, modifierFlags: [], action: #selector(handleDownArrow)),
+        UIKeyCommand(input: UIKeyCommand.inputLeftArrow, modifierFlags: [], action: #selector(handleLeftArrow)),
+        UIKeyCommand(input: UIKeyCommand.inputRightArrow, modifierFlags: [], action: #selector(handleRightArrow)),
+        UIKeyCommand(input: "\t", modifierFlags: .shift, action: #selector(retreatUserCursorToPreviousWord)),
+        UIKeyCommand(input: "\t", modifierFlags: [], action: #selector(advanceUserCursorToNextWord))
+    ]}
+
     var isPlayerAttributionEnabled: Bool = false {
         didSet { self.setNeedsLayout() }
     }
@@ -78,9 +87,7 @@ class PuzzleView: UIView {
     }
     
     lazy var tapGestureRecognizer = AccumulatingTapGestureRecognizer(target: self, action: #selector(tapGestureRecognizerTriggered))
-    
-    var currentDepressedKeys = Set<UIKeyboardHIDUsage>()
-    
+
     override var canBecomeFirstResponder: Bool {
         return true
     }
@@ -135,7 +142,7 @@ class PuzzleView: UIView {
         self.cursors = [:]
         self.circles = Set(puzzle.circles)
         super.init(frame: .zero)
-                
+
         self.addSubview(self.scrollView)
         self.scrollView.addSubview(self.backgroundView)
         self.backgroundView.addSubview(self.puzzleContainerView)
@@ -561,17 +568,29 @@ class PuzzleView: UIView {
         return layer
     }
     
-    func advanceUserCursorToNextLetter() {
+    func advanceUserCursorToNextLetter(freeMovement: Bool = false) {
         let current = self.userCursor.coordinates
         func nextCandidate(after lastCandidate: CellCoordinates) -> CellCoordinates {
             switch self.userCursor.direction {
                 case .across:
                     if lastCandidate.cell + 1 >= self.grid.columnCount {
-                        return current
+                        if lastCandidate.row + 1 >= self.grid.rowCount {
+                            return CellCoordinates(row: 0, cell: 0)
+                        } else {
+                            return CellCoordinates(row: lastCandidate.row + 1, cell: 0)
+                        }
                     }
                 case .down:
                     if lastCandidate.row + 1 >= self.grid.rowCount {
-                        return current
+                        if lastCandidate.cell + 1 >= self.grid.columnCount {
+                            if freeMovement {
+                                return CellCoordinates(row: 0, cell: 0)
+                            } else {
+                                return current
+                            }
+                        } else {
+                            return CellCoordinates(row: 0, cell: lastCandidate.cell + 1)
+                        }
                     }
             }
 
@@ -583,7 +602,7 @@ class PuzzleView: UIView {
             return
         }
 
-        while self.shouldSkip(cell: candidate) {
+        while self.shouldSkip(cell: candidate, freeMovement: freeMovement) {
             candidate = nextCandidate(after: candidate)
             if candidate == current {
                 return
@@ -593,19 +612,33 @@ class PuzzleView: UIView {
         self.userCursor = UserCursor(coordinates: candidate, direction: self.userCursor.direction)
     }
     
-    func retreatUserCursorToPreviousLetterIfNotAtNonemptyEdge() {
+    func retreatUserCursorToPreviousLetter(forDeletion: Bool = false, freeMovement: Bool = false) {
         let current = self.userCursor.coordinates
         func nextCandidate(after lastCandidate: CellCoordinates) -> CellCoordinates {
             switch self.userCursor.direction {
                 case .across:
-                    if lastCandidate.cell - 1 < 0 ||
-                        lastCandidate.cell == self.solution[lastCandidate.row].count - 1 && self.solution[lastCandidate] != nil {
-                        return current
+                    if lastCandidate.cell - 1 < 0 {
+                        if lastCandidate.row - 1 < 0 {
+                            if freeMovement {
+                                return CellCoordinates(row: self.grid.rowCount - 1, cell: self.grid.columnCount - 1)
+                            } else {
+                                return current
+                            }
+                        } else {
+                            return CellCoordinates(row: lastCandidate.row - 1, cell: self.grid.columnCount - 1)
+                        }
                     }
                 case .down:
-                    if lastCandidate.row - 1 < 0 ||
-                        lastCandidate.row == self.solution.count - 1 && self.solution[lastCandidate]?.value != nil {
-                        return current
+                    if lastCandidate.row - 1 < 0 {
+                        if lastCandidate.cell - 1 < 0 {
+                            if freeMovement {
+                                return CellCoordinates(row: self.grid.rowCount - 1, cell: self.grid.columnCount - 1)
+                            } else {
+                                return current
+                            }
+                        } else {
+                            return CellCoordinates(row: self.grid.rowCount - 1, cell: lastCandidate.cell - 1)
+                        }
                     }
             }
 
@@ -614,8 +647,12 @@ class PuzzleView: UIView {
         
         
         var candidate = nextCandidate(after: current)
+        if candidate == current {
+            self.retreatUserCursorToPreviousWord(trailingEdge: true, freeMovement: freeMovement)
+            return
+        }
 
-        while self.shouldSkip(cell: candidate) {
+        while self.shouldSkip(cell: candidate, forDeletion: forDeletion, freeMovement: freeMovement) {
             candidate = nextCandidate(after: candidate)
             if candidate == current {
                 return
@@ -625,14 +662,15 @@ class PuzzleView: UIView {
         self.userCursor = UserCursor(coordinates: candidate, direction: self.userCursor.direction)
     }
 
-    func shouldSkip(cell: CellCoordinates) -> Bool {
+    func shouldSkip(cell: CellCoordinates, forDeletion: Bool = false, freeMovement: Bool = false) -> Bool {
         return
             self.grid[cell] == Constant.wordBoundary ||
-            self.solution[cell]?.isWritable == false ||
-            (self.solution[cell] != nil && self.skipFilledCells)
+            (!freeMovement && (
+                self.solution[cell]?.isWritable == false ||
+                (self.solution[cell] != nil && self.solution[cell]?.correctness != .incorrect && self.skipFilledCells && !forDeletion)))
     }
 
-    func advanceUserCursorToNextWord() {
+    @objc func advanceUserCursorToNextWord(freeMovement: Bool = false) {
         let wordExtent = self.findCurrentWordExtent()
         switch self.userCursor.direction {
             case .across:
@@ -670,22 +708,22 @@ class PuzzleView: UIView {
         }
         
         let isFullAndPotentiallyCorrect = self.currentWordIsFullAndPotentiallyCorrect()
-        self.advanceToAppropriateCellIfNecessary(isCurrentWordFullAndPotentiallyCorrect: isFullAndPotentiallyCorrect)
+        self.advanceToAppropriateCellIfNecessary(isCurrentWordFullAndPotentiallyCorrect: isFullAndPotentiallyCorrect, freeMovement: freeMovement)
     }
     
-    func advanceToAppropriateCellIfNecessary(isCurrentWordFullAndPotentiallyCorrect: Bool) {
+    func advanceToAppropriateCellIfNecessary(isCurrentWordFullAndPotentiallyCorrect: Bool, freeMovement: Bool) {
         if !self.isSolved {
             if isCurrentWordFullAndPotentiallyCorrect {
                 self.advanceUserCursorToNextWord()
-            } else if self.shouldSkip(cell: self.userCursor.coordinates) {
-                self.advanceUserCursorToNextLetter()
+            } else if self.shouldSkip(cell: self.userCursor.coordinates, freeMovement: freeMovement) {
+                self.advanceUserCursorToNextLetter(freeMovement: freeMovement)
             }
         }
     }
     
-    func currentWordIsFullAndPotentiallyCorrect() -> Bool {
+    func currentWordIsFullAndPotentiallyCorrect(forDeletion: Bool = false) -> Bool {
         return self.findCurrentWordCellCoordinates().reduce(into: true) { partialResult, coords in
-            partialResult = partialResult && self.shouldSkip(cell: coords)
+            partialResult = partialResult && self.shouldSkip(cell: coords, forDeletion: forDeletion)
         }
     }
     
@@ -701,7 +739,7 @@ class PuzzleView: UIView {
         self.userCursor = UserCursor(coordinates: entry.coordinates, direction: direction)
     }
     
-    func retreatUserCursorToPreviousWord(trailingEdge: Bool = false) {
+    @objc func retreatUserCursorToPreviousWord(trailingEdge: Bool = false, forDeletion: Bool = false, freeMovement: Bool = false) {
         let wordExtent = self.findCurrentWordExtent()
         var rollover = false
         switch self.userCursor.direction {
@@ -725,16 +763,14 @@ class PuzzleView: UIView {
             self.toggleDirection()
         }
                 
-        if !self.isSolved && self.currentWordIsFullAndPotentiallyCorrect() {
-            self.retreatUserCursorToPreviousWord(trailingEdge: trailingEdge)
+        if !self.isSolved && self.currentWordIsFullAndPotentiallyCorrect(forDeletion: forDeletion) {
+            self.retreatUserCursorToPreviousWord(trailingEdge: trailingEdge, forDeletion: forDeletion, freeMovement: freeMovement)
         } else if trailingEdge {
             let newWordExtent = self.findCurrentWordCellCoordinates()
-            if let lastNonCorrectCell = newWordExtent.reversed().first(where: {
-                (self.solution[$0]?.isWritable ?? true) == true }
-            ) {
+            if let lastNonCorrectCell = newWordExtent.reversed().first(where: { !self.shouldSkip(cell: $0, forDeletion: forDeletion, freeMovement: freeMovement)} ) {
                 self.userCursor.coordinates = lastNonCorrectCell
             }
-        } else if self.shouldSkip(cell: self.userCursor.coordinates) {
+        } else if self.shouldSkip(cell: self.userCursor.coordinates, forDeletion: forDeletion, freeMovement: freeMovement) {
             self.advanceUserCursorToNextLetter()
         }
     }
@@ -751,9 +787,9 @@ class PuzzleView: UIView {
                     coordinates.cell == self.solution[coordinates.row].count - 1 ||
                     // at the end of the word
                     self.grid[coordinates.next(.across)] == Constant.wordBoundary ||
-                    // remainder of the word is checked and correct
-                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1]?.isWritable == false })
-                    
+                    // remainder of the word should be skipped
+                    wordExtent.reduce(into: true, { $0 = $0 && self.shouldSkip(cell: $1) })
+
             case .down:
                 // cells in the word after the current cell
                 let wordExtent = self.findCurrentWordCellCoordinates().filter({ $0.row > coordinates.row })
@@ -763,8 +799,8 @@ class PuzzleView: UIView {
                     coordinates.row == self.grid.rowCount - 1 ||
                     // at the end of the word
                     self.grid[coordinates.next(.down)] == Constant.wordBoundary ||
-                    // remainder of the word is checked and correct
-                    wordExtent.reduce(into: true, { $0 = $0 && self.solution[$1]?.isWritable == false })
+                    // remainder of the word should be skipped
+                    wordExtent.reduce(into: true, { $0 = $0 && self.shouldSkip(cell: $1) })
         }
     }
     
@@ -938,52 +974,6 @@ class PuzzleView: UIView {
         }
     }
     
-    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        self.currentDepressedKeys.formUnion(presses.compactMap({ $0.key?.keyCode }))
-        if self.currentDepressedKeys.count == 1 {
-            switch self.currentDepressedKeys.first {
-                case .keyboardRightArrow:
-                    if self.userCursor.direction == .down {
-                        self.toggleDirection()
-                    } else {
-                        self.advanceUserCursorToNextLetter()
-                    }
-                case .keyboardLeftArrow:
-                    if self.userCursor.direction == .down {
-                        self.toggleDirection()
-                    } else {
-                        self.retreatUserCursorToPreviousLetterIfNotAtNonemptyEdge()
-                    }
-                case .keyboardDownArrow:
-                    if self.userCursor.direction == .across {
-                        self.toggleDirection()
-                    } else {
-                        self.advanceUserCursorToNextLetter()
-                    }
-                case .keyboardUpArrow:
-                    if self.userCursor.direction == .across {
-                        self.toggleDirection()
-                    } else {
-                        self.retreatUserCursorToPreviousLetterIfNotAtNonemptyEdge()
-                    }
-                case .keyboardTab:
-                    self.advanceUserCursorToNextWord()
-                default:
-                    super.pressesBegan(presses, with: event)
-            }
-        } else if self.currentDepressedKeys.count == 2 {
-            if self.currentDepressedKeys.contains(.keyboardTab) {
-                if self.currentDepressedKeys.contains(.keyboardLeftShift) || self.currentDepressedKeys.contains(.keyboardRightShift) {
-                    self.retreatUserCursorToPreviousWord()
-                }
-            } else {
-                super.pressesBegan(presses, with: event)
-            }
-        } else {
-            super.pressesBegan(presses, with: event)
-        }
-    }
-    
     func findCurrentClueCellNumber() -> ModelLocation? {
         let wordExtent = self.findCurrentWordExtent()
         
@@ -1010,15 +1000,43 @@ class PuzzleView: UIView {
             return nil
         }
     }
-    
-    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        presses.compactMap({ $0.key?.keyCode }).forEach({ self.currentDepressedKeys.remove($0) })
-    }
-    
+
     func toggleDirection() {
         self.userCursor = UserCursor(coordinates: self.userCursor.coordinates, direction: self.userCursor.direction.opposite)
     }
-    
+
+    @objc func handleUpArrow() {
+        if self.userCursor.direction == .across {
+            self.toggleDirection()
+        } else {
+            self.retreatUserCursorToPreviousLetter(freeMovement: true)
+        }
+    }
+
+    @objc func handleDownArrow() {
+        if self.userCursor.direction == .across {
+            self.toggleDirection()
+        } else {
+            self.advanceUserCursorToNextLetter(freeMovement: true)
+        }
+    }
+
+    @objc func handleLeftArrow() {
+        if self.userCursor.direction == .down {
+            self.toggleDirection()
+        } else {
+            self.retreatUserCursorToPreviousLetter(freeMovement: true)
+        }
+    }
+
+    @objc func handleRightArrow() {
+        if self.userCursor.direction == .down {
+            self.toggleDirection()
+        } else {
+            self.advanceUserCursorToNextLetter(freeMovement: true)
+        }
+    }
+
 }
 
 extension PuzzleView: UIScrollViewDelegate {
@@ -1068,7 +1086,7 @@ extension PuzzleView: UIKeyInput {
         }
 
         // take only the first letter
-        var character = text[text.startIndex]
+        let character = text[text.startIndex]
 
         if text == " " {
             self.toggleDirection()
@@ -1101,7 +1119,7 @@ extension PuzzleView: UIKeyInput {
             }
         }
     }
-    
+
     func deleteBackward() {
         if let currentCellEntry = self.solution[self.userCursor.coordinates], currentCellEntry.isWritable {
             self.delegate?.puzzleView(self, didEnterText: nil, atCoordinates: self.userCursor.coordinates)
@@ -1109,9 +1127,9 @@ extension PuzzleView: UIKeyInput {
         }
         
         if self.isUserCursorAtLeadingWordBoundary() {
-            self.retreatUserCursorToPreviousWord(trailingEdge: true)
+            self.retreatUserCursorToPreviousWord(trailingEdge: true, forDeletion: true)
         } else {
-            self.retreatUserCursorToPreviousLetterIfNotAtNonemptyEdge()
+            self.retreatUserCursorToPreviousLetter(forDeletion: true)
         }
         
         self.delegate?.puzzleView(self, didEnterText: nil, atCoordinates: self.userCursor.coordinates)

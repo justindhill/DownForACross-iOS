@@ -630,7 +630,7 @@ extension PuzzleViewController: GameClientDelegate {
         
         if isBulkUpdate {
             self.puzzleView.advanceToAppropriateCellIfNecessary(
-                isCurrentWordFullAndPotentiallyCorrect: self.puzzleView.currentWordIsFullAndPotentiallyCorrect())
+                isCurrentWordFullAndPotentiallyCorrect: self.puzzleView.currentWordIsFullAndPotentiallyCorrect(), freeMovement: false)
         }
     }
     
