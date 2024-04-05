@@ -12,8 +12,14 @@ import Combine
 
 class PuzzleViewController: UIViewController {
     
+    enum VisibilityState {
+        case invisible
+        case transitioning
+        case visible
+    }
     static let puzzleIdToGameIdMapUserDefaultsKey = "com.justinhill.DownForACross.puzzleIdToGameIdMap"
     
+    var visibilityState: VisibilityState = .invisible
     var viewHasAppeared: Bool = false
     let puzzleId: String
     let puzzle: Puzzle
@@ -242,6 +248,12 @@ class PuzzleViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        if self.visibilityState == .transitioning {
+            return
+        }
+
+        self.visibilityState = .transitioning
+
         super.viewWillAppear(animated)
         self.puzzleView.userCursorColor = self.settingsStorage.userDisplayColor
         
@@ -279,9 +291,15 @@ class PuzzleViewController: UIViewController {
             }
         }
     }
-    
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.visibilityState = .transitioning
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        self.visibilityState = .visible
         self.puzzleView.becomeFirstResponder()
         self.titleBarAnimator?._titleControl = nil
 
@@ -300,13 +318,14 @@ class PuzzleViewController: UIViewController {
     }
 
     @objc func keyboardWillShow(_ note: Notification) {
-        guard let userInfo = note.userInfo else { return }
+        guard self.visibilityState == .visible, let userInfo = note.userInfo else { return }
         let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue.size
         self.currentKeyboardHeight = keyboardSize.height
         self.updateContentInsets()
     }
 
     @objc func keyboardWillHide(_ note: Notification) {
+        guard self.visibilityState == .visible else { return }
         self.currentKeyboardHeight = 0
         self.updateContentInsets()
     }
