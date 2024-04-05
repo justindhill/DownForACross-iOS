@@ -8,7 +8,7 @@
 import UIKit
 
 class ColorPickerView: UIControl {
-    
+
     static var reuseIdentifier: String = "ReuseIdentifier"
     var colors: [UIColor] = [
         .systemRed,
@@ -23,7 +23,9 @@ class ColorPickerView: UIControl {
         .systemIndigo,
         .systemBrown
     ]
-    
+
+    let itemSideLength: CGFloat = 44
+
     var selectedColor: UIColor {
         guard let indexPath = self.collectionView.indexPathsForSelectedItems?.first else {
             fatalError("There should always be a selected color")
@@ -31,23 +33,19 @@ class ColorPickerView: UIControl {
         
         return self.colors[indexPath.row]
     }
-    
-    var _intrinsicContentSize: CGSize = .zero {
-        didSet {
-            if _intrinsicContentSize != oldValue {
-                self.invalidateIntrinsicContentSize()
-            }
-        }
-    }
+
     override var intrinsicContentSize: CGSize {
-        return _intrinsicContentSize
+        // the top margin includes the arrow area, but should be equal to the bottom
+        var size = self.collectionView.collectionViewLayout.collectionViewContentSize
+        size.height += (2 * self.layoutMargins.bottom)
+        size.width += self.layoutMargins.left + self.layoutMargins.right
+        return size
     }
-    
+
     lazy var dataSource: UICollectionViewDiffableDataSource<Int, UIColor> = {
         UICollectionViewDiffableDataSource<Int, UIColor>(collectionView: self.collectionView, cellProvider: { collectionView, indexPath, color in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ColorPickerView.reuseIdentifier, for: indexPath)
-            cell.layer.cornerRadius = 12
-            cell.layer.cornerCurve = .continuous
+            cell.layer.cornerRadius = self.itemSideLength / 2
             cell.layer.masksToBounds = true
             cell.contentView.backgroundColor = color
             cell.layer.borderWidth = cell.isSelected ? 2 : 0
@@ -55,11 +53,12 @@ class ColorPickerView: UIControl {
         })
     }()
     
-    let collectionViewLayout: UICollectionViewFlowLayout = {
+    lazy var collectionViewLayout: UICollectionViewFlowLayout = {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumLineSpacing = 8
-        layout.minimumInteritemSpacing = 8
-        
+        layout.minimumLineSpacing = 16
+        layout.minimumInteritemSpacing = 16
+        layout.itemSize = CGSize(width: self.itemSideLength, height: self.itemSideLength)
+
         return layout
     }()
     
@@ -70,7 +69,8 @@ class ColorPickerView: UIControl {
         view.translatesAutoresizingMaskIntoConstraints = false
         view.allowsMultipleSelection = false
         view.delegate = self
-        
+        view.backgroundColor = .clear
+
         return view
     }()
     
@@ -81,10 +81,10 @@ class ColorPickerView: UIControl {
         self.addSubview(self.collectionView)
         
         NSLayoutConstraint.activate([
-            self.collectionView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            self.collectionView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            self.collectionView.topAnchor.constraint(equalTo: self.topAnchor),
-            self.collectionView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
+            self.collectionView.leadingAnchor.constraint(equalTo: self.layoutMarginsGuide.leadingAnchor),
+            self.collectionView.trailingAnchor.constraint(equalTo: self.layoutMarginsGuide.trailingAnchor),
+            self.collectionView.topAnchor.constraint(equalTo: self.layoutMarginsGuide.topAnchor),
+            self.collectionView.bottomAnchor.constraint(equalTo: self.layoutMarginsGuide.bottomAnchor)
         ])
         
         var snapshot = NSDiffableDataSourceSnapshot<Int, UIColor>()
@@ -92,12 +92,18 @@ class ColorPickerView: UIControl {
         snapshot.appendItems(self.colors, toSection: 0)
         self.dataSource.apply(snapshot, animatingDifferences: false)
     }
-    
+
+    private var _lastCollectionViewSize: CGSize = .zero
     override func layoutSubviews() {
         super.layoutSubviews()
-        self._intrinsicContentSize = self.collectionViewLayout.collectionViewContentSize
+
+        let size = self.collectionViewLayout.collectionViewContentSize
+        if size != self._lastCollectionViewSize {
+            _lastCollectionViewSize = size
+            self.invalidateIntrinsicContentSize()
+        }
     }
-    
+
     func setSelectedColorToMatchingColorIfPossible(_ color: UIColor) {
         let index = self.colors.firstIndex(of: color) ?? 0
         let indexPath = IndexPath(row: index, section: 0)

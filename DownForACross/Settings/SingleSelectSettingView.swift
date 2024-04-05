@@ -46,13 +46,5 @@ class SingleSelectSettingView<T: SettingsDisplayable>: BaseSettingView {
         return attributedString
     }
 
-    class GreedyButton: UIButton {
-
-        override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-            return true
-        }
-
-    }
-
 }
 

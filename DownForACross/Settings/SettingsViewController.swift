@@ -62,9 +62,15 @@ class SettingsViewController: UIViewController {
     func updateContent() {
         self.stackView.addArrangedSubview(EditableTextSettingView(
             title: "Display name",
-            details: "How you will appear to other players in chat messages and the player list",
+            details: "The name that will appear to other players in chat messages and the player list",
             settingsStorage: self.settingsStorage,
             keyPath: \.userDisplayName))
+
+        self.stackView.addArrangedSubview(ColorSettingView(
+            title: "Cursor color",
+            details: "The color that will represent you to other players",
+            settingsStorage: self.settingsStorage,
+            keyPath: \.userDisplayColor))
 
         self.addSetting(SingleSelectSettingView(
             title: "Default input mode",
@@ -73,7 +79,7 @@ class SettingsViewController: UIViewController {
             keyPath: \.defaultInputMode))
 
         self.addSetting(SingleSelectSettingView(
-            title: "Theme",
+            title: "App theme",
             settingsStorage: self.settingsStorage,
             keyPath: \.appearanceStyle,
             updateHandler: { newValue in
@@ -85,7 +91,7 @@ class SettingsViewController: UIViewController {
         )
 
         self.addSetting(SwitchSettingView(title: "Skip filled squares",
-                                          details: "When moving the cursor, skip over cells that have been filled regardless of whether they are checked for correctness",
+                                          details: "When moving the cursor, skip over cells that have been filled if they haven't been checked for correctness",
                                           settingsStorage: self.settingsStorage,
                                           keyPath: \.skipFilledCells))
 

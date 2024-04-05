@@ -93,7 +93,8 @@ class OnboardingViewController: UIViewController {
     lazy var colorPickerView: ColorPickerView = {
         let view = ColorPickerView()
         view.addTarget(self, action: #selector(selectedColorDidChange), for: .valueChanged)
-        
+        view.layoutMargins = .zero
+
         return view
     }()
     
@@ -187,18 +188,7 @@ class OnboardingViewController: UIViewController {
     
     @objc func selectedColorDidChange() {
         let color = self.colorPickerView.selectedColor
-        print()
-        print(color)
         self.settingsStorage.userDisplayColor = color
-        print(self.settingsStorage.userDisplayColor)
-        
     }
     
-}
-
-extension NSLayoutConstraint {
-    func withPriority(_ priority: UILayoutPriority) -> NSLayoutConstraint {
-        self.priority = priority
-        return self
-    }
 }
