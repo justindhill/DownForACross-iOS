@@ -3,3 +3,6 @@ Pods
 *.xcworkspace
 *.xcodeproj/xcuserdata
 .DS_Store
+
+_Prebuild
+_Prebuild_delta

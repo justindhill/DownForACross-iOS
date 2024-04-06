@@ -101,7 +101,6 @@ class SharedWithYouViewController: UIViewController {
     func refreshContent() {
         var models: [String: SharedGame] = [:]
         var snapshot = NSDiffableDataSourceSnapshot<Int, String>()
-        snapshot.appendSections([0, 1])
 
         func updateAfterResolvingGameInfo(_ result: Result<ResolvedSharedGame, NSError>) {
             switch result {
@@ -115,16 +114,20 @@ class SharedWithYouViewController: UIViewController {
         }
 
         let recentlyOpenedSharedGames = settingsStorage.recentlyOpenedSharedGames.sorted(using: KeyPathComparator(\.lastOpened, order: .reverse))
-        snapshot.appendItems(recentlyOpenedSharedGames.map { recentlyOpened in
-            let item = self.gameInfoResolver.gameInfo(gameId: recentlyOpened.gameId, highlight: nil) { result in
-                updateAfterResolvingGameInfo(result)
-            }
-            models[recentlyOpened.gameId] = item
 
-            return recentlyOpened.gameId
-        }, toSection: 0)
+        if recentlyOpenedSharedGames.count > 0 {
+            snapshot.appendSections([0])
+            snapshot.appendItems(recentlyOpenedSharedGames.map { recentlyOpened in
+                let item = self.gameInfoResolver.gameInfo(gameId: recentlyOpened.gameId, highlight: nil) { result in
+                    updateAfterResolvingGameInfo(result)
+                }
+                models[recentlyOpened.gameId] = item
 
-        snapshot.appendItems(self.highlightCenter.highlights.compactMap { highlight in
+                return recentlyOpened.gameId
+            }, toSection: 0)
+        }
+
+        let messagesItems: [String] = self.highlightCenter.highlights.compactMap { highlight in
             let gameId = highlight.url.lastPathComponent
 
             if var existingModel = models[gameId] {
@@ -140,7 +143,12 @@ class SharedWithYouViewController: UIViewController {
             models[gameId] = item
 
             return gameId
-        }, toSection: 1)
+        }
+
+        if messagesItems.count > 0 {
+            snapshot.appendSections([1])
+            snapshot.appendItems(messagesItems, toSection: 1)
+        }
 
         // build the snapshot so the puzzle info gets resolved even if the view isn't loaded yet
         guard self.isViewLoaded else {

@@ -58,7 +58,7 @@ extension EditableTextSettingView: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
         textField.textColor = .label
 
-        guard let text = textField.text else { return }
+        guard textField.text != nil else { return }
 
         DispatchQueue.main.async {
             textField.selectedTextRange = textField.textRange(from: textField.beginningOfDocument,

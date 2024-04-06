@@ -84,10 +84,10 @@ extension SiteInteractor: WKNavigationDelegate {
     }
     
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        print("webview fail! \(webView.url) \(error)")
+        print("webview fail! \(webView.url?.absoluteString ?? "unknown url") \(error)")
     }
     
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        print("webview fail! \(webView.url) \(error)")
+        print("webview fail! \(webView.url?.absoluteString ?? "unknown url") \(error)")
     }
 }
