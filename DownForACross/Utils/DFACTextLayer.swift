@@ -15,19 +15,35 @@ class DFACTextLayer: CATextLayer {
     static var circleColor: CGColor?
 
     var drawsIncorrectSlash: Bool = false {
-        didSet { self.setNeedsDisplay() }
+        didSet {
+            if oldValue != self.drawsIncorrectSlash {
+                self.setNeedsDisplay()
+            }
+        }
     }
 
     var drawsCircle: Bool = false {
-        didSet { self.setNeedsDisplay() }
+        didSet {
+            if oldValue != self.drawsCircle {
+                self.setNeedsDisplay()
+            }
+        }
     }
 
     var textStrokeColor: CGColor? {
-        didSet { self.setNeedsDisplay() }
+        didSet {
+            if oldValue != self.textStrokeColor {
+                self.setNeedsDisplay()
+            }
+        }
     }
 
     var textStrokeWidth: CGFloat = 2 {
-        didSet { self.setNeedsDisplay() }
+        didSet {
+            if oldValue != self.textStrokeWidth {
+                self.setNeedsDisplay()
+            }
+        }
     }
 
     override func draw(in context: CGContext) {
