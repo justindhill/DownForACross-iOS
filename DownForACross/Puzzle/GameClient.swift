@@ -15,6 +15,7 @@ protocol GameClientDelegate: AnyObject {
     func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: Cursor])
     func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isBulkUpdate: Bool, isSolved: Bool)
     func gameClient(_ client: GameClient, didReceiveNewChatMessage message: ChatEvent, from: Player)
+    func gameClient(_ client: GameClient, didReceivePing ping: PingEvent, from: Player)
     func gameClient(_ client: GameClient, connectionStateDidChange connectionState: GameClient.ConnectionState)
     func gameClient(_ client: GameClient, newPlayerJoined player: Player)
 }
@@ -354,6 +355,15 @@ class GameClient: NSObject, URLSessionDelegate {
                             } catch {
                                 fatalError("Need to handle wonkiness happening here")
                             }
+                        }
+                    }
+                } else if type == "addPing" {
+                    let event = try PingEvent(payload: payload)
+                    applyClosure = {
+                        if let player = self.players[event.userId] {
+                            self.delegate?.gameClient(self, didReceivePing: event, from: player)
+                        } else {
+                            print("Received a ping from an unknown player")
                         }
                     }
                 } else if type == "sendChatMessage" {

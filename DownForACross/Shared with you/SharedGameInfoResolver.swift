@@ -99,6 +99,10 @@ extension SharedGameInfoResolver: GameClientDelegate {
         // no-op
     }
 
+    func gameClient(_ client: GameClient, didReceivePing ping: PingEvent, from: Player) {
+        // no-op
+    }
+
     func gameClient(_ client: GameClient, connectionStateDidChange connectionState: GameClient.ConnectionState) {
         switch connectionState {
             case .connecting, .disconnected, .syncing:

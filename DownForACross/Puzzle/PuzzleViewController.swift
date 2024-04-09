@@ -656,7 +656,11 @@ extension PuzzleViewController: GameClientDelegate {
     func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: Cursor]) {
         self.puzzleView.cursors = cursors.filter({ $0.key != self.userId })
     }
-    
+
+    func gameClient(_ client: GameClient, didReceivePing ping: PingEvent, from: Player) {
+        print("PING \(from.displayName) \(ping.cell)")
+    }
+
     func gameClient(_ client: GameClient, connectionStateDidChange connectionState: GameClient.ConnectionState) {
         switch connectionState {
             case .disconnected:

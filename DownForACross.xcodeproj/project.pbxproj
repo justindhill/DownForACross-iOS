@@ -15,6 +15,8 @@
 		3B011DFD2B30C02F00BDB732 /* ListPuzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFC2B30C02F00BDB732 /* ListPuzzle.swift */; };
 		3B011DFF2B30C03500BDB732 /* Puzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFE2B30C03500BDB732 /* Puzzle.swift */; };
 		3B011E012B30C04C00BDB732 /* PuzzleStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011E002B30C04C00BDB732 /* PuzzleStats.swift */; };
+		3B18481F2BC5871A00B294D4 /* PingEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B18481E2BC5871A00B294D4 /* PingEvent.swift */; };
+		3B1848212BC5873900B294D4 /* GameEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1848202BC5873900B294D4 /* GameEvent.swift */; };
 		3B19A8772BB31FAB004F2D0D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B19A8762BB31FAB004F2D0D /* LaunchScreen.storyboard */; };
 		3B19D1162BB06D4E000AC250 /* ResetEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B19D1152BB06D4E000AC250 /* ResetEvent.swift */; };
 		3B19D1182BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */; };
@@ -89,6 +91,8 @@
 		3B011DFC2B30C02F00BDB732 /* ListPuzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPuzzle.swift; sourceTree = "<group>"; };
 		3B011DFE2B30C03500BDB732 /* Puzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Puzzle.swift; sourceTree = "<group>"; };
 		3B011E002B30C04C00BDB732 /* PuzzleStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleStats.swift; sourceTree = "<group>"; };
+		3B18481E2BC5871A00B294D4 /* PingEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PingEvent.swift; sourceTree = "<group>"; };
+		3B1848202BC5873900B294D4 /* GameEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEvent.swift; sourceTree = "<group>"; };
 		3B19A8762BB31FAB004F2D0D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3B19D1152BB06D4E000AC250 /* ResetEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetEvent.swift; sourceTree = "<group>"; };
 		3B19D1172BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableViewDiffableDataSource+LastIndex.swift"; sourceTree = "<group>"; };
@@ -212,6 +216,7 @@
 		3B011DFB2B30C01F00BDB732 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				3B90033E2B35D5D90088729C /* SharedTypes.swift */,
 				3B9003392B34E99B0088729C /* Game Events */,
 				3B011DFC2B30C02F00BDB732 /* ListPuzzle.swift */,
 				3B011DFE2B30C03500BDB732 /* Puzzle.swift */,
@@ -313,15 +318,16 @@
 		3B9003392B34E99B0088729C /* Game Events */ = {
 			isa = PBXGroup;
 			children = (
+				3BB0FCD82B6C5CB300CD907C /* ChatEvent.swift */,
 				3B4D818E2B63F01A0098A5DA /* CheckEvent.swift */,
-				3B90033E2B35D5D90088729C /* SharedTypes.swift */,
+				3B19D1152BB06D4E000AC250 /* ResetEvent.swift */,
+				3BC761B52BA0C422003ACF81 /* RevealEvent.swift */,
 				3B90033C2B35D5960088729C /* UpdateCellEvent.swift */,
 				3B7AD2662B597AA4004DEC1A /* UpdateColorEvent.swift */,
 				3B90033A2B34E9AF0088729C /* UpdateCursorEvent.swift */,
 				3B9003442B3630D70088729C /* UpdateDisplayNameEvent.swift */,
-				3BB0FCD82B6C5CB300CD907C /* ChatEvent.swift */,
-				3BC761B52BA0C422003ACF81 /* RevealEvent.swift */,
-				3B19D1152BB06D4E000AC250 /* ResetEvent.swift */,
+				3B18481E2BC5871A00B294D4 /* PingEvent.swift */,
+				3B1848202BC5873900B294D4 /* GameEvent.swift */,
 			);
 			path = "Game Events";
 			sourceTree = "<group>";
@@ -549,6 +555,7 @@
 				3BB0FCEF2B7E5B6A00CD907C /* SettingsStorage.swift in Sources */,
 				3B581B152B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift in Sources */,
 				3B76C8D42B9F3F2C00E60AFD /* UIView+PartialSnapshot.swift in Sources */,
+				3B1848212BC5873900B294D4 /* GameEvent.swift in Sources */,
 				3B73AD812B928FF5005DB5F8 /* ColorPickerView.swift in Sources */,
 				3BC761B62BA0C422003ACF81 /* RevealEvent.swift in Sources */,
 				3B5BD0D82BAA7984006DB214 /* PuzzleMessageCell.swift in Sources */,
@@ -598,6 +605,7 @@
 				3B90033B2B34E9AF0088729C /* UpdateCursorEvent.swift in Sources */,
 				3B5BD0DC2BAA7984006DB214 /* PuzzleSideBarViewController.swift in Sources */,
 				3B581B132B7E61880084EC9B /* TabBarViewController.swift in Sources */,
+				3B18481F2BC5871A00B294D4 /* PingEvent.swift in Sources */,
 				3B581B192B8444040084EC9B /* Puzzle+FindReferences.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

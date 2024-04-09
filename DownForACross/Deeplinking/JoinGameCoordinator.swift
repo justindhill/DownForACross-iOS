@@ -97,7 +97,11 @@ extension JoinGameCoordinator: GameClientDelegate {
     func gameClient(_ client: GameClient, didReceiveNewChatMessage message: ChatEvent, from: Player) {
         // no-op
     }
-    
+
+    func gameClient(_ client: GameClient, didReceivePing ping: PingEvent, from: Player) {
+        // no-op
+    }
+
     func gameClient(_ client: GameClient, connectionStateDidChange connectionState: GameClient.ConnectionState) {
         switch connectionState {
             case .connecting, .disconnected, .syncing:
