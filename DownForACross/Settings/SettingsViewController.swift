@@ -60,13 +60,13 @@ class SettingsViewController: UIViewController {
     }
 
     func updateContent() {
-        self.stackView.addArrangedSubview(EditableTextSettingView(
+        self.addSetting(EditableTextSettingView(
             title: "Display name",
             details: "The name that will appear to other players in chat messages and the player list",
             settingsStorage: self.settingsStorage,
             keyPath: \.userDisplayName))
 
-        self.stackView.addArrangedSubview(ColorSettingView(
+        self.addSetting(ColorSettingView(
             title: "Cursor color",
             details: "The color that will represent you to other players",
             settingsStorage: self.settingsStorage,
