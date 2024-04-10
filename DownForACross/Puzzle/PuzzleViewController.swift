@@ -175,7 +175,7 @@ class PuzzleViewController: UIViewController {
 
         self.puzzleView = PuzzleView(puzzle: self.puzzle)
         self.puzzleView.solution = self.gameClient.solution
-        self.puzzleView.isSolved = self.gameClient.isPuzzleSolved
+        self.puzzleView.solutionState = self.gameClient.solutionState
         self.puzzleView.skipFilledCells = self.settingsStorage.skipFilledCells
         self.puzzleView.translatesAutoresizingMaskIntoConstraints = false
         self.puzzleView.delegate = self
@@ -638,15 +638,22 @@ extension PuzzleViewController: GameClientDelegate {
         self.updateMenuContents()
     }
     
-    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isBulkUpdate: Bool, isSolved: Bool) {
-        self.puzzleView.solution = solution
-        
-        if isSolved && !self.puzzleView.isSolved {
-            self.playConfettiAnimation()
+    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isBulkUpdate: Bool, solutionState: GameClient.SolutionState) {
+
+        if solutionState != self.puzzleView.solutionState {
+            switch solutionState {
+                case .correct:
+                    self.playConfettiAnimation()
+                case .incorrect:
+                    self.newMessageStackView.addSystemMessage("You completed the puzzle, but something's not quite right. Keep trying!")
+                case .incomplete:
+                    break
+            }
         }
-        
-        self.puzzleView.isSolved = isSolved
-        
+
+        self.puzzleView.solution = solution
+        self.puzzleView.solutionState = solutionState
+
         if isBulkUpdate {
             self.puzzleView.advanceToAppropriateCellIfNecessary(
                 isCurrentWordFullAndPotentiallyCorrect: self.puzzleView.currentWordIsFullAndPotentiallyCorrect(), freeMovement: false)
@@ -658,6 +665,7 @@ extension PuzzleViewController: GameClientDelegate {
     }
 
     func gameClient(_ client: GameClient, didReceivePing ping: PingEvent, from: Player) {
+        self.puzzleView.pingCell(at: ping.cell, color: from.color)
         print("PING \(from.displayName) \(ping.cell)")
     }
 

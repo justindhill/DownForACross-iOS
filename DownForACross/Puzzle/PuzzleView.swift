@@ -25,6 +25,7 @@ class PuzzleView: UIView {
     enum Constant {
         static let otherPlayerCursorOpacity: CGFloat = 0.3
         static let wordBoundary: String = "."
+        static let pingAnimationKey = "ping"
     }
     
     weak var delegate: PuzzleViewDelegate?
@@ -61,7 +62,7 @@ class PuzzleView: UIView {
     var skipFilledCells: Bool = false
     var userCursorColor: UIColor = .gray
     var isDarkMode: Bool { self.traitCollection.userInterfaceStyle == .dark }
-    var isSolved: Bool = false
+    var solutionState: GameClient.SolutionState = .incomplete
     var grid: [[String]]
     var circles: Set<Int>
     var acrossSequence: [SequenceEntry] = []
@@ -246,8 +247,8 @@ class PuzzleView: UIView {
         self.userCursorWordIndicatorLayer.frame = self.boundingBoxOfCurrentWord(cellSideLength: cellSideLength)
         
         let separatorCount = self.grid.rowCount * self.grid.columnCount - 2
-        self.updateTextLayerCount(target: cellCount, font: baseFillFont)
         self.updateSeparatorCount(target: separatorCount)
+        self.updateTextLayerCount(target: cellCount, font: baseFillFont)
 
         DFACTextLayer.incorrectSlashColor = incorrectSlashColor
         DFACTextLayer.circleColor = Theme.circle.cgColor
@@ -321,8 +322,11 @@ class PuzzleView: UIView {
                     layer.backgroundColor = emptySpaceBackgroundColor
                     layer.string = nil
                 } else {
-                    layer.backgroundColor = clearBackgroundColor
-                    
+                    let layerIsBeingPinged = layer.animation(forKey: Constant.pingAnimationKey) != nil
+                    if !layerIsBeingPinged {
+                        layer.backgroundColor = clearBackgroundColor
+                    }
+
                     if let solutionEntry = self.solution[rowIndex][itemIndex] {
                         layer.string = solutionEntry.value
                         if solutionEntry.value.count > 1 {
@@ -378,7 +382,7 @@ class PuzzleView: UIView {
             self.acrossCellNumberToCoordinatesMap = acrossCellNumberToCoordinatesMap
             self.downCellNumberToCoordinatesMap = downCellNumberToCoordinatesMap
             
-            if self.isFirstLayout, let firstAcrossCoordinates = acrossSequence.first?.coordinates {
+            if self.isFirstLayout && self.solutionState == .incomplete, let firstAcrossCoordinates = acrossSequence.first?.coordinates {
                 self.userCursor.coordinates = firstAcrossCoordinates
                 if self.currentWordIsFullAndPotentiallyCorrect() {
                     self.advanceUserCursorToNextWord()
@@ -712,8 +716,8 @@ class PuzzleView: UIView {
     }
     
     func advanceToAppropriateCellIfNecessary(isCurrentWordFullAndPotentiallyCorrect: Bool, freeMovement: Bool) {
-        if !self.isSolved {
-            if isCurrentWordFullAndPotentiallyCorrect {
+        if self.solutionState != .correct {
+            if isCurrentWordFullAndPotentiallyCorrect && self.solutionState == .incomplete {
                 self.advanceUserCursorToNextWord()
             } else if self.shouldSkip(cell: self.userCursor.coordinates, freeMovement: freeMovement) {
                 self.advanceUserCursorToNextLetter(freeMovement: freeMovement)
@@ -763,7 +767,7 @@ class PuzzleView: UIView {
             self.toggleDirection()
         }
                 
-        if !self.isSolved && self.currentWordIsFullAndPotentiallyCorrect(forDeletion: forDeletion) {
+        if self.solutionState != .correct && self.currentWordIsFullAndPotentiallyCorrect(forDeletion: forDeletion) {
             self.retreatUserCursorToPreviousWord(trailingEdge: trailingEdge, forDeletion: forDeletion, freeMovement: freeMovement)
         } else if trailingEdge {
             let newWordExtent = self.findCurrentWordCellCoordinates()
@@ -945,7 +949,55 @@ class PuzzleView: UIView {
         let range = NSRange(location: firstLetterIndex, length: lastLetterIndex - firstLetterIndex + 1)
         return range
     }
-    
+
+    func pingCell(at: CellCoordinates, color: UIColor) {
+        let index = (at.row * self.grid.columnCount) + at.cell
+        let layer = self.fillTextLayers[index]
+        if layer.animation(forKey: Constant.pingAnimationKey) != nil {
+            return
+        }
+
+        layer.backgroundColor = Theme.background.cgColor
+        layer.borderWidth = 2
+        layer.borderColor = color.cgColor
+        layer.zPosition = 1
+
+        CATransaction.begin()
+        CATransaction.setCompletionBlock {
+            print("removed")
+            layer.removeAllAnimations()
+            self.setNeedsLayout()
+            layer.borderWidth = 0
+            layer.zPosition = 0
+        }
+
+        let animation = CAKeyframeAnimation(keyPath: "transform")
+        animation.values = [
+            CATransform3DIdentity,
+            CATransform3DMakeAffineTransform(CGAffineTransform(scaleX: 1.9, y: 1.9)),
+            CATransform3DMakeAffineTransform(CGAffineTransform(scaleX: 2.0, y: 2.0)),
+            CATransform3DMakeAffineTransform(CGAffineTransform(scaleX: 1.9, y: 1.9)),
+            CATransform3DIdentity
+        ]
+
+        animation.keyTimes = [
+            0, 0.2, 0.5, 0.8, 1
+        ]
+
+        animation.timingFunctions = [
+            CAMediaTimingFunction(name: .easeIn),
+            CAMediaTimingFunction(name: .linear),
+            CAMediaTimingFunction(name: .linear),
+            CAMediaTimingFunction(name: .easeOut)
+        ]
+
+        animation.duration = 1.5
+        animation.isRemovedOnCompletion = true
+
+        layer.add(animation, forKey: Constant.pingAnimationKey)
+        CATransaction.commit()
+    }
+
     @objc func tapGestureRecognizerTriggered(_ tap: UITapGestureRecognizer) {
         let pointCoords = tap.location(in: self.puzzleContainerView)
         
@@ -1076,7 +1128,7 @@ extension PuzzleView: UIKeyInput {
     func insertText(_ text: String) {
         
         func advance() {
-            if !self.isSolved {
+            if self.solutionState == .incomplete {
                 if self.isUserCursorAtTrailingWordBoundary() {
                     self.advanceUserCursorToNextWord()
                 } else {
@@ -1121,6 +1173,10 @@ extension PuzzleView: UIKeyInput {
     }
 
     func deleteBackward() {
+        if self.solutionState == .correct {
+            return
+        }
+
         if let currentCellEntry = self.solution[self.userCursor.coordinates], currentCellEntry.isWritable {
             self.delegate?.puzzleView(self, didEnterText: nil, atCoordinates: self.userCursor.coordinates)
             return

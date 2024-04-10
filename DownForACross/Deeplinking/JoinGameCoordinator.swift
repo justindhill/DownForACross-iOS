@@ -90,7 +90,7 @@ extension JoinGameCoordinator: GameClientDelegate {
         // no-op
     }
     
-    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isBulkUpdate: Bool, isSolved: Bool) {
+    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isBulkUpdate: Bool, solutionState: GameClient.SolutionState) {
         // no-op
     }
     

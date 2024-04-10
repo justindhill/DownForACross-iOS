@@ -13,7 +13,7 @@ import Reachability
 
 protocol GameClientDelegate: AnyObject {
     func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: Cursor])
-    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isBulkUpdate: Bool, isSolved: Bool)
+    func gameClient(_ client: GameClient, solutionDidChange solution: [[CellEntry?]], isBulkUpdate: Bool, solutionState: GameClient.SolutionState)
     func gameClient(_ client: GameClient, didReceiveNewChatMessage message: ChatEvent, from: Player)
     func gameClient(_ client: GameClient, didReceivePing ping: PingEvent, from: Player)
     func gameClient(_ client: GameClient, connectionStateDidChange connectionState: GameClient.ConnectionState)
@@ -22,6 +22,12 @@ protocol GameClientDelegate: AnyObject {
 
 class GameClient: NSObject, URLSessionDelegate {
     
+    enum SolutionState {
+        case incomplete
+        case incorrect
+        case correct
+    }
+
     enum ConnectionState {
         case disconnected
         case connecting
@@ -57,7 +63,7 @@ class GameClient: NSObject, URLSessionDelegate {
     private(set) var puzzleId: String
     var defersJoining: Bool = false
     let reachability = try! Reachability()
-    var isPuzzleSolved: Bool = false
+    var solutionState: SolutionState = .incomplete
     lazy var inputMode: InputMode = self.settingsStorage.defaultInputMode
     var puzzle: Puzzle
     let userId: String
@@ -77,7 +83,7 @@ class GameClient: NSObject, URLSessionDelegate {
         didSet {
             if !self.isPerformingBulkEventSync && oldValue != solution {
                 self.writeCurrentSolutionToFile()
-                self.delegate?.gameClient(self, solutionDidChange: self.solution, isBulkUpdate: false, isSolved: self.checkIfPuzzleIsSolved())
+                self.delegate?.gameClient(self, solutionDidChange: self.solution, isBulkUpdate: false, solutionState: self.resolveSolutionState())
             }
         }
     }
@@ -152,8 +158,8 @@ class GameClient: NSObject, URLSessionDelegate {
         self.correctSolution = self.puzzle.grid.map({ $0.map({ $0 == "." ? nil : $0 }) })
         
         super.init()
-        self.isPuzzleSolved = self.checkIfPuzzleIsSolved()
-                
+        self.solutionState = self.resolveSolutionState()
+
         do {
             self.reachability.whenReachable = { [weak self] _ in self?.reachabilityDidChange() }
             self.reachability.whenUnreachable = { [weak self] _ in self?.reachabilityDidChange() }
@@ -230,7 +236,7 @@ class GameClient: NSObject, URLSessionDelegate {
             self.delegate?.gameClient(self,
                                       solutionDidChange: self.solution,
                                       isBulkUpdate: true,
-                                      isSolved: self.checkIfPuzzleIsSolved())
+                                      solutionState: self.resolveSolutionState())
         }
     }
 
@@ -268,7 +274,7 @@ class GameClient: NSObject, URLSessionDelegate {
                         }
                     }
                 } else if type == "updateCell"  {
-                    guard self.solution.count > 0 else { continue }
+                    guard self.solution.count > 0 && self.solutionState != .correct else { continue }
                     let event = UpdateCellEvent(payload: payload)
                     dedupableEvent = event
                     applyClosure = {
@@ -358,6 +364,7 @@ class GameClient: NSObject, URLSessionDelegate {
                         }
                     }
                 } else if type == "addPing" {
+                    guard !self.isPerformingBulkEventSync else { continue }
                     let event = try PingEvent(payload: payload)
                     applyClosure = {
                         if let player = self.players[event.userId] {
@@ -446,12 +453,31 @@ class GameClient: NSObject, URLSessionDelegate {
         return entry == correctValue ? .correct : .incorrect
     }
     
-    func checkIfPuzzleIsSolved() -> Bool {
-        let proposedSolution = self.solution.map({ $0.map({ $0 == nil ? nil : $0!.value }) })
-        let solved = proposedSolution == self.correctSolution
-        self.isPuzzleSolved = solved
-        
-        return solved
+    func resolveSolutionState() -> SolutionState {
+        var isFull = true
+        let proposedSolution: [[String?]] = self.solution.enumerated().map({ (rowIndex, row) in
+            row.enumerated().map({ (cellIndex, cell) in
+                if let cell {
+                    return cell.value
+                } else if isFull && self.puzzle.grid[rowIndex][cellIndex] != "." {
+                    isFull = false
+                }
+
+                return nil
+            })
+        })
+
+        var solutionState: SolutionState
+        if proposedSolution == self.correctSolution {
+            solutionState = .correct
+        } else if isFull {
+            solutionState = .incorrect
+        } else {
+            solutionState = .incomplete
+        }
+
+        self.solutionState = solutionState
+        return solutionState
     }
     
     func writeCurrentSolutionToFile() {
