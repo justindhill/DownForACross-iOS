@@ -75,6 +75,9 @@ class SettingsStorage {
     @UserDefaultsEntry<Bool>(key: "showMessagePreviews")
     var showMessagePreviews = true
 
+    @UserDefaultsEntry<[String: String]>(key: "puzzleIdToGameIdMap")
+    var puzzleIdToGameIdMap = [:]
+
     var onboardingComplete: Bool {
         get { self.onboardingVersionComplete == self.currentOnboardingVersion }
     }

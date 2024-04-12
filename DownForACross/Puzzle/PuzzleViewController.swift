@@ -17,8 +17,7 @@ class PuzzleViewController: UIViewController {
         case transitioning
         case visible
     }
-    static let puzzleIdToGameIdMapUserDefaultsKey = "com.justinhill.DownForACross.puzzleIdToGameIdMap"
-    
+
     var visibilityState: VisibilityState = .invisible
     var viewHasAppeared: Bool = false
     let puzzleId: String
@@ -28,11 +27,6 @@ class PuzzleViewController: UIViewController {
     let siteInteractor: SiteInteractor
     let settingsStorage: SettingsStorage
     let api: API
-    var puzzleIdToGameIdMap: [String: String] {
-        didSet {
-            UserDefaults.standard.setValue(puzzleIdToGameIdMap, forKey: Self.puzzleIdToGameIdMapUserDefaultsKey)
-        }
-    }
     
     var puzzleView: PuzzleView!
     var keyboardToolbar: PuzzleToolbarView!
@@ -109,12 +103,6 @@ class PuzzleViewController: UIViewController {
         self.siteInteractor = siteInteractor
         self.settingsStorage = settingsStorage
 
-        if let gameIdMap = UserDefaults.standard.object(forKey: Self.puzzleIdToGameIdMapUserDefaultsKey) as? [String: String] {
-            self.puzzleIdToGameIdMap = gameIdMap
-        } else {
-            self.puzzleIdToGameIdMap = [:]
-        }
-
         super.init(nibName: nil, bundle: nil)
 
         self.gameClient.delegate = self
@@ -122,7 +110,7 @@ class PuzzleViewController: UIViewController {
         self.hidesBottomBarWhenPushed = true
     }
 
-    init(puzzle: Puzzle, puzzleId: String, userId: String, gameId: String? = nil, siteInteractor: SiteInteractor, api: API, settingsStorage: SettingsStorage) {
+    init(puzzle: Puzzle, puzzleId: String, userId: String, gameId: String?, siteInteractor: SiteInteractor, api: API, settingsStorage: SettingsStorage) {
         self.puzzle = puzzle
         self.puzzleId = puzzleId
         self.userId = userId
@@ -130,15 +118,12 @@ class PuzzleViewController: UIViewController {
         self.settingsStorage = settingsStorage
         self.api = api
         
-        if let gameIdMap = UserDefaults.standard.object(forKey: Self.puzzleIdToGameIdMapUserDefaultsKey) as? [String: String] {
-            self.puzzleIdToGameIdMap = gameIdMap
-        } else {
-            self.puzzleIdToGameIdMap = [:]
-        }
-        
-        let resolvedGameId = gameId ?? self.puzzleIdToGameIdMap[puzzleId] ?? ""
-        self.gameId = resolvedGameId
-        self.gameClient = GameClient(puzzle: self.puzzle, puzzleId: self.puzzleId, userId: self.userId, gameId: resolvedGameId, settingsStorage: self.settingsStorage)
+        self.gameId = gameId
+        self.gameClient = GameClient(puzzle: self.puzzle,
+                                     puzzleId: self.puzzleId,
+                                     userId: self.userId,
+                                     gameId: gameId ?? "",
+                                     settingsStorage: self.settingsStorage)
 
         super.init(nibName: nil, bundle: nil)
 
@@ -289,7 +274,7 @@ class PuzzleViewController: UIViewController {
                     return
                 }
                 self.gameId = gameId
-                self.puzzleIdToGameIdMap[self.puzzleId] = gameId
+                self.settingsStorage.puzzleIdToGameIdMap[self.puzzleId] = gameId
                 self.gameClient = GameClient(puzzle: self.puzzle, puzzleId: self.puzzleId, userId: self.userId, gameId: gameId, settingsStorage: self.settingsStorage)
                 self.gameClient.connect()
             }
