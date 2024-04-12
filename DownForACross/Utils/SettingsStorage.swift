@@ -75,8 +75,8 @@ class SettingsStorage {
     @UserDefaultsEntry<Bool>(key: "showMessagePreviews")
     var showMessagePreviews = true
 
-    @UserDefaultsEntry<[String: String]>(key: "puzzleIdToGameIdMap")
-    var puzzleIdToGameIdMap = [:]
+    @UserDefaultsEntry<[String: PuzzleListCreatedGame]>(key: "puzzleIdToCreatedGameMap")
+    var puzzleIdToCreatedGameMap = [:]
 
     var onboardingComplete: Bool {
         get { self.onboardingVersionComplete == self.currentOnboardingVersion }
@@ -84,5 +84,13 @@ class SettingsStorage {
     
     func setOnboardingComplete() {
         self.onboardingVersionComplete = self.currentOnboardingVersion
+    }
+
+    func runMigrations() {
+        let pidToGidKey = "com.justinhill.DownForACross.puzzleIdToGameIdMap"
+        if let pidToGidMap = UserDefaults.standard.object(forKey: pidToGidKey) as? [String: String] {
+            self.puzzleIdToCreatedGameMap = pidToGidMap.mapValues({ PuzzleListCreatedGame(gameId: $0, completion: .incomplete)})
+            UserDefaults.standard.removeObject(forKey: pidToGidKey)
+        }
     }
 }

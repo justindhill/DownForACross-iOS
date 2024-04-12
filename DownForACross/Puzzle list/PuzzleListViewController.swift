@@ -182,7 +182,7 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let puzzleListEntry = self.dataSource.itemIdentifier(for: indexPath) else { return }
         self.show(puzzleListEntry: puzzleListEntry, 
-                  gameId: self.settingsStorage.puzzleIdToGameIdMap[puzzleListEntry.pid])
+                  gameId: self.settingsStorage.puzzleIdToCreatedGameMap[puzzleListEntry.pid]?.gameId)
     }
     
     func show(puzzleListEntry: PuzzleListEntry, gameId: String? = nil) {
