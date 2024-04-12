@@ -89,7 +89,7 @@ class SettingsStorage {
     func runMigrations() {
         let pidToGidKey = "com.justinhill.DownForACross.puzzleIdToGameIdMap"
         if let pidToGidMap = UserDefaults.standard.object(forKey: pidToGidKey) as? [String: String] {
-            self.puzzleIdToCreatedGameMap = pidToGidMap.mapValues({ PuzzleListCreatedGame(gameId: $0, completion: .incomplete)})
+            self.puzzleIdToCreatedGameMap = pidToGidMap.mapValues({ PuzzleListCreatedGame(gameId: $0, completion: .empty)})
             UserDefaults.standard.removeObject(forKey: pidToGidKey)
         }
     }

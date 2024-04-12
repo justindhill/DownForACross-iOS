@@ -10,13 +10,7 @@ import Foundation
 
 struct PuzzleListCreatedGame: Codable {
 
-    enum Completion: Codable {
-        case incomplete
-        case complete
-        case completeAndCorrect
-    }
-
     let gameId: String
-    let completion: Completion
+    var completion: GameClient.SolutionState
 
 }

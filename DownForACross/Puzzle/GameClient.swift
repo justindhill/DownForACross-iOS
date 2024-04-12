@@ -22,7 +22,8 @@ protocol GameClientDelegate: AnyObject {
 
 class GameClient: NSObject, URLSessionDelegate {
     
-    enum SolutionState {
+    enum SolutionState: Codable {
+        case empty
         case incomplete
         case incorrect
         case correct
@@ -63,7 +64,7 @@ class GameClient: NSObject, URLSessionDelegate {
     private(set) var puzzleId: String
     var defersJoining: Bool = false
     let reachability = try! Reachability()
-    var solutionState: SolutionState = .incomplete
+    var solutionState: SolutionState = .empty
     lazy var inputMode: InputMode = self.settingsStorage.defaultInputMode
     var puzzle: Puzzle
     let userId: String
@@ -463,6 +464,7 @@ class GameClient: NSObject, URLSessionDelegate {
     
     func resolveSolutionState() -> SolutionState {
         var isFull = true
+        var isEmpty = true
 
         if self.solution.cellCount != self.puzzle.grid.cellCount {
             return .incomplete
@@ -471,8 +473,11 @@ class GameClient: NSObject, URLSessionDelegate {
         let proposedSolution: [[String?]] = self.solution.enumerated().map({ (rowIndex, row) in
             row.enumerated().map({ (cellIndex, cell) in
                 if let cell {
+                    if cell.value != "" {
+                        isEmpty = false
+                    }
                     return cell.value
-                } else if isFull && self.puzzle.grid[rowIndex][cellIndex] != "." {
+                } else if isFull && ![".", ""].contains(self.puzzle.grid[rowIndex][cellIndex]) {
                     isFull = false
                 }
 
@@ -485,11 +490,12 @@ class GameClient: NSObject, URLSessionDelegate {
             solutionState = .correct
         } else if isFull {
             solutionState = .incorrect
+        } else if isEmpty {
+            solutionState = .empty
         } else {
             solutionState = .incomplete
         }
 
-        self.solutionState = solutionState
         return solutionState
     }
     

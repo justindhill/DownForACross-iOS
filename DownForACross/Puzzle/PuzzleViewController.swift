@@ -10,6 +10,10 @@ import WebKit
 import Lottie
 import Combine
 
+protocol PuzzleViewControllerDelegate: AnyObject {
+    func puzzleViewController(_ viewController: PuzzleViewController, completionStateDidChange: GameClient.SolutionState)
+}
+
 class PuzzleViewController: UIViewController {
     
     enum VisibilityState {
@@ -18,22 +22,23 @@ class PuzzleViewController: UIViewController {
         case visible
     }
 
+    private var gameId: String?
     var visibilityState: VisibilityState = .invisible
     var viewHasAppeared: Bool = false
     let puzzleId: String
     let puzzle: Puzzle
-    var gameId: String?
     let userId: String
     let siteInteractor: SiteInteractor
     let settingsStorage: SettingsStorage
     let api: API
-    
+    weak var delegate: PuzzleViewControllerDelegate?
+
     var puzzleView: PuzzleView!
     var keyboardToolbar: PuzzleToolbarView!
     var keyboardToolbarBottomConstraint: NSLayoutConstraint!
     var titleBarAnimator: PuzzleTitleBarAnimator?
     var previewImageView: UIImageView = UIImageView()
-    
+
     var currentKeyboardHeight: CGFloat = 0 {
         didSet {
             self.view.setNeedsLayout()
@@ -598,7 +603,7 @@ class PuzzleViewController: UIViewController {
 
     func showConfirmationAlert(title: String, message: String, confirmActionTitle: String, confirmBlock: @escaping (() -> Void)) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Reveal", style: .destructive, handler: { _ in
+        alert.addAction(UIAlertAction(title: confirmActionTitle, style: .destructive, handler: { _ in
             confirmBlock()
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -635,9 +640,11 @@ extension PuzzleViewController: GameClientDelegate {
                     self.playConfettiAnimation()
                 case .incorrect:
                     self.newMessageStackView.addSystemMessage("You completed the puzzle, but something's not quite right. Keep trying!")
-                case .incomplete:
+                case .incomplete, .empty:
                     break
             }
+
+            self.delegate?.puzzleViewController(self, completionStateDidChange: solutionState)
         }
 
         self.puzzleView.solution = solution
