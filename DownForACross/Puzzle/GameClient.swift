@@ -306,6 +306,11 @@ class GameClient: NSObject, URLSessionDelegate {
                     applyClosure = {
                         var intermediateSolution = self.solution
                         for cell in event.cells {
+                            if let existingCorrectness = self.solution[cell]?.correctness,
+                                existingCorrectness == .revealed {
+                                continue
+                            }
+
                             let correctness = self.correctness(forEntryAt: cell, in: intermediateSolution)
                             intermediateSolution[cell.row][cell.cell]?.correctness = correctness
                         }
