@@ -8,13 +8,18 @@
 import Foundation
 import UIKit
 
+protocol PuzzleNewMessageStackViewDelegate: AnyObject {
+    func messageStackViewDidSelectMessage(_ view: PuzzleNewMessageStackView)
+}
+
 class PuzzleNewMessageStackView: UIView {
     
     static let removedViewTag: Int = 999
     let concurrentViewCap: Int = 3
     
     var seenMessages: Set<String> = Set()
-    
+    weak var delegate: PuzzleNewMessageStackViewDelegate?
+
     lazy var stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
@@ -65,7 +70,10 @@ class PuzzleNewMessageStackView: UIView {
         label.text = "\(from.displayName): \(chatEvent.message)"
         label.font = UIFont.preferredFont(forTextStyle: .caption1)
         label.numberOfLines = 0
-        
+        label.isUserInteractionEnabled = false
+
+        bubbleView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(bubbleTapped)))
+
         bubbleView.contentView.addSubview(label)
         NSLayoutConstraint.activate([
             label.leadingAnchor.constraint(equalTo: bubbleView.contentView.layoutMarginsGuide.leadingAnchor),
@@ -114,5 +122,13 @@ class PuzzleNewMessageStackView: UIView {
             self.layoutIfNeeded()
             self.heightConstraint.constant = self.stackView.frame.size.height
         }
+    }
+
+    @objc func bubbleTapped() {
+        self.stackView.arrangedSubviews.forEach { view in
+            self.remove(view: view, animated: true)
+        }
+
+        self.delegate?.messageStackViewDidSelectMessage(self)
     }
 }

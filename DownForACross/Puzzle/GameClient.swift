@@ -83,7 +83,8 @@ class GameClient: NSObject, URLSessionDelegate {
         didSet {
             if !self.isPerformingBulkEventSync && oldValue != solution {
                 self.writeCurrentSolutionToFile()
-                self.delegate?.gameClient(self, solutionDidChange: self.solution, isBulkUpdate: false, solutionState: self.resolveSolutionState())
+                self.solutionState = self.resolveSolutionState()
+                self.delegate?.gameClient(self, solutionDidChange: self.solution, isBulkUpdate: false, solutionState: self.solutionState)
             }
         }
     }
@@ -230,13 +231,14 @@ class GameClient: NSObject, URLSessionDelegate {
             self.isPerformingBulkEventSync = true
             self.solution = Self.createEmptySolution(forPuzzle: self.puzzle)
             self.handleGameEvents(events)
+            self.solutionState = self.resolveSolutionState()
             self.isPerformingBulkEventSync = false
             self.writeCurrentSolutionToFile()
             self.connectionState = .connected
             self.delegate?.gameClient(self,
                                       solutionDidChange: self.solution,
                                       isBulkUpdate: true,
-                                      solutionState: self.resolveSolutionState())
+                                      solutionState: self.solutionState)
         }
     }
 
@@ -274,7 +276,8 @@ class GameClient: NSObject, URLSessionDelegate {
                         }
                     }
                 } else if type == "updateCell"  {
-                    guard self.solution.count > 0 && self.solutionState != .correct else { continue }
+                    guard self.solution.count > 0 &&
+                          (self.solutionState != .correct || self.isPerformingBulkEventSync) else { continue }
                     let event = UpdateCellEvent(payload: payload)
                     dedupableEvent = event
                     applyClosure = {
@@ -455,6 +458,11 @@ class GameClient: NSObject, URLSessionDelegate {
     
     func resolveSolutionState() -> SolutionState {
         var isFull = true
+
+        if self.solution.cellCount != self.puzzle.grid.cellCount {
+            return .incomplete
+        }
+
         let proposedSolution: [[String?]] = self.solution.enumerated().map({ (rowIndex, row) in
             row.enumerated().map({ (cellIndex, cell) in
                 if let cell {

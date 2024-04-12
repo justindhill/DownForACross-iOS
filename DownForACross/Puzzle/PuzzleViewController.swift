@@ -75,7 +75,11 @@ class PuzzleViewController: UIViewController {
         return tap
     }()
     
-    var newMessageStackView: PuzzleNewMessageStackView = PuzzleNewMessageStackView()
+    lazy var newMessageStackView: PuzzleNewMessageStackView = {
+        let stackView = PuzzleNewMessageStackView()
+        stackView.delegate = self
+        return stackView
+    }()
     var confettiView: LottieAnimationView?
     
     var gameClient: GameClient {
@@ -775,6 +779,15 @@ extension PuzzleViewController: PuzzleToolbarViewDelegate {
         self.sideBarViewController.messagesViewController.addMessage(messageAndPlayer)
     }
     
+}
+
+extension PuzzleViewController: PuzzleNewMessageStackViewDelegate {
+    
+    func messageStackViewDidSelectMessage(_ view: PuzzleNewMessageStackView) {
+        self.sideBarViewController.setCurrentTab(.messages, animated: false)
+        self.toggleSidebar()
+    }
+
 }
 
 extension PuzzleViewController: PuzzlePlayersViewControllerDelegate {
