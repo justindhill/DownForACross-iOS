@@ -382,7 +382,9 @@ class PuzzleView: UIView {
             self.acrossCellNumberToCoordinatesMap = acrossCellNumberToCoordinatesMap
             self.downCellNumberToCoordinatesMap = downCellNumberToCoordinatesMap
             
-            if self.isFirstLayout && self.solutionState == .incomplete, let firstAcrossCoordinates = acrossSequence.first?.coordinates {
+            if self.isFirstLayout && !self.solutionState.isFilledIn,
+                let firstAcrossCoordinates = acrossSequence.first?.coordinates {
+
                 self.userCursor.coordinates = firstAcrossCoordinates
                 if self.currentWordIsFullAndPotentiallyCorrect() {
                     self.advanceUserCursorToNextWord()
@@ -469,23 +471,22 @@ class PuzzleView: UIView {
     }
     
     func itemRequiresNumberLabel(_ item: String?, atRow row: Int, index: Int) -> Bool {
-        let dueToFirstCell = (row == 0 || index == 0) && item != Constant.wordBoundary
-        let dueToDown = 
-            // previous row is an empty space
-            (row > 0 && self.grid[row - 1][index] == Constant.wordBoundary) &&
+        let dueToDown =
+            // previous row is an empty space or this is the first row
+            (row == 0 || self.grid[row - 1][index] == Constant.wordBoundary) &&
             // this row is not an empty space
             item != Constant.wordBoundary &&
             // next row is not an empty space
             (row < self.grid.rowCount - 1 && self.grid[row + 1][index] != Constant.wordBoundary)
         let dueToAcross =
-            // previous column is an empty space
-            (index > 0 && self.grid[row][index - 1] == Constant.wordBoundary) &&
+            // previous column is an empty space or this is the first row
+            (index == 0 || self.grid[row][index - 1] == Constant.wordBoundary) &&
             // this column is not an empty space
             item != Constant.wordBoundary &&
             // next column is not an empty space
             (index < self.grid[row].count - 1 && self.grid[row][index + 1] != Constant.wordBoundary)
-        
-        return dueToFirstCell || dueToDown || dueToAcross
+
+        return dueToDown || dueToAcross
     }
     
     func createNumberTextLayer() -> CATextLayer {

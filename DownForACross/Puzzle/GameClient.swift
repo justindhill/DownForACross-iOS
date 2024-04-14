@@ -27,6 +27,10 @@ class GameClient: NSObject, URLSessionDelegate {
         case incomplete
         case incorrect
         case correct
+
+        var isFilledIn: Bool {
+            return ![.empty, .incomplete].contains(self)
+        }
     }
 
     enum ConnectionState {
