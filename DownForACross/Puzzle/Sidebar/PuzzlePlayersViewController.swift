@@ -109,7 +109,7 @@ class PuzzlePlayersViewController: UIViewController {
 
             var config = UIListContentConfiguration.cell()
             config.image = UIImage(systemName: "square.and.arrow.up")
-            config.text = "Send invite"
+            config.text = "Invite others"
 
             cell.contentConfiguration = config
             return cell

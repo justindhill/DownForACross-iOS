@@ -16,10 +16,10 @@ class EmptyStateView: UIView {
     init() {
         super.init(frame: .zero)
         
-        self.activityIndicator.isHidden = false
         self.label.textColor = UIColor.secondaryLabel
         self.label.textAlignment = .center
-        
+        self.label.numberOfLines = 0
+
         let stackView = UIStackView(arrangedSubviews: [self.label, self.activityIndicator])
         stackView.axis = .vertical
         stackView.translatesAutoresizingMaskIntoConstraints = false

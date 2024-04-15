@@ -18,9 +18,9 @@ class SharedWithYouViewController: UIViewController {
         return tableView
     }()
 
-    lazy var dataSource: SharedWithYouDataSource<Int, String> = {
-        let dataSource = SharedWithYouDataSource<Int, String>(tableView: self.tableView,
-                                                              cellProvider: { [weak self] tableView, indexPath, identifier in
+    lazy var dataSource: SharedWithYouDataSource<String> = {
+        let dataSource = SharedWithYouDataSource<String>(tableView: self.tableView,
+                                                         cellProvider: { [weak self] tableView, indexPath, identifier in
             guard let self else { return UITableViewCell() }
             return self.tableView(tableView, cellForRowAt: indexPath, identifier: identifier)
         })
@@ -35,6 +35,15 @@ class SharedWithYouViewController: UIViewController {
     let siteInteractor: SiteInteractor
     let userId: String
     let api: API
+
+    let emptyStateView: EmptyStateView = {
+        let view = EmptyStateView()
+        view.label.text = "Links you've opened and invites from Messages will appear here"
+        view.isHidden = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+
+        return view
+    }()
 
     var models: [String: SharedGame] = [:]
 
@@ -63,11 +72,16 @@ class SharedWithYouViewController: UIViewController {
         self.refreshContent()
 
         self.view.addSubview(self.tableView)
+        self.view.addSubview(self.emptyStateView)
         NSLayoutConstraint.activate([
             self.tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             self.tableView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
             self.tableView.topAnchor.constraint(equalTo: self.view.topAnchor),
-            self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
+            self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            self.emptyStateView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+            self.emptyStateView.leadingAnchor.constraint(equalTo: self.view.layoutMarginsGuide.leadingAnchor),
+            self.emptyStateView.trailingAnchor.constraint(equalTo: self.view.layoutMarginsGuide.trailingAnchor)
+
         ])
     }
 
@@ -177,6 +191,8 @@ class SharedWithYouViewController: UIViewController {
                        self.dataSource.tableView(self.tableView, numberOfRowsInSection: 0) > 0
         self.models = models
         self.dataSource.apply(snapshot, animatingDifferences: animated)
+
+        self.emptyStateView.isHidden = (self.models.count != 0)
     }
 
     func updateItem(_ item: ResolvedSharedGame) {
@@ -248,13 +264,15 @@ extension SharedWithYouViewController: UITableViewDelegate {
 
 }
 
-class SharedWithYouDataSource<SectionIdentifierType: Hashable, ItemIdentifierType: Hashable>: UITableViewDiffableDataSource<SectionIdentifierType, ItemIdentifierType> {
+class SharedWithYouDataSource<ItemIdentifierType: Hashable>: UITableViewDiffableDataSource<Int, ItemIdentifierType> {
 
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard let sectionIdentifier = self.sectionIdentifier(for: section) else { return nil }
+
         if self.tableView(tableView, numberOfRowsInSection: 0) > 0 {
-            if section == 0 {
+            if sectionIdentifier == 0 {
                 return "Recently opened"
-            } else if section == 1 {
+            } else if sectionIdentifier == 1 {
                 return "From Messages"
             }
         }
