@@ -55,7 +55,13 @@ class PuzzleMessagesViewController: UIViewController {
 
     private let settingsStorage: SettingsStorage
     private var needsContentOffsetAdjustment = true
-    private var isFollowingBottom = true
+    private var isFollowingBottom = true {
+        didSet {
+            if isFollowingBottom != oldValue {
+                print(isFollowingBottom)
+            }
+        }
+    }
     private var isVisible: Bool = false
     private var messagesNeedingAnimation: [MessageAndPlayer] = []
     private var messageIds: Set<String> = Set()
@@ -128,13 +134,14 @@ class PuzzleMessagesViewController: UIViewController {
     }
 
     override func viewWillAppear(_ animated: Bool) {
+        self.isVisible = true
+
         if self.needsContentOffsetAdjustment {
             self.view.setNeedsLayout()
         }
         
         super.viewWillAppear(animated)
         self.hasUnreadMessages = false
-        self.isVisible = true
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -147,7 +154,10 @@ class PuzzleMessagesViewController: UIViewController {
         super.viewDidLayoutSubviews()
 
         if self.isVisible {
-            if self.needsContentOffsetAdjustment && self.isFollowingBottom {
+            if self.needsContentOffsetAdjustment && 
+                self.isFollowingBottom &&
+                self.tableView.contentSize.height > self.tableView.frame.size.height {
+                
                 self.tableView.contentOffset.y = self.tableViewBottomContentOffset
             }
             self.needsContentOffsetAdjustment = false
@@ -196,22 +206,9 @@ class PuzzleMessagesViewController: UIViewController {
         }
     }
 
-    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
-        let willEndAtBottom = (abs(targetContentOffset.pointee.y - self.tableViewBottomContentOffset) < 1)
-
-        // this is a reasonable proxy since the go to bottom button is only visible when the last cell is visible
-        let lastCellVisible = self.goToBottomButton.isHidden
-
-        self.isFollowingBottom = (willEndAtBottom || lastCellVisible)
-    }
-
     @objc func goToBottomButtonTapped() {
         guard let lastIndexPath = self.dataSource.lastIndexPath(in: self.tableView) else { return }
         self.tableView.scrollToRow(at: lastIndexPath, at: .bottom, animated: true)
-    }
-
-    func scrollViewDidScrollToTop(_ scrollView: UIScrollView) {
-        self.isFollowingBottom = false
     }
 
     func isLastIndexPath(_ indexPath: IndexPath) -> Bool {
@@ -237,6 +234,7 @@ extension PuzzleMessagesViewController: UITableViewDelegate {
 
         if self.isLastIndexPath(indexPath) {
             ShowHideAnimationHelpers.hide(view: self.goToBottomButton)
+            self.isFollowingBottom = true
 
             if self.isVisible {
                 self.hasUnreadMessages = false
@@ -247,6 +245,7 @@ extension PuzzleMessagesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if self.isLastIndexPath(indexPath) {
             ShowHideAnimationHelpers.show(view: self.goToBottomButton)
+            self.isFollowingBottom = false
         }
     }
 
