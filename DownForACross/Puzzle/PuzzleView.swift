@@ -965,7 +965,6 @@ class PuzzleView: UIView {
 
         CATransaction.begin()
         CATransaction.setCompletionBlock {
-            print("removed")
             layer.removeAllAnimations()
             self.setNeedsLayout()
             layer.borderWidth = 0

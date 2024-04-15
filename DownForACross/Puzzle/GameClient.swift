@@ -583,6 +583,12 @@ class GameClient: NSObject, URLSessionDelegate {
         self.handleGameEvents([event.eventPayload()])
     }
 
+    func ping(cell: CellCoordinates) {
+        let event = PingEvent(userId: self.userId, gameId: self.gameId, cell: cell)
+        self.emitWithAckNoOp(event)
+        self.handleGameEvents([event.eventPayload()])
+    }
+
 }
 
 extension GameClient {

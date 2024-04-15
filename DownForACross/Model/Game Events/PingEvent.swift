@@ -7,13 +7,17 @@
 
 import Foundation
 
-class PingEvent: GameEvent {
+class PingEvent: DedupableGameEvent {
 
     var type: String = "addPing"
     var eventId: String = UUID().uuidString
     var userId: String
     var gameId: String
     var cell: CellCoordinates
+
+    var dedupKey: String {
+        "\(self.type)-\(self.userId)-\(self.cell.row),\(self.cell.cell)"
+    }
 
     init(userId: String, gameId: String, cell: CellCoordinates) {
         self.userId = userId

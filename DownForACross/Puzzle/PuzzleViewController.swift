@@ -38,6 +38,7 @@ class PuzzleViewController: UIViewController {
     var keyboardToolbarBottomConstraint: NSLayoutConstraint!
     var titleBarAnimator: PuzzleTitleBarAnimator?
     var previewImageView: UIImageView = UIImageView()
+    var contextMenuDismissalAnimationCompletion: (() -> Void)?
 
     var currentKeyboardHeight: CGFloat = 0 {
         didSet {
@@ -513,7 +514,7 @@ class PuzzleViewController: UIViewController {
         self.present(activityViewController, animated: true)
     }
 
-    func checkRevealResetMenus(includingFullPuzzleOption puzzle: Bool) -> [UIMenu] {
+    func checkRevealResetMenus(includingFullPuzzleOption puzzle: Bool) -> [UIMenuElement] {
         var checkMenuActions: [UIAction] = [
             UIAction(title: "Square", handler: { [weak self] _ in
                 guard let self else { return }
@@ -552,6 +553,21 @@ class PuzzleViewController: UIViewController {
                 }
             })
         ]
+
+        let pingCellAction = UIAction(title: "Ping square") { [weak self] _ in
+            guard let self else { return }
+
+            if self.previewImageView.isHidden {
+                // from the menu bar
+                self.gameClient.ping(cell: self.puzzleView.userCursor.coordinates)
+            } else {
+                // from the context menu
+                self.contextMenuDismissalAnimationCompletion = { [weak self] in
+                    guard let self else { return }
+                    self.gameClient.ping(cell: self.puzzleView.userCursor.coordinates)
+                }
+            }
+        }
 
         if puzzle {
             revealMenuActions.append(UIAction(title: "Puzzle", handler: { [weak self] _ in
@@ -592,7 +608,7 @@ class PuzzleViewController: UIViewController {
         let revealMenu = UIMenu(title: "Reveal", identifier: nil, options: [], preferredElementSize: .automatic, children: revealMenuActions)
         let resetMenu = UIMenu(title: "Reset", identifier: nil, options: [], preferredElementSize: .automatic, children: resetMenuActions)
 
-        return [checkMenu, revealMenu, resetMenu]
+        return [checkMenu, revealMenu, resetMenu, pingCellAction]
     }
 
     func showInputModeQuickswitchTooltipIfNecessary() {
@@ -664,7 +680,6 @@ extension PuzzleViewController: GameClientDelegate {
 
     func gameClient(_ client: GameClient, didReceivePing ping: PingEvent, from: Player) {
         self.puzzleView.pingCell(at: ping.cell, color: from.color)
-        print("PING \(from.displayName) \(ping.cell)")
     }
 
     func gameClient(_ client: GameClient, connectionStateDidChange connectionState: GameClient.ConnectionState) {
@@ -840,6 +855,8 @@ extension PuzzleViewController: UIContextMenuInteractionDelegate {
         animator?.addCompletion {
             self.previewImageView.isHidden = true
             self.updateContentInsets()
+            self.contextMenuDismissalAnimationCompletion?()
+            self.contextMenuDismissalAnimationCompletion = nil
         }
     }
     
