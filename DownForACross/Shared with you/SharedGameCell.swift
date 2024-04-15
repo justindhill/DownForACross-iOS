@@ -14,12 +14,14 @@ class SharedGameCell: UITableViewCell {
 
     var sharingHighlight: SWHighlight? {
         didSet {
-            if let sharingHighlight {
-                self.attributionView.highlight = sharingHighlight
-                self.attributionView.isHidden = false
-            } else {
-                self.attributionView.highlight = sharingHighlight
-                self.attributionView.isHidden = true
+            if sharingHighlight != oldValue {
+                if let sharingHighlight {
+                    self.attributionView.highlight = sharingHighlight
+                } else {
+                    self.attributionView.highlight = sharingHighlight
+                }
+
+                self.setNeedsLayout()
             }
         }
     }
@@ -101,6 +103,9 @@ class SharedGameCell: UITableViewCell {
                 self.attributionView.trailingAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.trailingAnchor),
                 self.contentView.layoutMarginsGuide.bottomAnchor.constraint(equalTo: self.attributionView.bottomAnchor)
             ]
+
+            // trigger the constraint activation
+            self.attributionView.isHidden = !(self.attributionView.highlight == nil)
         }
 
         if self.attributionView.highlight == nil && !self.attributionView.isHidden {

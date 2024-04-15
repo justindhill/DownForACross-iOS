@@ -267,17 +267,16 @@ extension SharedWithYouViewController: UITableViewDelegate {
 class SharedWithYouDataSource<ItemIdentifierType: Hashable>: UITableViewDiffableDataSource<Int, ItemIdentifierType> {
 
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        guard let sectionIdentifier = self.sectionIdentifier(for: section) else { return nil }
+        guard let sectionIdentifier = self.sectionIdentifier(for: section),
+                self.numberOfSections(in: tableView) > 1 else { return nil }
 
-        if self.tableView(tableView, numberOfRowsInSection: 0) > 0 {
-            if sectionIdentifier == 0 {
-                return "Recently opened"
-            } else if sectionIdentifier == 1 {
-                return "From Messages"
-            }
+        if sectionIdentifier == 0 {
+            return "Recently opened"
+        } else if sectionIdentifier == 1 {
+            return "From Messages"
+        } else {
+            return nil
         }
-
-        return nil
     }
 
 }
