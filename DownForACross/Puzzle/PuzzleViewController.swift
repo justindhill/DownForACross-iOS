@@ -279,7 +279,8 @@ class PuzzleViewController: UIViewController {
                     return
                 }
                 self.gameId = gameId
-                self.settingsStorage.puzzleIdToCreatedGameMap[self.puzzleId] = PuzzleListCreatedGame(gameId: gameId, completion: .incomplete)
+                self.settingsStorage.puzzleIdToGameIdMap[self.puzzleId] = gameId
+                self.settingsStorage.gameIdToCompletion[gameId] = .empty
                 self.gameClient = GameClient(puzzle: self.puzzle, puzzleId: self.puzzleId, userId: self.userId, gameId: gameId, settingsStorage: self.settingsStorage)
                 self.gameClient.connect()
             }
@@ -644,6 +645,7 @@ extension PuzzleViewController: GameClientDelegate {
                     break
             }
 
+            self.settingsStorage.gameIdToCompletion[client.gameId] = solutionState
             self.delegate?.puzzleViewController(self, completionStateDidChange: solutionState)
         }
 

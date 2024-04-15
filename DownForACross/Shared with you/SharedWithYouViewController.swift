@@ -71,6 +71,18 @@ class SharedWithYouViewController: UIViewController {
         ])
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        if let visibleIndexPaths = self.tableView.indexPathsForVisibleRows {
+            var snapshot = self.dataSource.snapshot()
+            let ids = visibleIndexPaths.compactMap({ self.dataSource.itemIdentifier(for: $0) })
+            snapshot.reloadItems(ids)
+
+            self.dataSource.apply(snapshot, animatingDifferences: false)
+        }
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.refreshContent()
@@ -93,6 +105,12 @@ class SharedWithYouViewController: UIViewController {
                 cell.authorLabel.text = resolvedGame.puzzle.info.author
                 cell.sharingHighlight = resolvedGame.highlight
                 cell.obscuresLabels = false
+        }
+
+        if let completion = self.settingsStorage.gameIdToCompletion[identifier] {
+            cell.accessoryView = completion.createAccessoryImageView()
+        } else {
+            cell.accessoryView = nil
         }
 
         return cell

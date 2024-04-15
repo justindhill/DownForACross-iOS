@@ -52,20 +52,9 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
                     config.secondaryTextProperties.color = .secondaryLabel
                     cell.contentConfiguration = config
 
-                    if let createdGame = self.settingsStorage.puzzleIdToCreatedGameMap[puzzle.pid] {
-                        let imageView = UIImageView()
-                        imageView.frame.size = CGSize(width: 20, height: 20)
-                        imageView.tintColor = .secondaryLabel
-                        switch createdGame.completion {
-                            case .incomplete, .incorrect:
-                                imageView.image = UIImage(systemName: "circle.dotted")
-                                cell.accessoryView = imageView
-                            case .correct:
-                                imageView.image = UIImage(systemName: "checkmark.circle.fill")
-                                cell.accessoryView = imageView
-                            case .empty:
-                                cell.accessoryView = nil
-                        }
+                    if let gameId = self.settingsStorage.puzzleIdToGameIdMap[puzzle.pid],
+                       let completion = self.settingsStorage.gameIdToCompletion[gameId] {
+                        cell.accessoryView = completion.createAccessoryImageView()
                     } else {
                         cell.accessoryView = nil
                     }
@@ -190,7 +179,19 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
         
         self.updatePuzzleList(refreshType: .other)
     }
-    
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        if let visibleIndexPaths = self.tableView.indexPathsForVisibleRows {
+            var snapshot = self.dataSource.snapshot()
+            let ids = visibleIndexPaths.compactMap({ self.dataSource.itemIdentifier(for: $0) })
+            snapshot.reloadItems(ids)
+
+            self.dataSource.apply(snapshot)
+        }
+    }
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         if let selectedIndexPath = self.tableView.indexPathForSelectedRow {
@@ -201,13 +202,7 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let puzzleListEntry = self.dataSource.itemIdentifier(for: indexPath) else { return }
         self.show(puzzleListEntry: puzzleListEntry, 
-                  gameId: self.settingsStorage.puzzleIdToCreatedGameMap[puzzleListEntry.pid]?.gameId)
-
-        if let item = self.dataSource.itemIdentifier(for: indexPath) {
-            var snapshot = self.dataSource.snapshot()
-            snapshot.reloadItems([item])
-            self.dataSource.apply(snapshot, animatingDifferences: false)
-        }
+                  gameId: self.settingsStorage.puzzleIdToGameIdMap[puzzleListEntry.pid])
     }
     
     func show(puzzleListEntry: PuzzleListEntry, gameId: String? = nil) {
@@ -218,10 +213,9 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
                                       siteInteractor: self.siteInteractor,
                                       api: self.api,
                                       settingsStorage: self.settingsStorage)
-        vc.delegate = self
 
-        if gameId != nil {
-            self.settingsStorage.puzzleIdToCreatedGameMap[puzzleListEntry.pid]?.completion = vc.gameClient.solutionState
+        if let gameId {
+            self.settingsStorage.gameIdToCompletion[gameId] = vc.gameClient.solutionState
         }
 
         self.navigationController?.pushViewController(vc, animated: true)
@@ -331,20 +325,3 @@ extension PuzzleListViewController: PuzzleListQuickFilterBarViewDelegate {
     }
     
 }
-
-extension PuzzleListViewController: PuzzleViewControllerDelegate {
-
-    func puzzleViewController(_ viewController: PuzzleViewController, completionStateDidChange completion: GameClient.SolutionState) {
-        self.settingsStorage.puzzleIdToCreatedGameMap[viewController.gameClient.puzzleId]?.completion = completion
-
-        if let visibleIndexPaths = self.tableView.indexPathsForVisibleRows {
-            var snapshot = self.dataSource.snapshot()
-            let ids = visibleIndexPaths.compactMap({ self.dataSource.itemIdentifier(for: $0) })
-            snapshot.reloadItems(ids)
-
-            self.dataSource.apply(snapshot)
-        }
-    }
-
-}
-

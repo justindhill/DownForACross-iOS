@@ -24,6 +24,7 @@ class SharedGameCell: UITableViewCell {
         }
     }
 
+    var attributionViewConstaints: [NSLayoutConstraint] = []
     var sharedGame: ResolvedSharedGame?
 
     let titleLabel: UILabel = {
@@ -73,7 +74,7 @@ class SharedGameCell: UITableViewCell {
             self.authorLabel.leadingAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.leadingAnchor),
             self.authorLabel.trailingAnchor.constraint(lessThanOrEqualTo: self.contentView.layoutMarginsGuide.trailingAnchor),
             self.authorLabel.topAnchor.constraint(equalTo: self.titleLabel.bottomAnchor, constant: 4),
-            self.contentView.layoutMarginsGuide.bottomAnchor.constraint(greaterThanOrEqualTo: self.authorLabel.bottomAnchor)
+            self.contentView.layoutMarginsGuide.bottomAnchor.constraint(equalTo: self.authorLabel.bottomAnchor).withPriority(.defaultLow)
         ])
     }
 
@@ -94,13 +95,21 @@ class SharedGameCell: UITableViewCell {
         if self.attributionView.superview == nil {
             self.contentView.addSubview(self.attributionView)
 
-            NSLayoutConstraint.activate([
+            self.attributionViewConstaints = [
                 self.attributionView.topAnchor.constraint(equalTo: self.authorLabel.bottomAnchor, constant: 8),
                 self.attributionView.leadingAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.leadingAnchor),
                 self.attributionView.trailingAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.trailingAnchor),
                 self.contentView.layoutMarginsGuide.bottomAnchor.constraint(equalTo: self.attributionView.bottomAnchor)
-            ])
+            ]
+        }
 
+        if self.attributionView.highlight == nil && !self.attributionView.isHidden {
+            self.attributionView.isHidden = true
+            NSLayoutConstraint.deactivate(self.attributionViewConstaints)
+            self.invalidateIntrinsicContentSize()
+        } else if self.attributionView.highlight != nil && self.attributionView.isHidden {
+            self.attributionView.isHidden = false
+            NSLayoutConstraint.activate(self.attributionViewConstaints)
             self.invalidateIntrinsicContentSize()
         }
 

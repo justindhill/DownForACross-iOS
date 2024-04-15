@@ -75,8 +75,11 @@ class SettingsStorage {
     @UserDefaultsEntry<Bool>(key: "showMessagePreviews")
     var showMessagePreviews = true
 
-    @UserDefaultsEntry<[String: PuzzleListCreatedGame]>(key: "puzzleIdToCreatedGameMap")
-    var puzzleIdToCreatedGameMap = [:]
+    @UserDefaultsEntry<[String: String]>(key: "puzzleIdToGameIdMap")
+    var puzzleIdToGameIdMap = [:]
+
+    @UserDefaultsEntry<[String: GameClient.SolutionState]>(key: "gameIdToCompletionMap")
+    var gameIdToCompletion = [:]
 
     var onboardingComplete: Bool {
         get { self.onboardingVersionComplete == self.currentOnboardingVersion }
@@ -87,10 +90,20 @@ class SettingsStorage {
     }
 
     func runMigrations() {
-        let pidToGidKey = "com.justinhill.DownForACross.puzzleIdToGameIdMap"
-        if let pidToGidMap = UserDefaults.standard.object(forKey: pidToGidKey) as? [String: String] {
-            self.puzzleIdToCreatedGameMap = pidToGidMap.mapValues({ PuzzleListCreatedGame(gameId: $0, completion: .empty)})
-            UserDefaults.standard.removeObject(forKey: pidToGidKey)
+        let createdGameKey = "com.justinhill.DownForACross.puzzleIdToCreatedGameMap"
+        if let createdGamesData = UserDefaults.standard.object(forKey: createdGameKey) as? Data,
+           let createdGames = try? JSONDecoder().decode([String: PuzzleListCreatedGame].self, from: createdGamesData) {
+            var pidToGid: [String: String] = [:]
+            var gidToCompletion: [String: GameClient.SolutionState] = [:]
+
+            createdGames.forEach { (key, value) in
+                pidToGid[key] = value.gameId
+                gidToCompletion[value.gameId] = value.completion
+            }
+
+            self.puzzleIdToGameIdMap = pidToGid
+            self.gameIdToCompletion = gidToCompletion
+            UserDefaults.standard.removeObject(forKey: createdGameKey)
         }
     }
 }
