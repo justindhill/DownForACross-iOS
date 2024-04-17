@@ -5,7 +5,7 @@
 //  Created by Justin Hill on 12/22/23.
 //
 
-import Foundation
+import UIKit
 
 struct UpdateCellEvent: DedupableGameEvent {
     
@@ -16,9 +16,10 @@ struct UpdateCellEvent: DedupableGameEvent {
     let gameId: String
     let cell: CellCoordinates
     let autocheck: Bool?
+    let color: UIColor?
     let value: String?
     
-    init(payload: [String: Any]) {
+    init(payload: [String: Any]) throws {
         guard let eventId = payload["id"] as? String,
               let params = payload["params"] as? [String: Any],
               let id = params["id"] as? String,
@@ -33,14 +34,21 @@ struct UpdateCellEvent: DedupableGameEvent {
         self.autocheck = params["autocheck"] as? Bool
         self.value = params["value"] as? String
         self.gameId = ""
+
+        if let colorString = params["color"] as? String {
+            self.color = try UIColor(hslString: colorString)
+        } else {
+            self.color = nil
+        }
     }
     
-    init(userId: String, gameId: String, cell: CellCoordinates, value: String?, autocheck: Bool) {
+    init(userId: String, gameId: String, cell: CellCoordinates, value: String?, color: UIColor?, autocheck: Bool) {
         self.eventId = UUID().uuidString
         self.userId = userId
         self.gameId = gameId
         self.cell = cell
         self.value = value
+        self.color = color
         self.autocheck = autocheck
     }
     
@@ -54,6 +62,7 @@ struct UpdateCellEvent: DedupableGameEvent {
             "r": self.cell.row,
             "c": self.cell.cell
         ],
+        "color": self.color?.hslString,
         "autocheck": self.autocheck,
         "value": self.value
     ]}

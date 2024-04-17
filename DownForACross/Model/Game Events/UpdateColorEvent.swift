@@ -26,43 +26,13 @@ struct UpdateColorEvent: DedupableGameEvent {
         }
         
         self.userId = userId
-        self.color = try Self.parseHSL(string: hslString)
+        self.color = try UIColor(hslString: hslString)
     }
     
     init(gameId: String, userId: String, color: UIColor) {
         self.gameId = gameId
         self.userId = userId
         self.color = color
-    }
-    
-    static func parseHSL(string: String) throws -> UIColor {
-        let numberFormatter = NumberFormatter()
-        let hue = Reference(CGFloat.self)
-        let saturation = Reference(CGFloat.self)
-        let luminance = Reference(CGFloat.self)
-        
-        let floatTransformBlock: (Substring) -> CGFloat? = { match in
-            if let floatValue = numberFormatter.number(from: String(match))?.floatValue {
-                return CGFloat(floatValue)
-            }
-            return nil
-        }
-        
-        let hslRegex = Regex {
-            "hsl("
-            TryCapture(as: hue, { OneOrMore(.any) }, transform: floatTransformBlock)
-            ","
-            TryCapture(as: saturation, { OneOrMore(.any) }, transform: floatTransformBlock)
-            "%,"
-            TryCapture(as: luminance, { OneOrMore(.any) }, transform: floatTransformBlock)
-            "%)"
-        }
-        
-        guard let result = try hslRegex.firstMatch(in: string) else {
-            throw NSError(domain: "UpdateColorEventErrorDomain", code: 1)
-        }
-        
-        return UIColor(UIColor.HSL(hue: result[hue], saturation: result[saturation], lightness: result[luminance]))
     }
     
     var paramsDictionary: [String : Any?] {[

@@ -470,12 +470,7 @@ class PuzzleViewController: UIViewController {
                     guard let self else { return }
                     self.gameClient.inputMode = inputMode
                     self.updateMenuContents()
-
-                    if inputMode == .pencil {
-                        self.newMessageStackView.addSystemMessage("Pencil mode isn't implemented yet.")
-                    } else {
-                        self.showInputModeQuickswitchTooltipIfNecessary()
-                    }
+                    self.showInputModeQuickswitchTooltipIfNecessary()
                 })
             })),
 

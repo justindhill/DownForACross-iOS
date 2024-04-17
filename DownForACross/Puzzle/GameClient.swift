@@ -283,15 +283,17 @@ class GameClient: NSObject, URLSessionDelegate {
                 } else if type == "updateCell"  {
                     guard self.solution.count > 0 &&
                           (self.solutionState != .correct || self.isPerformingBulkEventSync) else { continue }
-                    let event = UpdateCellEvent(payload: payload)
+                    let event = try UpdateCellEvent(payload: payload)
                     dedupableEvent = event
                     applyClosure = {
                         if let value = event.value, value != "" {
                             var correctness: Correctness?
                             if let autocheck = event.autocheck, autocheck {
                                 correctness = self.correctness(forEntry: value, at: event.cell)
+                            } else if let color = event.color {
+                                correctness = .penciled(colorString: color.hslString)
                             }
-                            
+
                             self.solution[event.cell.row][event.cell.cell] = CellEntry(userId: event.userId, value: value, correctness: correctness)
                         } else {
                             self.solution[event.cell.row][event.cell.cell] = nil
@@ -424,6 +426,8 @@ class GameClient: NSObject, URLSessionDelegate {
             if self.inputMode == .autocheck {
                 let correctness: Correctness = self.puzzle.grid[coordinates.row][coordinates.cell] == value ? .correct : .incorrect
                 resolvedValue?.correctness = correctness
+            } else if self.inputMode == .pencil {
+                resolvedValue?.correctness = .penciled(colorString: self.settingsStorage.userDisplayColor.hslString)
             }
         } else {
             resolvedValue = nil
@@ -431,11 +435,12 @@ class GameClient: NSObject, URLSessionDelegate {
         
         self.solution[coordinates.row][coordinates.cell] = resolvedValue
 
-        
+
         self.emitWithAckNoOp(UpdateCellEvent(userId: self.userId,
                                              gameId: self.gameId,
                                              cell: coordinates,
                                              value: value,
+                                             color: self.inputMode == .pencil ? self.settingsStorage.userDisplayColor : nil,
                                              autocheck: self.inputMode == .autocheck))
     }
     

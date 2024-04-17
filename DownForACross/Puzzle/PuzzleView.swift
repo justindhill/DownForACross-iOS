@@ -262,9 +262,9 @@ class PuzzleView: UIView {
         var downSequence: [SequenceEntry] = []
         var acrossCellNumberToCoordinatesMap: [Int: CellCoordinates] = [:]
         var downCellNumberToCoordinatesMap: [Int: CellCoordinates] = [:]
-        var userIdToCGColorMap: [String: CGColor] = [:]
+        var cgColorCache: [String: CGColor] = [:]
         if self.isPlayerAttributionEnabled {
-            userIdToCGColorMap = self.cursors.mapValues(\.player.color.cgColor)
+            cgColorCache = self.cursors.mapValues(\.player.color.cgColor)
         }
 
         for (rowIndex, row) in self.grid.enumerated() {
@@ -349,6 +349,18 @@ class PuzzleView: UIView {
                                 case .incorrect:
                                     layer.foregroundColor = normalFillColor
                                     layer.drawsIncorrectSlash = true
+                                case .penciled(let colorString):
+                                    if let color = cgColorCache[colorString] {
+                                        layer.foregroundColor = color
+                                    } else if let uiColor = try? UIColor(hslString: colorString) {
+                                        let color = uiColor.cgColor
+                                        cgColorCache[colorString] = color
+                                        layer.foregroundColor = color
+                                    } else if let color = cgColorCache[solutionEntry.userId] {
+                                        layer.foregroundColor = color
+                                    } else {
+                                        layer.foregroundColor = normalFillColor
+                                    }
                             }
                         } else {
                             layer.foregroundColor = normalFillColor
@@ -358,7 +370,7 @@ class PuzzleView: UIView {
                             layer.textStrokeColor = textBorderColor
                             layer.textStrokeWidth = 2
 
-                            if let playerColor = userIdToCGColorMap[solutionEntry.userId] {
+                            if let playerColor = cgColorCache[solutionEntry.userId] {
                                 layer.backgroundColor = playerColor
                             } else {
                                 layer.backgroundColor = self.userCursorColor.cgColor
