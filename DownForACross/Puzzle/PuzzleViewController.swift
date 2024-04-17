@@ -477,7 +477,14 @@ class PuzzleViewController: UIViewController {
                         self.showInputModeQuickswitchTooltipIfNecessary()
                     }
                 })
-            }))
+            })),
+
+            UIAction(title: "Enter rebus", handler: { [weak self] _ in
+                self?.puzzleView.rebusInputMode = true
+                self?.titleBarAnimator?.showPill(withText: "Enter rebus", timeout: PuzzleTitleBarAnimator.frozenTime, icon: .cancel, animated: true, didDismiss: { [weak self] in
+                    self?.puzzleView.rebusInputMode = false
+                })
+            })
         ]
 
         menuElements.append(contentsOf: self.checkRevealResetMenus(includingFullPuzzleOption: true))

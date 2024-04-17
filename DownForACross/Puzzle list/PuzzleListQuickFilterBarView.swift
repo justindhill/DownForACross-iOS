@@ -36,6 +36,7 @@ class PuzzleListQuickFilterBarView: UIView {
         "LA Times",
         "The Crossword",
         "WSJ",
+        "Quiptic",
         "Mania"
     ]
     

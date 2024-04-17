@@ -14,6 +14,7 @@ class PuzzleTitleBarAnimator {
         case spinner
         case success
         case circle(color: UIColor)
+        case cancel
 
         fileprivate var image: UIImage {
             switch self {
@@ -21,15 +22,19 @@ class PuzzleTitleBarAnimator {
                 case .spinner: UIImage(systemName: "circle.hexagonpath")!
                 case .success: UIImage(systemName: "checkmark.circle.fill")!
                 case .circle: UIImage(systemName: "circle.fill")!
+                case .cancel: UIImage(systemName: "xmark.circle.fill")!
             }
         }
     }
     
     static let timeUntilDismiss: TimeInterval = 1.4
+    static let frozenTime: TimeInterval = -1
     let transitionDuration: TimeInterval = 0.2
     let navigationBar: UINavigationBar
     let navigationItem: UINavigationItem
-    
+    private var frozenUntilCanceled: Bool = false
+    private var dismissalBlock: (() -> Void)? = nil
+
     var _titleControl: UIView?
     var titleControl: UIView? {
         if let _titleControl {
@@ -43,13 +48,14 @@ class PuzzleTitleBarAnimator {
     
     private var hideTimer: Timer?
     
-    let statusPill: UIButton = {
+    lazy var statusPill: UIButton = {
         let button = UIButton(configuration: .gray())
         button.configuration?.cornerStyle = .capsule
         button.configuration?.imagePadding = 4
         button.isUserInteractionEnabled = false
         button.titleLabel?.tintColor = .label
-        
+        button.addTarget(self, action: #selector(cancelIfPossible(_:)), for: .primaryActionTriggered)
+
         return button
     }()
     
@@ -58,16 +64,25 @@ class PuzzleTitleBarAnimator {
         self.navigationItem = navigationItem
     }
     
-    func showPill(withText text: String, timeout: TimeInterval? = PuzzleTitleBarAnimator.timeUntilDismiss, icon: Icon, animated: Bool = true) {
+    func showPill(withText text: String, 
+                  timeout: TimeInterval? = PuzzleTitleBarAnimator.timeUntilDismiss,
+                  icon: Icon,
+                  animated: Bool = true,
+                  didDismiss: (() -> Void)? = nil) {
+        if self.frozenUntilCanceled {
+            return
+        }
+
         self.statusPill.configuration?.title = text
         self.statusPill.configuration?.image = icon.image
         self.statusPill.sizeToFit() // inexplicably makes the button tall for some texts
         self.statusPill.frame.size.height = 0 // UINavigationController fixes the height after doing this
-        
-        if let hideTimer = self.hideTimer {
-            hideTimer.invalidate()
-            self.hideTimer = nil
-        }
+
+        self.dismissalBlock?()
+        self.dismissalBlock = didDismiss
+
+        self.hideTimer?.invalidate()
+        self.hideTimer = nil
         
         self.setStatusPillVisible(true, animated: animated)
         
@@ -91,8 +106,14 @@ class PuzzleTitleBarAnimator {
                 self.statusPill.imageView?.layer.removeAnimation(forKey: spinAnimationKey)
                 self.statusPill.imageView?.tintColor = nil
         }
-        
+
+        self.statusPill.isUserInteractionEnabled = false
         if let timeout {
+            if timeout == Self.frozenTime {
+                self.frozenUntilCanceled = true
+                self.statusPill.isUserInteractionEnabled = true
+                return
+            }
             self.hideTimer = Timer.scheduledTimer(withTimeInterval: timeout, repeats: false, block: { [weak self] _ in
                 guard let self else { return }
                 self.hideTimer = nil
@@ -100,7 +121,16 @@ class PuzzleTitleBarAnimator {
             })
         }
     }
-    
+
+    @objc private func cancelIfPossible(_ sender: UIView) {
+        if self.frozenUntilCanceled {
+            self.frozenUntilCanceled = false
+            self.dismissalBlock?()
+            self.dismissalBlock = nil
+            self.setStatusPillVisible(false, animated: true)
+        }
+    }
+
     private func setStatusPillVisible(_ visible: Bool, animated: Bool) {
         let needsUpdate = (visible && self.navigationItem.titleView == nil) ||
                           (!visible && self.navigationItem.titleView != nil)

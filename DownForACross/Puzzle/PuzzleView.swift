@@ -59,6 +59,7 @@ class PuzzleView: UIView {
         didSet { self.setNeedsLayout() }
     }
     
+    var rebusInputMode: Bool = false
     var skipFilledCells: Bool = false
     var userCursorColor: UIColor = .gray
     var isDarkMode: Bool { self.traitCollection.userInterfaceStyle == .dark }
@@ -1151,7 +1152,7 @@ extension PuzzleView: UIKeyInput {
         } else {
             var newValue: String
             var shouldAdvance: Bool = false
-            if character.isUppercase || character == "/" || character == "?" {
+            if character.isUppercase || character == "/" || character == "?" || self.rebusInputMode {
                 var actualCharacter = character
                 if character == "?" {
                     actualCharacter = "/"
