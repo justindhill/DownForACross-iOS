@@ -16,7 +16,7 @@ struct UpdateCellEvent: DedupableGameEvent {
     let gameId: String
     let cell: CellCoordinates
     let autocheck: Bool?
-    let color: UIColor?
+    let pencil: Bool?
     let value: String?
     
     init(payload: [String: Any]) throws {
@@ -32,24 +32,19 @@ struct UpdateCellEvent: DedupableGameEvent {
         self.userId = id
         self.cell = CellCoordinates(row: row.intValue, cell: cell.intValue)
         self.autocheck = params["autocheck"] as? Bool
+        self.pencil = params["pencil"] as? Bool
         self.value = params["value"] as? String
         self.gameId = ""
-
-        if let colorString = params["color"] as? String {
-            self.color = try UIColor(hslString: colorString)
-        } else {
-            self.color = nil
-        }
     }
     
-    init(userId: String, gameId: String, cell: CellCoordinates, value: String?, color: UIColor?, autocheck: Bool) {
+    init(userId: String, gameId: String, cell: CellCoordinates, value: String?, color: UIColor?, autocheck: Bool, pencil: Bool) {
         self.eventId = UUID().uuidString
         self.userId = userId
         self.gameId = gameId
         self.cell = cell
         self.value = value
-        self.color = color
         self.autocheck = autocheck
+        self.pencil = pencil
     }
     
     var dedupKey: String {
@@ -62,7 +57,7 @@ struct UpdateCellEvent: DedupableGameEvent {
             "r": self.cell.row,
             "c": self.cell.cell
         ],
-        "color": self.color?.hslString,
+        "pencil": self.pencil,
         "autocheck": self.autocheck,
         "value": self.value
     ]}

@@ -52,7 +52,7 @@ enum Correctness: Equatable, Codable {
     case correct
     case incorrect
     case revealed
-    case penciled(colorString: String)
+    case penciled
 
     fileprivate var isWritable: Bool {
         switch self {

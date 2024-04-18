@@ -290,8 +290,8 @@ class GameClient: NSObject, URLSessionDelegate {
                             var correctness: Correctness?
                             if let autocheck = event.autocheck, autocheck {
                                 correctness = self.correctness(forEntry: value, at: event.cell)
-                            } else if let color = event.color {
-                                correctness = .penciled(colorString: color.hslString)
+                            } else if let pencil = event.pencil, pencil {
+                                correctness = .penciled
                             }
 
                             self.solution[event.cell.row][event.cell.cell] = CellEntry(userId: event.userId, value: value, correctness: correctness)
@@ -427,7 +427,7 @@ class GameClient: NSObject, URLSessionDelegate {
                 let correctness: Correctness = self.puzzle.grid[coordinates.row][coordinates.cell] == value ? .correct : .incorrect
                 resolvedValue?.correctness = correctness
             } else if self.inputMode == .pencil {
-                resolvedValue?.correctness = .penciled(colorString: self.settingsStorage.userDisplayColor.hslString)
+                resolvedValue?.correctness = .penciled
             }
         } else {
             resolvedValue = nil
@@ -441,7 +441,8 @@ class GameClient: NSObject, URLSessionDelegate {
                                              cell: coordinates,
                                              value: value,
                                              color: self.inputMode == .pencil ? self.settingsStorage.userDisplayColor : nil,
-                                             autocheck: self.inputMode == .autocheck))
+                                             autocheck: self.inputMode == .autocheck,
+                                             pencil: self.inputMode == .pencil))
     }
     
     func moveUserCursor(to coordinates: CellCoordinates) {

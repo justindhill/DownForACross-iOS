@@ -251,7 +251,8 @@ class PuzzleViewController: UIViewController {
 
         super.viewWillAppear(animated)
         self.puzzleView.userCursorColor = self.settingsStorage.userDisplayColor
-        
+        self.puzzleView.pencilColor = self.settingsStorage.pencilColor
+
         if let navigationBar = self.navigationController?.navigationBar {
             self.titleBarAnimator = PuzzleTitleBarAnimator(navigationBar: navigationBar, navigationItem: self.navigationItem)
         }

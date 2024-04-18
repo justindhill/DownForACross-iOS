@@ -62,6 +62,7 @@ class PuzzleView: UIView {
     var rebusInputMode: Bool = false
     var skipFilledCells: Bool = false
     var userCursorColor: UIColor = .gray
+    var pencilColor: UIColor = .gray
     var isDarkMode: Bool { self.traitCollection.userInterfaceStyle == .dark }
     var solutionState: GameClient.SolutionState = .incomplete
     var grid: [[String]]
@@ -191,6 +192,7 @@ class PuzzleView: UIView {
         let clearBackgroundColor = UIColor.clear.cgColor
         let normalFillColor = self.isPlayerAttributionEnabled ? Theme.attributedFillNormal.cgColor : Theme.fillNormal.cgColor
         let correctFillColor = self.isPlayerAttributionEnabled ? Theme.attributedFillCorrect.cgColor : Theme.fillCorrect.cgColor
+        let pencilFillColor = self.pencilColor.cgColor
         let revealedFillColor = Theme.fillRevealed.cgColor
         let incorrectSlashColor = Theme.incorrectSlash.cgColor
         let separatorColor = Theme.separator.cgColor
@@ -349,18 +351,8 @@ class PuzzleView: UIView {
                                 case .incorrect:
                                     layer.foregroundColor = normalFillColor
                                     layer.drawsIncorrectSlash = true
-                                case .penciled(let colorString):
-                                    if let color = cgColorCache[colorString] {
-                                        layer.foregroundColor = color
-                                    } else if let uiColor = try? UIColor(hslString: colorString) {
-                                        let color = uiColor.cgColor
-                                        cgColorCache[colorString] = color
-                                        layer.foregroundColor = color
-                                    } else if let color = cgColorCache[solutionEntry.userId] {
-                                        layer.foregroundColor = color
-                                    } else {
-                                        layer.foregroundColor = normalFillColor
-                                    }
+                                case .penciled:
+                                    layer.foregroundColor = pencilFillColor
                             }
                         } else {
                             layer.foregroundColor = normalFillColor

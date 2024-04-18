@@ -38,7 +38,10 @@ class SettingsStorage {
     
     @UserDefaultsArchiveEntry<UIColor>(key: "userDisplayColor")
     var userDisplayColor = UIColor.systemPink
-    
+
+    @UserDefaultsArchiveEntry<UIColor>(key: "pencilColor")
+    var pencilColor = UIColor.systemTeal
+
     @UserDefaultsEntry<PuzzleListQuickFilterBarView.PuzzleSize>(key: "puzzleSizeFilter")
     var puzzleListSizeFilter = .all
     
