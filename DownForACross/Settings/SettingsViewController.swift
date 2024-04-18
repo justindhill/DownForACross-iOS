@@ -72,6 +72,12 @@ class SettingsViewController: UIViewController {
             settingsStorage: self.settingsStorage,
             keyPath: \.userDisplayColor))
 
+        self.addSetting(ColorSettingView(
+            title: "Pencil color",
+            details: "The color that will be used to fill letters in pencil mode",
+            settingsStorage: self.settingsStorage,
+            keyPath: \.pencilColor))
+
         self.addSetting(SingleSelectSettingView(
             title: "Default input mode",
             details: "The input mode that will be initiallly selected when you start a game",
