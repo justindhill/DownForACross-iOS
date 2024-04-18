@@ -230,8 +230,12 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
                         self.refreshControl.beginRefreshing()
                     case .other:
                         self.page = 0
-                        self.emptyStateView.activityIndicator.isHidden = false
-                        self.emptyStateView.activityIndicator.startAnimating()
+                        if self.dataSource.numberOfSections(in: self.tableView) > 0 && self.dataSource.tableView(self.tableView, numberOfRowsInSection: 0) > 0 {
+                            self.addPulsingAnimation(on: self.tableView)
+                        } else {
+                            self.emptyStateView.activityIndicator.isHidden = false
+                            self.emptyStateView.activityIndicator.startAnimating()
+                        }
                     case .loadMore:
                         self.page += 1
                         break
@@ -245,10 +249,6 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
                     limit: self.pageLimit)
                 
                 self.hasReachedLastPage = puzzleList.puzzles.count < self.pageLimit
-                
-                self.emptyStateView.activityIndicator.stopAnimating()
-                self.emptyStateView.activityIndicator.isHidden = true
-                self.refreshControl.endRefreshing()
                 
                 var snapshot: NSDiffableDataSourceSnapshot<Int, PuzzleListEntry>
                 if refreshType == .loadMore {
@@ -269,6 +269,12 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
                     }
                 }
                 await self.dataSource.apply(snapshot, animatingDifferences: false)
+
+                self.removePulsingAnimation(from: self.tableView)
+                self.emptyStateView.activityIndicator.stopAnimating()
+                self.emptyStateView.activityIndicator.isHidden = true
+                self.refreshControl.endRefreshing()
+
                 if refreshType == .other {
                     tableView.contentOffset = .zero
                 }
@@ -284,11 +290,26 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
                 self.emptyStateView.label.text = "Couldn't load the puzzle list"
                 self.quickFilterBar.isUserInteractionEnabled = true
                 self.emptyStateView.activityIndicator.stopAnimating()
+                self.removePulsingAnimation(from: self.tableView)
                 print(error)
             }
         }.cancel)
     }
-    
+
+    func addPulsingAnimation(on view: UIView) {
+        let animation = CAKeyframeAnimation(keyPath: "opacity")
+        animation.values = [1, 0.5, 1]
+        animation.timingFunctions = [CAMediaTimingFunction(name: .easeIn), CAMediaTimingFunction(name: .easeOut)]
+        animation.duration = 1
+        animation.repeatCount = 10000
+
+        view.layer.add(animation, forKey: "pulsing")
+    }
+
+    func removePulsingAnimation(from view: UIView) {
+        view.layer.removeAnimation(forKey: "pulsing")
+    }
+
     @objc func refreshControlDidBeginRefreshing() {
         self.updatePuzzleList(refreshType: .pullToRefresh)
     }
