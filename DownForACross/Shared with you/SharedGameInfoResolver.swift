@@ -103,6 +103,10 @@ extension SharedGameInfoResolver: GameClientDelegate {
         // no-op
     }
 
+    func gameClient(_ client: GameClient, timeClockStateDidChange state: TimeClock.ClockState) {
+        // no-op
+    }
+
     func gameClient(_ client: GameClient, connectionStateDidChange connectionState: GameClient.ConnectionState) {
         switch connectionState {
             case .connecting, .disconnected, .syncing:

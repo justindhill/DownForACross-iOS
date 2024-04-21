@@ -84,6 +84,9 @@ class SettingsStorage {
     @UserDefaultsEntry<[String: GameClient.SolutionState]>(key: "gameIdToCompletionMap")
     var gameIdToCompletion = [:]
 
+    @UserDefaultsEntry<Bool>(key: "showTimerInNavigationBar")
+    var showTimerInNavigationBar = true
+
     var onboardingComplete: Bool {
         get { self.onboardingVersionComplete == self.currentOnboardingVersion }
     }

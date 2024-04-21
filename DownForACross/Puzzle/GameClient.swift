@@ -18,6 +18,7 @@ protocol GameClientDelegate: AnyObject {
     func gameClient(_ client: GameClient, didReceivePing ping: PingEvent, from: Player)
     func gameClient(_ client: GameClient, connectionStateDidChange connectionState: GameClient.ConnectionState)
     func gameClient(_ client: GameClient, newPlayerJoined player: Player)
+    func gameClient(_ client: GameClient, timeClockStateDidChange state: TimeClock.ClockState)
 }
 
 class GameClient: NSObject, URLSessionDelegate {
@@ -75,6 +76,7 @@ class GameClient: NSObject, URLSessionDelegate {
     let settingsStorage: SettingsStorage
     let correctSolution: [[String?]]
     var mostRecentDedupableEvents: [String: String] = [:]
+    var timeClock: TimeClock = TimeClock()
     var connectionState: ConnectionState = .disconnected {
         didSet {
             self.delegate?.gameClient(self, connectionStateDidChange: connectionState)
@@ -164,6 +166,7 @@ class GameClient: NSObject, URLSessionDelegate {
         self.correctSolution = self.puzzle.grid.map({ $0.map({ $0 == "." ? nil : $0 }) })
         
         super.init()
+        self.timeClock.delegate = self
         self.solutionState = self.resolveSolutionState()
 
         do {
@@ -265,7 +268,9 @@ class GameClient: NSObject, URLSessionDelegate {
                 print("Encountered invalid game event payload")
                 return
             }
-            
+
+            self.timeClock.accountFor(rawEvent: payload)
+
             do {
                 var dedupableEvent: DedupableGameEvent?
                 var applyClosure: (() -> Void)
@@ -595,6 +600,12 @@ class GameClient: NSObject, URLSessionDelegate {
         self.handleGameEvents([event.eventPayload()])
     }
 
+}
+
+extension GameClient: TimeClockDelegate {
+    func timeClock(_ timeClock: TimeClock, stateDidChange state: TimeClock.ClockState) {
+        self.delegate?.gameClient(self, timeClockStateDidChange: state)
+    }
 }
 
 extension GameClient {

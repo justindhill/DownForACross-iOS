@@ -75,6 +75,7 @@
 		3BB8381B2BC987CF007E3A4F /* PuzzleListCreatedGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB8381A2BC987CF007E3A4F /* PuzzleListCreatedGame.swift */; };
 		3BBD6C552BCD53FE007A5A9B /* SolutionState+AccessoryImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBD6C542BCD53FE007A5A9B /* SolutionState+AccessoryImageView.swift */; };
 		3BBD6C572BD01124007A5A9B /* UIColor+HSLString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBD6C562BD01124007A5A9B /* UIColor+HSLString.swift */; };
+		3BBD6C592BD2A139007A5A9B /* TimeClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBD6C582BD2A139007A5A9B /* TimeClock.swift */; };
 		3BC12A3E2B613B730060C29F /* PuzzleToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */; };
 		3BC12A402B62A9380060C29F /* UIColor+HSL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC12A3F2B62A9380060C29F /* UIColor+HSL.swift */; };
 		3BC761B62BA0C422003ACF81 /* RevealEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC761B52BA0C422003ACF81 /* RevealEvent.swift */; };
@@ -155,6 +156,7 @@
 		3BB8381A2BC987CF007E3A4F /* PuzzleListCreatedGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleListCreatedGame.swift; sourceTree = "<group>"; };
 		3BBD6C542BCD53FE007A5A9B /* SolutionState+AccessoryImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SolutionState+AccessoryImageView.swift"; sourceTree = "<group>"; };
 		3BBD6C562BD01124007A5A9B /* UIColor+HSLString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+HSLString.swift"; sourceTree = "<group>"; };
+		3BBD6C582BD2A139007A5A9B /* TimeClock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeClock.swift; sourceTree = "<group>"; };
 		3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleToolbarView.swift; sourceTree = "<group>"; };
 		3BC12A3F2B62A9380060C29F /* UIColor+HSL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+HSL.swift"; sourceTree = "<group>"; };
 		3BC761B52BA0C422003ACF81 /* RevealEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevealEvent.swift; sourceTree = "<group>"; };
@@ -351,6 +353,7 @@
 				3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */,
 				3BB0FCDC2B6C6DD100CD907C /* PuzzleNewMessageStackView.swift */,
 				3B76C8CB2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift */,
+				3BBD6C582BD2A139007A5A9B /* TimeClock.swift */,
 			);
 			path = Puzzle;
 			sourceTree = "<group>";
@@ -570,6 +573,7 @@
 				3B5BD0D82BAA7984006DB214 /* PuzzleMessageCell.swift in Sources */,
 				3B73AD7C2B921494005DB5F8 /* LaunchInterstitialViewController.swift in Sources */,
 				3B19D1182BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift in Sources */,
+				3BBD6C592BD2A139007A5A9B /* TimeClock.swift in Sources */,
 				3B76C8CC2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift in Sources */,
 				3B73AD832B93E3AB005DB5F8 /* DFACTextLayer.swift in Sources */,
 				3BAD21272B98BBBB00839504 /* EmptyStateView.swift in Sources */,

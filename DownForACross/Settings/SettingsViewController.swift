@@ -110,6 +110,10 @@ class SettingsViewController: UIViewController {
                                           details: "Show a message preview over the puzzle when new messages are received",
                                           settingsStorage: self.settingsStorage,
                                           keyPath: \.showMessagePreviews))
+
+        self.addSetting(SwitchSettingView(title: "Show timer in navigation bar",
+                                          settingsStorage: self.settingsStorage,
+                                          keyPath: \.showTimerInNavigationBar))
     }
 
     func addSetting(_ view: UIView) {

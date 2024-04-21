@@ -12,7 +12,7 @@ class SwitchSettingView: BaseSettingView {
     let switchView: UISwitch
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    init(title: String, details: String?, settingsStorage: SettingsStorage, keyPath: WritableKeyPath<SettingsStorage, Bool>, updateHandler: ((Bool) -> Void)? = nil) {
+    init(title: String, details: String? = nil, settingsStorage: SettingsStorage, keyPath: WritableKeyPath<SettingsStorage, Bool>, updateHandler: ((Bool) -> Void)? = nil) {
         self.switchView = UISwitch()
         super.init(title: title, details: details, settingsStorage: settingsStorage, accessoryView: self.switchView)
 

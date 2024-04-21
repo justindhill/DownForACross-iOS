@@ -138,6 +138,7 @@ class PuzzleViewController: UIViewController {
         self.hidesBottomBarWhenPushed = true
     }
     
+    var clockUpdateTimer: Timer?
     lazy var contextMenuInteraction = UIContextMenuInteraction(delegate: self)
     
     override func viewDidLoad() {
@@ -192,9 +193,11 @@ class PuzzleViewController: UIViewController {
         self.keyboardToolbar.rightButton.addAction(UIAction(handler: { [weak self] _ in
             self?.puzzleView.advanceUserCursorToNextWord()
         }), for: .primaryActionTriggered)
-        
-        self.navigationItem.title = self.puzzle.info.title
-        
+
+        self.clockUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { [weak self] _ in
+            self?.updateNavigationTitle()
+        })
+
         self.view.addSubview(self.puzzleView)
         self.view.addSubview(self.keyboardToolbar)
         
@@ -630,6 +633,21 @@ class PuzzleViewController: UIViewController {
 
         self.present(alert, animated: true)
     }
+
+    func updateNavigationTitle() {
+        let result = NSMutableAttributedString()
+
+        if self.settingsStorage.showTimerInNavigationBar {
+            result.append(NSAttributedString(string: self.gameClient.timeClock.formattedCurrentInstant.elapsedTime + " • ",
+                                             attributes: [.font: UIFont.monospacedSystemFont(ofSize: 17, weight: .semibold)]))
+        }
+
+        result.append(NSAttributedString(string: self.puzzle.info.title,
+                                         attributes: [.font: UIFont.systemFont(ofSize: 17, weight: .semibold)]))
+
+        self.titleBarAnimator?.title = result
+    }
+
 }
 
 extension PuzzleViewController: GameClientDelegate {
@@ -698,7 +716,11 @@ extension PuzzleViewController: GameClientDelegate {
                 break
         }
     }
-    
+
+    func gameClient(_ client: GameClient, timeClockStateDidChange state: TimeClock.ClockState) {
+        self.updateNavigationTitle()
+    }
+
 }
 
 extension PuzzleViewController: PuzzleViewDelegate {

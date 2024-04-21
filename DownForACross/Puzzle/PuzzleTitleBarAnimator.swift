@@ -58,7 +58,20 @@ class PuzzleTitleBarAnimator {
 
         return button
     }()
-    
+
+    var title: NSAttributedString = NSAttributedString() {
+        didSet {
+            self.titleLabel.attributedText = self.title
+            self.titleLabel.sizeToFit()
+        }
+    }
+
+    let titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        return label
+    }()
+
     init(navigationBar: UINavigationBar, navigationItem: UINavigationItem) {
         self.navigationBar = navigationBar
         self.navigationItem = navigationItem
@@ -132,9 +145,9 @@ class PuzzleTitleBarAnimator {
     }
 
     private func setStatusPillVisible(_ visible: Bool, animated: Bool) {
-        let needsUpdate = (visible && self.navigationItem.titleView == nil) ||
-                          (!visible && self.navigationItem.titleView != nil)
-        
+        let needsUpdate = (visible && self.navigationItem.titleView != self.statusPill) ||
+                          (!visible && self.navigationItem.titleView != self.titleLabel)
+
         if !needsUpdate {
             return
         }
@@ -152,7 +165,7 @@ class PuzzleTitleBarAnimator {
         } else {
             transition.type = .reveal
             transition.subtype = .fromTop
-            self.navigationItem.titleView = nil
+            self.navigationItem.titleView = self.titleLabel
         }
         
         if animated {
