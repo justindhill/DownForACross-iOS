@@ -91,6 +91,10 @@ class GameClient: NSObject, URLSessionDelegate {
             if !self.isPerformingBulkEventSync && oldValue != solution {
                 self.writeCurrentSolutionToFile()
                 self.solutionState = self.resolveSolutionState()
+                if self.solutionState == .correct {
+                    self.timeClock.stop()
+                }
+
                 self.delegate?.gameClient(self, solutionDidChange: self.solution, isBulkUpdate: false, solutionState: self.solutionState)
             }
         }
@@ -221,7 +225,7 @@ class GameClient: NSObject, URLSessionDelegate {
         
         socket.on("game_event") { [weak self] data, ack in
             guard let self, let events = data as? [[String: Any]] else { return }
-            self.handleGameEvents(events)
+            self.handleGameEvents(events, timeClock: self.timeClock)
         }
         
         socket.connect()
@@ -238,11 +242,17 @@ class GameClient: NSObject, URLSessionDelegate {
             guard let self, let events = data.first as? [[String: Any]] else { return }
             self.isPerformingBulkEventSync = true
             self.solution = Self.createEmptySolution(forPuzzle: self.puzzle)
-            self.handleGameEvents(events)
-            self.solutionState = self.resolveSolutionState()
+
+            let timeClock = TimeClock()
+
+            self.handleGameEvents(events, timeClock: timeClock)
             self.isPerformingBulkEventSync = false
             self.writeCurrentSolutionToFile()
             self.connectionState = .connected
+
+            self.timeClock = timeClock
+            timeClock.delegate = self
+
             self.delegate?.gameClient(self,
                                       solutionDidChange: self.solution,
                                       isBulkUpdate: true,
@@ -262,14 +272,14 @@ class GameClient: NSObject, URLSessionDelegate {
                                            color: self.settingsStorage.userDisplayColor)
     }
 
-    func handleGameEvents(_ data: [[String: Any]]) {
+    func handleGameEvents(_ data: [[String: Any]], timeClock: TimeClock) {
         for payload in data {
             guard let type = payload["type"] as? String else {
                 print("Encountered invalid game event payload")
                 return
             }
 
-            self.timeClock.accountFor(rawEvent: payload)
+            timeClock.accountFor(rawEvent: payload)
 
             do {
                 var dedupableEvent: DedupableGameEvent?
@@ -421,6 +431,11 @@ class GameClient: NSObject, URLSessionDelegate {
                 print("Encountered an error while parsing \"\(type)\" event")
                 print(error)
             }
+
+            self.solutionState = self.resolveSolutionState()
+            if self.solutionState == .correct {
+                timeClock.stop()
+            }
         }
     }
     
@@ -438,8 +453,8 @@ class GameClient: NSObject, URLSessionDelegate {
             resolvedValue = nil
         }
         
+        self.timeClock.accountForFakeEvent()
         self.solution[coordinates.row][coordinates.cell] = resolvedValue
-
 
         self.emitWithAckNoOp(UpdateCellEvent(userId: self.userId,
                                              gameId: self.gameId,
@@ -579,25 +594,25 @@ class GameClient: NSObject, URLSessionDelegate {
     func check(cells: [CellCoordinates]) {
         let event = CheckEvent(gameId: self.gameId, cells: cells)
         self.emitWithAckNoOp(event)
-        self.handleGameEvents([event.eventPayload()])
+        self.handleGameEvents([event.eventPayload()], timeClock: self.timeClock)
     }
     
     func reveal(cells: [CellCoordinates]) {
         let event = RevealEvent(gameId: self.gameId, cells: cells)
         self.emitWithAckNoOp(event)
-        self.handleGameEvents([event.eventPayload()])
+        self.handleGameEvents([event.eventPayload()], timeClock: self.timeClock)
     }
 
     func reset(cells: [CellCoordinates]) {
         let event = ResetEvent(gameId: self.gameId, cells: cells)
         self.emitWithAckNoOp(event)
-        self.handleGameEvents([event.eventPayload()])
+        self.handleGameEvents([event.eventPayload()], timeClock: self.timeClock)
     }
 
     func ping(cell: CellCoordinates) {
         let event = PingEvent(userId: self.userId, gameId: self.gameId, cell: cell)
         self.emitWithAckNoOp(event)
-        self.handleGameEvents([event.eventPayload()])
+        self.handleGameEvents([event.eventPayload()], timeClock: self.timeClock)
     }
 
 }

@@ -50,5 +50,21 @@ class API {
         
         return nil
     }
-    
+
+    func recordSolve(puzzleId: String, gameId: String, timeToSolve: TimeInterval) async throws -> Void {
+        var urlComponents = self.baseURLComponents
+        urlComponents.path = "/api/record_solve/\(puzzleId)"
+
+        let params: [String: AnyHashable] = [
+            "gid": gameId,
+            "time_to_solve": Int(timeToSolve * 1000)
+        ]
+
+        var request = URLRequest(url: urlComponents.url!)
+        request.httpBody = try JSONSerialization.data(withJSONObject: params)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        _ = try await self.session.data(for: request)
+    }
+
 }

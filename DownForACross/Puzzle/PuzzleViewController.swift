@@ -676,6 +676,11 @@ extension PuzzleViewController: GameClientDelegate {
             switch solutionState {
                 case .correct:
                     self.playConfettiAnimation()
+                    Task {
+                        try await self.api.recordSolve(puzzleId: self.puzzleId,
+                                                       gameId: self.gameClient.gameId,
+                                                       timeToSolve: self.gameClient.timeClock.currentInstant.elapsedTime)
+                    }
                 case .incorrect:
                     self.newMessageStackView.addSystemMessage("You completed the puzzle, but something's not quite right. Keep trying!")
                 case .incomplete, .empty:

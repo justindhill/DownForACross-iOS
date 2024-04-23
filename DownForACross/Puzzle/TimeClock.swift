@@ -25,7 +25,9 @@ class TimeClock {
 
     enum ClockState {
         case stopped
+        case paused
         case started
+
     }
 
     let autoPauseInterval: TimeInterval = 60
@@ -35,13 +37,19 @@ class TimeClock {
 
     weak var delegate: TimeClockDelegate?
     private var autoPauseTimer: Timer?
+    private var stopped: Bool = false
+    private var createEventObserved: Bool = false
 
     var currentInstant: Instant {
         let now = Date().timeIntervalSince1970
         let timeSinceLastEvent = (now - self.lastEventTimestamp)
         let totalElapsedTime = self.recordedElapsedTime + min(self.autoPauseInterval, timeSinceLastEvent)
 
-        return (timeSinceLastEvent >= self.autoPauseInterval ? .stopped : .started , totalElapsedTime)
+        if self.stopped {
+            return (.stopped, self.recordedElapsedTime)
+        } else {
+            return (timeSinceLastEvent >= self.autoPauseInterval ? .paused : .started , totalElapsedTime)
+        }
     }
 
     var formattedCurrentInstant: FormattedInstant {
@@ -54,36 +62,74 @@ class TimeClock {
         var timeString = hours > 0 ? "\(hours):" : ""
         timeString.append("\(self.zeroPaddingFormatter.string(from: NSNumber(value: minutes))!):\(self.zeroPaddingFormatter.string(from: NSNumber(value: seconds))!)")
 
-        if instant.state == .stopped {
+        if instant.state == .paused {
             timeString = "(\(timeString))"
         }
 
         return (instant.state, timeString)
     }
 
+    func accountForFakeEvent() {
+        self.accountFor(rawEvent: [
+            "type": "fake",
+            "timestamp": Date().timeIntervalSince1970 * 1000
+        ])
+    }
+
     func accountFor(rawEvent: [String: Any]) {
-        guard let type = rawEvent["type"] as? String, let timestamp = rawEvent["timestamp"] as? TimeInterval else { return }
+        guard
+            !self.stopped,
+            let type = rawEvent["type"] as? String,
+            let timestamp = rawEvent["timestamp"] as? TimeInterval else { return }
+
+        print("CLOCK: accountFor")
+
         let secondsTimestamp = timestamp / 1000
 
         let currentState = self.currentInstant.state
 
-        if type != "create" {
+        if type == "create" {
+            self.lastEventTimestamp = secondsTimestamp
+            self.createEventObserved = true
+            return
+        } else if !self.createEventObserved {
+            return
+        } else {
             self.recordedElapsedTime += min(secondsTimestamp - self.lastEventTimestamp, self.autoPauseInterval)
+            print(recordedElapsedTime)
+            self.lastEventTimestamp = secondsTimestamp
         }
-
-        self.lastEventTimestamp = secondsTimestamp
 
         self.autoPauseTimer?.invalidate()
         self.autoPauseTimer = Timer.scheduledTimer(withTimeInterval: self.autoPauseInterval, repeats: false, block: { [weak self] _ in
             guard let self else { return }
-            self.delegate?.timeClock(self, stateDidChange: .stopped)
+            self.recordedElapsedTime += min(secondsTimestamp - self.lastEventTimestamp, self.autoPauseInterval)
+            self.delegate?.timeClock(self, stateDidChange: .paused)
         })
 
-        if currentState == .stopped {
+        if currentState == .paused {
             self.delegate?.timeClock(self, stateDidChange: .started)
         }
 
-        print(self.formattedCurrentInstant.elapsedTime)
+        withUnsafePointer(to: self) { ptr in
+            print("\(ptr) \(self.stopped) " + self.formattedCurrentInstant.elapsedTime)
+        }
+    }
+
+    func accountFor(rawEvents: [[String: Any]]) {
+        rawEvents.forEach(self.accountFor(rawEvent:))
+    }
+
+    func start() {
+        self.lastEventTimestamp = Date().timeIntervalSince1970
+        self.stopped = false
+    }
+
+    func stop() {
+        print("CLOCK: stopped")
+        self.stopped = true
+        self.autoPauseTimer?.invalidate()
+        self.delegate?.timeClock(self, stateDidChange: .stopped)
     }
 
 }
