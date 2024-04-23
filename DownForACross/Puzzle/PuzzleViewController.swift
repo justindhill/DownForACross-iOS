@@ -739,9 +739,9 @@ extension PuzzleViewController: PuzzleViewDelegate {
         
         switch clue.direction {
             case .across:
-                self.keyboardToolbar.clueLabel.text = self.puzzle.clues.across[clue.clueIndex]
+                self.keyboardToolbar.clueLabel.text = self.puzzle.clues.across[safe: clue.clueIndex]
             case .down:
-                self.keyboardToolbar.clueLabel.text = self.puzzle.clues.down[clue.clueIndex]
+                self.keyboardToolbar.clueLabel.text = self.puzzle.clues.down[safe: clue.clueIndex]
         }
         
         self.sideBarViewController.clueListViewController.selectClue(atSequenceIndex: clue.sequenceIndex, direction: clue.direction)
@@ -759,9 +759,9 @@ extension PuzzleViewController: PuzzleViewDelegate {
         var clue: String?
         switch direction {
             case .across:
-                clue = self.puzzle.clues.across[clueIndex]
+                clue = self.puzzle.clues.across[safe: clueIndex]
             case .down:
-                clue = self.puzzle.clues.down[clueIndex]
+                clue = self.puzzle.clues.down[safe: clueIndex]
         }
         
         guard let clue else { return [] }

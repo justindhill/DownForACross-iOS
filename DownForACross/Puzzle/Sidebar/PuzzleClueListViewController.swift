@@ -102,8 +102,10 @@ class PuzzleClueListViewController: UIViewController {
         }
         
         let candidate = IndexPath(row: sequenceIndex, section: direction.sectionIndex)
-        if candidate != self.tableView.indexPathForSelectedRow {
-            self.tableView.selectRow(at: candidate, animated: true, scrollPosition: .middle)
+        if self.dataSource.itemIdentifier(for: candidate) != nil {
+            if candidate != self.tableView.indexPathForSelectedRow {
+                self.tableView.selectRow(at: candidate, animated: true, scrollPosition: .middle)
+            }
         }
     }
     
