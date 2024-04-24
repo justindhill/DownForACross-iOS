@@ -131,6 +131,13 @@ class SettingsViewController: UIViewController {
             mode: .appearance,
             navigationHandler: self))
 
+        self.addSetting(NavigationSettingView(
+            title: "Quick filters",
+            details: nil,
+            handler: { [weak self] in
+                self?.showQuickFiltersSettings()
+            }))
+
         self.addSetting(SingleSelectSettingView(
             title: "Default input mode",
             details: "The input mode that will be initially selected when you start a game",
@@ -158,6 +165,11 @@ class SettingsViewController: UIViewController {
                 view.cancel()
             }
         }
+    }
+
+    func showQuickFiltersSettings() {
+        let vc = QuickFiltersViewController()
+        self.navigationController?.pushViewController(vc, animated: true)
     }
 }
 

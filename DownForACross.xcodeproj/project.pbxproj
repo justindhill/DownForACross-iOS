@@ -76,6 +76,7 @@
 		3BB996B12BD8088500494810 /* Array+SafeAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB996B02BD8088500494810 /* Array+SafeAccess.swift */; };
 		3BB996B32BD93CF200494810 /* Separator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB996B22BD93CF200494810 /* Separator.swift */; };
 		3BB996B52BD93F5100494810 /* NavigationSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB996B42BD93F5100494810 /* NavigationSettingView.swift */; };
+		3BB996B82BD949A800494810 /* QuickFiltersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB996B72BD949A800494810 /* QuickFiltersViewController.swift */; };
 		3BBD6C552BCD53FE007A5A9B /* SolutionState+AccessoryImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBD6C542BCD53FE007A5A9B /* SolutionState+AccessoryImageView.swift */; };
 		3BBD6C572BD01124007A5A9B /* UIColor+HSLString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBD6C562BD01124007A5A9B /* UIColor+HSLString.swift */; };
 		3BBD6C592BD2A139007A5A9B /* TimeClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBD6C582BD2A139007A5A9B /* TimeClock.swift */; };
@@ -160,6 +161,7 @@
 		3BB996B02BD8088500494810 /* Array+SafeAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+SafeAccess.swift"; sourceTree = "<group>"; };
 		3BB996B22BD93CF200494810 /* Separator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Separator.swift; sourceTree = "<group>"; };
 		3BB996B42BD93F5100494810 /* NavigationSettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationSettingView.swift; sourceTree = "<group>"; };
+		3BB996B72BD949A800494810 /* QuickFiltersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickFiltersViewController.swift; sourceTree = "<group>"; };
 		3BBD6C542BCD53FE007A5A9B /* SolutionState+AccessoryImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SolutionState+AccessoryImageView.swift"; sourceTree = "<group>"; };
 		3BBD6C562BD01124007A5A9B /* UIColor+HSLString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+HSLString.swift"; sourceTree = "<group>"; };
 		3BBD6C582BD2A139007A5A9B /* TimeClock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeClock.swift; sourceTree = "<group>"; };
@@ -386,7 +388,16 @@
 		3BB0FCE72B76745400CD907C /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				3BB996B62BD9495A00494810 /* Setting row views */,
 				3BB0FCEA2B76746900CD907C /* SettingsViewController.swift */,
+				3BB996B72BD949A800494810 /* QuickFiltersViewController.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		3BB996B62BD9495A00494810 /* Setting row views */ = {
+			isa = PBXGroup;
+			children = (
 				3B5BD0DD2BAA7A0A006DB214 /* BaseSettingView.swift */,
 				3B5BD0DF2BAB1D46006DB214 /* EditableTextSettingView.swift */,
 				3B5BD0E12BAB2004006DB214 /* SingleSelectSettingView.swift */,
@@ -396,7 +407,7 @@
 				3BB996B22BD93CF200494810 /* Separator.swift */,
 				3BB996B42BD93F5100494810 /* NavigationSettingView.swift */,
 			);
-			path = Settings;
+			path = "Setting row views";
 			sourceTree = "<group>";
 		};
 		3BC761B72BA3BE1B003ACF81 /* Supporting */ = {
@@ -621,6 +632,7 @@
 				3B5BD0D92BAA7984006DB214 /* PuzzleMessagesViewController.swift in Sources */,
 				3B5BD0E42BAD2371006DB214 /* Publisher+DidSet.swift in Sources */,
 				3B5BD0E02BAB1D46006DB214 /* EditableTextSettingView.swift in Sources */,
+				3BB996B82BD949A800494810 /* QuickFiltersViewController.swift in Sources */,
 				3BB0FCEB2B76746900CD907C /* SettingsViewController.swift in Sources */,
 				3B5BD0DA2BAA7984006DB214 /* PuzzleClueListViewController.swift in Sources */,
 				3BBD6C552BCD53FE007A5A9B /* SolutionState+AccessoryImageView.swift in Sources */,
