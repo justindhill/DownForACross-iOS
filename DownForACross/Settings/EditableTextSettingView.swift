@@ -14,12 +14,14 @@ class EditableTextSettingView: BaseSettingView {
         return textField
     }()
 
-    let keyPath: WritableKeyPath<SettingsStorage, String>
+    var settingsStorage: SettingsStorage
+    var keyPath: WritableKeyPath<SettingsStorage, String>
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     init(title: String, details: String?, settingsStorage: SettingsStorage, keyPath: WritableKeyPath<SettingsStorage, String>) {
         self.keyPath = keyPath
-        super.init(title: title, details: details, settingsStorage: settingsStorage, accessoryView: self.textField)
+        self.settingsStorage = settingsStorage
+        super.init(title: title, details: details, accessoryView: self.textField)
         textField.text = settingsStorage[keyPath: keyPath]
         textField.textColor = .secondaryLabel
         textField.returnKeyType = .done

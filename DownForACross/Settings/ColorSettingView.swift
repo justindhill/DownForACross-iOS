@@ -9,6 +9,7 @@ import UIKit
 
 class ColorSettingView: BaseSettingView {
 
+    var settingsStorage: SettingsStorage
     let keyPath: WritableKeyPath<SettingsStorage, UIColor>
     let updateHandler: ((UIColor) -> Void)?
     let button: GreedyButton = {
@@ -19,9 +20,10 @@ class ColorSettingView: BaseSettingView {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     init(title: String, details: String? = nil, settingsStorage: SettingsStorage, keyPath: WritableKeyPath<SettingsStorage, UIColor>, updateHandler: ((UIColor) -> Void)? = nil) {
+        self.settingsStorage = settingsStorage
         self.keyPath = keyPath
         self.updateHandler = updateHandler
-        super.init(title: title, details: details, settingsStorage: settingsStorage, accessoryView: self.button)
+        super.init(title: title, details: details, accessoryView: self.button)
         button.configuration?.attributedTitle = self.titleString(color: settingsStorage[keyPath: keyPath])
         button.addAction(UIAction(handler: { [weak self] _ in
             guard let self else { return }

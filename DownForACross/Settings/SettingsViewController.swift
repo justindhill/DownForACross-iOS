@@ -13,12 +13,26 @@ protocol SettingsDisplayable: CaseIterable {
 
 class SettingsViewController: UIViewController {
 
+    enum Mode {
+        case root
+        case appearance
+
+        var title: String {
+            switch self {
+                case .root: "Settings"
+                case .appearance: "Appearance"
+            }
+        }
+    }
+
     let stackView: UIStackView
     let scrollView: UIScrollView
     let settingsStorage: SettingsStorage
+    let mode: Mode
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    init(settingsStorage: SettingsStorage) {
+    init(mode: Mode = .root, settingsStorage: SettingsStorage) {
+        self.mode = mode
         self.settingsStorage = settingsStorage
         self.stackView = UIStackView()
         self.stackView.axis = .vertical
@@ -28,7 +42,7 @@ class SettingsViewController: UIViewController {
         self.scrollView.alwaysBounceVertical = true
         super.init(nibName: nil, bundle: nil)
 
-        self.navigationItem.title = "Settings"
+        self.navigationItem.title = self.mode.title
     }
 
     override func viewDidLoad() {
@@ -56,16 +70,13 @@ class SettingsViewController: UIViewController {
             self.scrollView.contentLayoutGuide.widthAnchor.constraint(equalTo: self.view.widthAnchor),
         ])
 
-        self.updateContent()
+        switch self.mode {
+            case .root: self.addRootContent()
+            case .appearance: self.addAppearanceContent()
+        }
     }
 
-    func updateContent() {
-        self.addSetting(EditableTextSettingView(
-            title: "Display name",
-            details: "The name that will appear to other players in chat messages and the player list",
-            settingsStorage: self.settingsStorage,
-            keyPath: \.userDisplayName))
-
+    func addAppearanceContent() {
         self.addSetting(ColorSettingView(
             title: "Cursor color",
             details: "The color that will represent you to other players",
@@ -79,12 +90,6 @@ class SettingsViewController: UIViewController {
             keyPath: \.pencilColor))
 
         self.addSetting(SingleSelectSettingView(
-            title: "Default input mode",
-            details: "The input mode that will be initiallly selected when you start a game",
-            settingsStorage: self.settingsStorage,
-            keyPath: \.defaultInputMode))
-
-        self.addSetting(SingleSelectSettingView(
             title: "App theme",
             settingsStorage: self.settingsStorage,
             keyPath: \.appearanceStyle,
@@ -96,24 +101,47 @@ class SettingsViewController: UIViewController {
             })
         )
 
-        self.addSetting(SwitchSettingView(title: "Skip filled squares",
-                                          details: "When moving the cursor, skip over cells that have been filled if they haven't been checked for correctness",
-                                          settingsStorage: self.settingsStorage,
-                                          keyPath: \.skipFilledCells))
+        self.addSetting(SwitchSettingView(
+            title: "Unread messages badge",
+            details: "Show a badge when there are chat messages you haven't seen yet",
+            settingsStorage: self.settingsStorage,
+            keyPath: \.showUnreadMessageBadges))
 
-        self.addSetting(SwitchSettingView(title: "Unread messages badge",
-                                          details: "Show a badge when there are chat messages you haven't seen yet",
-                                          settingsStorage: self.settingsStorage,
-                                          keyPath: \.showUnreadMessageBadges))
-
-        self.addSetting(SwitchSettingView(title: "Chat message previews",
-                                          details: "Show a message preview over the puzzle when new messages are received",
-                                          settingsStorage: self.settingsStorage,
-                                          keyPath: \.showMessagePreviews))
+        self.addSetting(SwitchSettingView(
+            title: "Chat message previews",
+            details: "Show a message preview over the puzzle when new messages are received",
+            settingsStorage: self.settingsStorage,
+            keyPath: \.showMessagePreviews))
 
         self.addSetting(SwitchSettingView(title: "Show timer in navigation bar",
                                           settingsStorage: self.settingsStorage,
                                           keyPath: \.showTimerInNavigationBar))
+    }
+
+    func addRootContent() {
+        self.addSetting(EditableTextSettingView(
+            title: "Display name",
+            details: "The name that will appear to other players in chat messages and the player list",
+            settingsStorage: self.settingsStorage,
+            keyPath: \.userDisplayName))
+
+        self.addSetting(NavigationSettingView(
+            title: "Appearance",
+            details: nil,
+            mode: .appearance,
+            navigationHandler: self))
+
+        self.addSetting(SingleSelectSettingView(
+            title: "Default input mode",
+            details: "The input mode that will be initially selected when you start a game",
+            settingsStorage: self.settingsStorage,
+            keyPath: \.defaultInputMode))
+
+        self.addSetting(SwitchSettingView(
+            title: "Skip filled squares",
+            details: "When moving the cursor, skip over cells that have been filled if they haven't been checked for correctness",
+            settingsStorage: self.settingsStorage,
+            keyPath: \.skipFilledCells))
     }
 
     func addSetting(_ view: UIView) {
@@ -131,36 +159,13 @@ class SettingsViewController: UIViewController {
             }
         }
     }
+}
 
-    class Separator: UIView {
-        let lineLayer: CALayer = CALayer()
+extension SettingsViewController: NavigationSettingViewHandler {
 
-        override func didMoveToWindow() {
-            if let screen = self.window?.screen {
-                self.heightConstraint.constant = 1 / screen.scale
-            }
-        }
-
-        lazy var heightConstraint: NSLayoutConstraint = self.heightAnchor.constraint(equalToConstant: 1)
-
-        required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-        override init(frame: CGRect) {
-            super.init(frame: frame)
-
-            self.layoutMargins = BaseSettingView.layoutMargins
-            NSLayoutConstraint.activate([
-                self.heightConstraint
-            ])
-
-            self.layer.addSublayer(self.lineLayer)
-        }
-
-        override func layoutSublayers(of layer: CALayer) {
-            self.lineLayer.backgroundColor = UIColor.systemFill.cgColor
-            self.lineLayer.frame = CGRect(x: self.layoutMargins.left,
-                                          y: 0, 
-                                          width: self.frame.size.width - self.layoutMargins.left,
-                                          height: self.frame.size.height)
-        }
+    func navigationViewDidNavigateWithMode(mode: Mode) {
+        let settingsVc = SettingsViewController(mode: mode, settingsStorage: self.settingsStorage)
+        self.navigationController?.pushViewController(settingsVc, animated: true)
     }
+
 }

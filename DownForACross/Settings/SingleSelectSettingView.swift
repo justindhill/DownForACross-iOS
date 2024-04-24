@@ -9,6 +9,7 @@ import UIKit
 
 class SingleSelectSettingView<T: SettingsDisplayable>: BaseSettingView {
 
+    var settingsStorage: SettingsStorage
     let keyPath: WritableKeyPath<SettingsStorage, T>
     let updateHandler: ((T) -> Void)?
     let button: GreedyButton = {
@@ -21,9 +22,10 @@ class SingleSelectSettingView<T: SettingsDisplayable>: BaseSettingView {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     init(title: String, details: String? = nil, settingsStorage: SettingsStorage, keyPath: WritableKeyPath<SettingsStorage, T>, updateHandler: ((T) -> Void)? = nil) {
+        self.settingsStorage = settingsStorage
         self.keyPath = keyPath
         self.updateHandler = updateHandler
-        super.init(title: title, details: details, settingsStorage: settingsStorage, accessoryView: self.button)
+        super.init(title: title, details: details, accessoryView: self.button)
         button.configuration?.attributedTitle = self.titleString(for: settingsStorage[keyPath: keyPath].displayString)
         
         button.menu = UIMenu(children: T.allCases.map({ value in

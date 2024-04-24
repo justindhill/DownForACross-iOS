@@ -74,6 +74,8 @@
 		3BB0FCEF2B7E5B6A00CD907C /* SettingsStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FCEE2B7E5B6A00CD907C /* SettingsStorage.swift */; };
 		3BB8381B2BC987CF007E3A4F /* PuzzleListCreatedGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB8381A2BC987CF007E3A4F /* PuzzleListCreatedGame.swift */; };
 		3BB996B12BD8088500494810 /* Array+SafeAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB996B02BD8088500494810 /* Array+SafeAccess.swift */; };
+		3BB996B32BD93CF200494810 /* Separator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB996B22BD93CF200494810 /* Separator.swift */; };
+		3BB996B52BD93F5100494810 /* NavigationSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB996B42BD93F5100494810 /* NavigationSettingView.swift */; };
 		3BBD6C552BCD53FE007A5A9B /* SolutionState+AccessoryImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBD6C542BCD53FE007A5A9B /* SolutionState+AccessoryImageView.swift */; };
 		3BBD6C572BD01124007A5A9B /* UIColor+HSLString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBD6C562BD01124007A5A9B /* UIColor+HSLString.swift */; };
 		3BBD6C592BD2A139007A5A9B /* TimeClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBD6C582BD2A139007A5A9B /* TimeClock.swift */; };
@@ -156,6 +158,8 @@
 		3BB0FCEE2B7E5B6A00CD907C /* SettingsStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStorage.swift; sourceTree = "<group>"; };
 		3BB8381A2BC987CF007E3A4F /* PuzzleListCreatedGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleListCreatedGame.swift; sourceTree = "<group>"; };
 		3BB996B02BD8088500494810 /* Array+SafeAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+SafeAccess.swift"; sourceTree = "<group>"; };
+		3BB996B22BD93CF200494810 /* Separator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Separator.swift; sourceTree = "<group>"; };
+		3BB996B42BD93F5100494810 /* NavigationSettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationSettingView.swift; sourceTree = "<group>"; };
 		3BBD6C542BCD53FE007A5A9B /* SolutionState+AccessoryImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SolutionState+AccessoryImageView.swift"; sourceTree = "<group>"; };
 		3BBD6C562BD01124007A5A9B /* UIColor+HSLString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+HSLString.swift"; sourceTree = "<group>"; };
 		3BBD6C582BD2A139007A5A9B /* TimeClock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeClock.swift; sourceTree = "<group>"; };
@@ -389,6 +393,8 @@
 				3B926AE12BBEED49009BF228 /* ColorSettingView.swift */,
 				3B926ADF2BBD8E8B009BF228 /* SwitchSettingView.swift */,
 				3B926AE72BC0359A009BF228 /* GreedyButton.swift */,
+				3BB996B22BD93CF200494810 /* Separator.swift */,
+				3BB996B42BD93F5100494810 /* NavigationSettingView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -579,6 +585,7 @@
 				3BBD6C592BD2A139007A5A9B /* TimeClock.swift in Sources */,
 				3B76C8CC2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift in Sources */,
 				3B73AD832B93E3AB005DB5F8 /* DFACTextLayer.swift in Sources */,
+				3BB996B32BD93CF200494810 /* Separator.swift in Sources */,
 				3BAD21272B98BBBB00839504 /* EmptyStateView.swift in Sources */,
 				3BBD6C572BD01124007A5A9B /* UIColor+HSLString.swift in Sources */,
 				3B7AD2672B597AA4004DEC1A /* UpdateColorEvent.swift in Sources */,
@@ -607,6 +614,7 @@
 				3B926AE42BBEEF81009BF228 /* UIView+ClosestViewController.swift in Sources */,
 				3BB0FCE22B6F33AF00CD907C /* PuzzleListQuickFilterBarView.swift in Sources */,
 				3B76C8CA2B9BECD700E60AFD /* UINavigationBar+TitleControl.swift in Sources */,
+				3BB996B52BD93F5100494810 /* NavigationSettingView.swift in Sources */,
 				3B011DFD2B30C02F00BDB732 /* ListPuzzle.swift in Sources */,
 				3B702AF72BA48DE800F89FB0 /* JoinConfirmationViewController.swift in Sources */,
 				3BB0FCED2B7E5AEB00CD907C /* UserDefaultsEntryPropertyWrapper.swift in Sources */,

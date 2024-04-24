@@ -11,7 +11,6 @@ class BaseSettingView: UIView {
 
     static let layoutMargins: UIEdgeInsets = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
 
-    var settingsStorage: SettingsStorage
     let title: String
     let details: String?
     let labelSpacing: CGFloat = 8.0
@@ -36,11 +35,10 @@ class BaseSettingView: UIView {
     }()
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    init(title: String, details: String?, settingsStorage: SettingsStorage, accessoryView: UIView?) {
+    init(title: String, details: String?, accessoryView: UIView?) {
         self.title = title
         self.details = details
         self.accessoryView = accessoryView
-        self.settingsStorage = settingsStorage
         accessoryView?.translatesAutoresizingMaskIntoConstraints = false
         super.init(frame: .zero)
 
