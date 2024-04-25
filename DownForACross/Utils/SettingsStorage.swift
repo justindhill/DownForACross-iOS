@@ -87,6 +87,16 @@ class SettingsStorage {
     @UserDefaultsEntry<Bool>(key: "showTimerInNavigationBar")
     var showTimerInNavigationBar = true
 
+    @UserDefaultsEntry<[String]>(key: "quickFilterTerms")
+    var quickFilterTerms = [
+        "NY Times",
+        "LA Times",
+        "The Crossword",
+        "WSJ",
+        "Quiptic",
+        "Mania"
+    ]
+
     var onboardingComplete: Bool {
         get { self.onboardingVersionComplete == self.currentOnboardingVersion }
     }

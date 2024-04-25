@@ -168,7 +168,7 @@ class SettingsViewController: UIViewController {
     }
 
     func showQuickFiltersSettings() {
-        let vc = QuickFiltersViewController()
+        let vc = QuickFiltersViewController(settingsStorage: self.settingsStorage)
         self.navigationController?.pushViewController(vc, animated: true)
     }
 }

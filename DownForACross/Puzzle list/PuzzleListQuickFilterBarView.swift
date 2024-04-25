@@ -31,14 +31,7 @@ class PuzzleListQuickFilterBarView: UIView {
         }
     }
     
-    private let wordFilters: [String] = [
-        "NY Times",
-        "LA Times",
-        "The Crossword",
-        "WSJ",
-        "Quiptic",
-        "Mania"
-    ]
+    private var wordFilters: [String]
     
     lazy var wordFilterButtons = self.wordFilters.map({ term in
         var config = UIButton.Configuration.plain()
@@ -83,7 +76,8 @@ class PuzzleListQuickFilterBarView: UIView {
     lazy var sizeSelectorButton: UIButton = UIButton(configuration: self.buttonConfigurationFor(puzzleSize: self.selectedPuzzleSize))
     let scrollView: UIScrollView = UIScrollView()
     var filterStackView: UIStackView!
-    
+    let settingsStorage: SettingsStorage
+
     var selectedPuzzleSize: PuzzleSize {
         didSet {
             self.sizeSelectorButton.configuration = self.buttonConfigurationFor(puzzleSize: self.selectedPuzzleSize)
@@ -105,10 +99,13 @@ class PuzzleListQuickFilterBarView: UIView {
     }
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    init(puzzleSize: PuzzleSize, wordFilter: String) {
-        self.selectedPuzzleSize = puzzleSize
+    init(settingsStorage: SettingsStorage) {
+        self.selectedPuzzleSize = settingsStorage.puzzleListSizeFilter
+        self.wordFilters = settingsStorage.quickFilterTerms
+        self.settingsStorage = settingsStorage
         super.init(frame: .zero)
         
+        let wordFilter = settingsStorage.puzzleTextFilter
         self.filterStackView = UIStackView(arrangedSubviews: self.wordFilterButtons)
         self.filterStackView.distribution = .fill
         

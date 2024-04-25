@@ -115,7 +115,7 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
     }()
     
     lazy var quickFilterBar: PuzzleListQuickFilterBarView = {
-        let view = PuzzleListQuickFilterBarView(puzzleSize: self.settingsStorage.puzzleListSizeFilter, wordFilter: self.settingsStorage.puzzleTextFilter)
+        let view = PuzzleListQuickFilterBarView(settingsStorage: self.settingsStorage)
         view.translatesAutoresizingMaskIntoConstraints = false
         view.delegate = self
         return view
