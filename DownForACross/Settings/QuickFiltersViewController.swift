@@ -9,7 +9,29 @@ import UIKit
 
 class QuickFiltersViewController: UIViewController, UITableViewDelegate {
 
-    let reuseIdentifier = "ReuseIdentifier"
+    enum Section {
+        case filters
+        case newFilter
+    }
+
+    let existingFilterReuseIdentifier = "ExistingFilterReuseIdentifier"
+    let newFilterReuseIdentifier = "NewFilterReuseIdentifier"
+
+    let placeholderString: NSAttributedString = {
+        let textAttachmentString = NSMutableAttributedString(
+            string: "\(UnicodeScalar(NSTextAttachment.character)!)",
+            attributes: [
+                .attachment: NSTextAttachment(image: UIImage(systemName: "plus.circle")!),
+                .foregroundColor: UIColor.systemBlue
+            ])
+        textAttachmentString.append(NSAttributedString(string: " Add a filter", attributes: [
+            .foregroundColor: UIColor.systemBlue
+        ]))
+
+        return textAttachmentString
+    }()
+    var textInputCanceled: Bool = false
+
     var entries: [String] {
         didSet {
             self.settingsStorage.quickFilterTerms = entries
@@ -56,7 +78,8 @@ class QuickFiltersViewController: UIViewController, UITableViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .systemGroupedBackground
-        self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: self.reuseIdentifier)
+        self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: self.existingFilterReuseIdentifier)
+        self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: self.newFilterReuseIdentifier)
 
         self.updateEditButton()
 
@@ -68,7 +91,14 @@ class QuickFiltersViewController: UIViewController, UITableViewDelegate {
             self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
         ])
 
+        self.tableView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(endEditing)))
+
         self.updateContent(animated: false)
+    }
+
+    @objc func endEditing() {
+        self.textInputCanceled = true
+        self.view.endEditing(true)
     }
 
     func updateEditButton() {
@@ -85,21 +115,32 @@ class QuickFiltersViewController: UIViewController, UITableViewDelegate {
     }
 
     func updateContent(animated: Bool) {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, String>()
-        snapshot.appendSections([0])
-        snapshot.appendItems(self.entries, toSection: 0)
+        var snapshot = NSDiffableDataSourceSnapshot<Section, String>()
+        snapshot.appendSections([.filters, .newFilter])
+        snapshot.appendItems(self.entries, toSection: .filters)
+        snapshot.appendItems(["new"], toSection: .newFilter)
         self.dataSource.apply(snapshot, animatingDifferences: animated)
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath, item: String) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: self.reuseIdentifier, for: indexPath)
+        guard let section = self.dataSource.sectionIdentifier(for: indexPath.section) else { return UITableViewCell() }
+        switch section {
+            case .filters:
+                let cell = tableView.dequeueReusableCell(withIdentifier: self.existingFilterReuseIdentifier, for: indexPath)
 
-        var config = UIListContentConfiguration.cell()
-        config.text = item
-        cell.contentConfiguration = config
-        cell.showsReorderControl = true
+                var config = UIListContentConfiguration.cell()
+                config.text = item
+                cell.contentConfiguration = config
+                cell.showsReorderControl = true
 
-        return cell
+                return cell
+
+            case .newFilter:
+                let cell = tableView.dequeueReusableCell(withIdentifier: self.newFilterReuseIdentifier, for: indexPath)
+                self.configureTextFieldCell(cell)
+                return cell
+        }
+
     }
 
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -119,13 +160,33 @@ class QuickFiltersViewController: UIViewController, UITableViewDelegate {
         ])
     }
 
-    class DataSource: UITableViewDiffableDataSource<Int, String> {
+    func configureTextFieldCell(_ cell: UITableViewCell) {
+        guard cell.contentView.subviews.firstIndex(where: { $0 is UITextField }) == nil else { return }
+
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.delegate = self
+
+        textField.returnKeyType = .done
+        textField.attributedPlaceholder = self.placeholderString
+
+        cell.contentView.addSubview(textField)
+        NSLayoutConstraint.activate([
+            textField.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
+            textField.trailingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
+            textField.topAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.topAnchor),
+            textField.bottomAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.bottomAnchor)
+        ])
+    }
+
+    class DataSource: UITableViewDiffableDataSource<Section, String> {
 
         var orderUpdateBlock: ((Int, Int) -> Void)?
         var deleteBlock: ((Int) -> Void)?
 
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-            return true
+            guard let section = self.sectionIdentifier(for: indexPath.section) else { return false }
+            return section == .filters
         }
 
         override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
@@ -144,6 +205,37 @@ class QuickFiltersViewController: UIViewController, UITableViewDelegate {
             self.apply(snapshot)
         }
 
+    }
+
+}
+
+extension QuickFiltersViewController: UITextFieldDelegate {
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        self.textInputCanceled = false
+        self.endEditing()
+        return false
+    }
+
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        textField.attributedPlaceholder = nil
+    }
+
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if string.contains("\n") {
+            return false
+        }
+
+        return true
+    }
+
+    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
+        textField.attributedPlaceholder = self.placeholderString
+
+        guard let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines), text.count > 0 else { return }
+        self.entries.append(text)
+        textField.text = nil
+        self.updateContent(animated: true)
     }
 
 }
