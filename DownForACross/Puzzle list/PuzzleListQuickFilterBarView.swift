@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 protocol PuzzleListQuickFilterBarViewDelegate {
     func filterBar(_ filterBar: PuzzleListQuickFilterBarView, selectedSizesDidChange: PuzzleListQuickFilterBarView.PuzzleSize)
@@ -33,18 +34,8 @@ class PuzzleListQuickFilterBarView: UIView {
     
     private var wordFilters: [String]
     
-    lazy var wordFilterButtons = self.wordFilters.map({ term in
-        var config = UIButton.Configuration.plain()
-        config.title = term
-        
-        let button = UIButton(configuration: config)
-        button.setContentHuggingPriority(.required, for: .horizontal)
-        button.setContentCompressionResistancePriority(.required, for: .horizontal)
-        button.addTarget(self, action: #selector(textFilterButtonTapped(_:)), for: .primaryActionTriggered)
-        
-        return button
-    })
-    
+    var wordFilterButtons: [UIButton] = []
+
     enum PuzzleSize: Int, CaseIterable, Codable {
         case all
         case standard
@@ -77,6 +68,7 @@ class PuzzleListQuickFilterBarView: UIView {
     let scrollView: UIScrollView = UIScrollView()
     var filterStackView: UIStackView!
     let settingsStorage: SettingsStorage
+    var quickFilterSubscription: AnyCancellable? = nil
 
     var selectedPuzzleSize: PuzzleSize {
         didSet {
@@ -105,14 +97,19 @@ class PuzzleListQuickFilterBarView: UIView {
         self.settingsStorage = settingsStorage
         super.init(frame: .zero)
         
-        let wordFilter = settingsStorage.puzzleTextFilter
         self.filterStackView = UIStackView(arrangedSubviews: self.wordFilterButtons)
         self.filterStackView.distribution = .fill
-        
-        if let wordFilterIndex = self.wordFilters.firstIndex(of: wordFilter) {
-            self.textFilterButtonTapped(self.wordFilterButtons[wordFilterIndex])
-        }
-        
+
+        self.quickFilterSubscription = self.settingsStorage.quickFilterTermsPublisher
+            .sink(receiveValue: { value in
+                if value != self.wordFilters {
+                    self.wordFilters = value
+                    self.updateContent()
+                }
+            })
+
+        self.updateContent()
+
         self.sizeSelectorButton.configuration = self.buttonConfigurationFor(puzzleSize: self.selectedPuzzleSize)
         
         self.scrollView.showsHorizontalScrollIndicator = false
@@ -146,7 +143,36 @@ class PuzzleListQuickFilterBarView: UIView {
             self.filterStackView.bottomAnchor.constraint(equalTo: self.scrollView.contentLayoutGuide.bottomAnchor),
         ])
     }
-    
+
+    func updateContent() {
+        if self.filterStackView.arrangedSubviews.count > 0 {
+            self.filterStackView.arrangedSubviews.forEach({ view in
+                self.filterStackView.removeArrangedSubview(view)
+                NSLayoutConstraint.deactivate(view.constraints)
+                view.removeFromSuperview()
+            })
+        }
+
+        self.wordFilterButtons = self.wordFilters.map({ term in
+            var config = UIButton.Configuration.plain()
+            config.title = term
+
+            let button = UIButton(configuration: config)
+            button.setContentHuggingPriority(.required, for: .horizontal)
+            button.setContentCompressionResistancePriority(.required, for: .horizontal)
+            button.addTarget(self, action: #selector(textFilterButtonTapped(_:)), for: .primaryActionTriggered)
+
+            return button
+        })
+
+        self.wordFilterButtons.forEach({ self.filterStackView.addArrangedSubview($0) })
+
+        let wordFilter = settingsStorage.puzzleTextFilter
+        if let wordFilterIndex = self.wordFilters.firstIndex(of: wordFilter) {
+            self.textFilterButtonTapped(self.wordFilterButtons[wordFilterIndex])
+        }
+    }
+
     @objc func textFilterButtonTapped(_ sender: UIButton) {
         guard let index = self.wordFilterButtons.firstIndex(of: sender) else { return }
         if index == self.selectedWordFilterIndex {

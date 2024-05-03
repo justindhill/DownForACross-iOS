@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 class SettingsStorage {
     
@@ -87,6 +88,8 @@ class SettingsStorage {
     @UserDefaultsEntry<Bool>(key: "showTimerInNavigationBar")
     var showTimerInNavigationBar = true
 
+    private var quickFilterTermsSubject = PassthroughSubject<[String], Never>()
+    lazy var quickFilterTermsPublisher: AnyPublisher<[String], Never> = quickFilterTermsSubject.eraseToAnyPublisher()
     @UserDefaultsEntry<[String]>(key: "quickFilterTerms")
     var quickFilterTerms = [
         "NY Times",
@@ -95,7 +98,11 @@ class SettingsStorage {
         "WSJ",
         "Quiptic",
         "Mania"
-    ]
+    ] {
+        didSet {
+            self.quickFilterTermsSubject.send(self.quickFilterTerms)
+        }
+    }
 
     var onboardingComplete: Bool {
         get { self.onboardingVersionComplete == self.currentOnboardingVersion }
