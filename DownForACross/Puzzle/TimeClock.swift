@@ -82,8 +82,6 @@ class TimeClock {
             let type = rawEvent["type"] as? String,
             let timestamp = rawEvent["timestamp"] as? TimeInterval else { return }
 
-        print("CLOCK: accountFor")
-
         let secondsTimestamp = timestamp / 1000
 
         let currentState = self.currentInstant.state
@@ -110,10 +108,6 @@ class TimeClock {
         if currentState == .paused {
             self.delegate?.timeClock(self, stateDidChange: .started)
         }
-
-        withUnsafePointer(to: self) { ptr in
-            print("\(ptr) \(self.stopped) " + self.formattedCurrentInstant.elapsedTime)
-        }
     }
 
     func accountFor(rawEvents: [[String: Any]]) {
@@ -126,7 +120,6 @@ class TimeClock {
     }
 
     func stop() {
-        print("CLOCK: stopped")
         self.stopped = true
         self.autoPauseTimer?.invalidate()
         self.delegate?.timeClock(self, stateDidChange: .stopped)
