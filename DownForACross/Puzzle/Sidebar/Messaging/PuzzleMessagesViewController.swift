@@ -99,7 +99,7 @@ class PuzzleMessagesViewController: UIViewController {
     init(gameClient: GameClient, settingsStorage: SettingsStorage) {
         self.settingsStorage = settingsStorage
         super.init(nibName: nil, bundle: nil)
-        self.playersSubscription = gameClient.$players.sink(receiveValue: { [weak self] newValue in
+        self.playersSubscription = gameClient.playersPublisher.sink(receiveValue: { [weak self] newValue in
             self?.players = newValue
         })
     }

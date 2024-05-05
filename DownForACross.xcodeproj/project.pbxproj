@@ -15,6 +15,7 @@
 		3B011DFD2B30C02F00BDB732 /* ListPuzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFC2B30C02F00BDB732 /* ListPuzzle.swift */; };
 		3B011DFF2B30C03500BDB732 /* Puzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011DFE2B30C03500BDB732 /* Puzzle.swift */; };
 		3B011E012B30C04C00BDB732 /* PuzzleStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B011E002B30C04C00BDB732 /* PuzzleStats.swift */; };
+		3B055AC02BE70A9400AF4118 /* PlayerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B055ABF2BE70A9400AF4118 /* PlayerCell.swift */; };
 		3B18481F2BC5871A00B294D4 /* PingEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B18481E2BC5871A00B294D4 /* PingEvent.swift */; };
 		3B1848212BC5873900B294D4 /* GameEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1848202BC5873900B294D4 /* GameEvent.swift */; };
 		3B19A8772BB31FAB004F2D0D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B19A8762BB31FAB004F2D0D /* LaunchScreen.storyboard */; };
@@ -99,6 +100,7 @@
 		3B011DFC2B30C02F00BDB732 /* ListPuzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPuzzle.swift; sourceTree = "<group>"; };
 		3B011DFE2B30C03500BDB732 /* Puzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Puzzle.swift; sourceTree = "<group>"; };
 		3B011E002B30C04C00BDB732 /* PuzzleStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleStats.swift; sourceTree = "<group>"; };
+		3B055ABF2BE70A9400AF4118 /* PlayerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCell.swift; sourceTree = "<group>"; };
 		3B18481E2BC5871A00B294D4 /* PingEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PingEvent.swift; sourceTree = "<group>"; };
 		3B1848202BC5873900B294D4 /* GameEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEvent.swift; sourceTree = "<group>"; };
 		3B19A8762BB31FAB004F2D0D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -277,6 +279,7 @@
 				3B5BD0D42BAA7984006DB214 /* PuzzleClueListViewController.swift */,
 				3B5BD0D52BAA7984006DB214 /* PuzzlePlayersViewController.swift */,
 				3B5BD0D62BAA7984006DB214 /* PuzzleSideBarViewController.swift */,
+				3B055ABF2BE70A9400AF4118 /* PlayerCell.swift */,
 			);
 			path = Sidebar;
 			sourceTree = "<group>";
@@ -592,6 +595,7 @@
 				3BC761B62BA0C422003ACF81 /* RevealEvent.swift in Sources */,
 				3B5BD0D82BAA7984006DB214 /* PuzzleMessageCell.swift in Sources */,
 				3B73AD7C2B921494005DB5F8 /* LaunchInterstitialViewController.swift in Sources */,
+				3B055AC02BE70A9400AF4118 /* PlayerCell.swift in Sources */,
 				3B19D1182BB2ED74000AC250 /* UITableViewDiffableDataSource+LastIndex.swift in Sources */,
 				3BBD6C592BD2A139007A5A9B /* TimeClock.swift in Sources */,
 				3B76C8CC2B9BF30C00E60AFD /* PuzzleTitleBarAnimator.swift in Sources */,

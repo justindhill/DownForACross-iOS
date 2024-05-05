@@ -66,6 +66,8 @@ struct Player: Hashable, Identifiable {
     private static let defaultColor: UIColor = .clear
     private static let defaultDisplayName: String = "Unknown player"
 
+    static let activityTimeoutInterval: TimeInterval = 60
+
     var id: String {
         return self.userId
     }
@@ -73,9 +75,30 @@ struct Player: Hashable, Identifiable {
     var userId: String
     var displayName: String = Self.defaultDisplayName
     var color: UIColor = Self.defaultColor
+    var lastActivityTimeInterval: TimeInterval = Date().timeIntervalSince1970
+
+    var isActive: Bool {
+        Date().timeIntervalSince1970 - self.lastActivityTimeInterval < Self.activityTimeoutInterval
+    }
 
     var isComplete: Bool {
         !((self.displayName == Self.defaultDisplayName) || (self.color == Self.defaultColor))
+    }
+
+    static func ==(lhs: Player, rhs: Player) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.userId == rhs.userId &&
+        lhs.displayName == rhs.displayName &&
+        lhs.color == rhs.color &&
+        lhs.isActive == rhs.isActive
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.id)
+        hasher.combine(self.userId)
+        hasher.combine(self.displayName)
+        hasher.combine(self.color)
+        hasher.combine(self.isActive)
     }
 }
 

@@ -701,7 +701,7 @@ extension PuzzleViewController: GameClientDelegate {
     }
     
     func gameClient(_ client: GameClient, cursorsDidChange cursors: [String: Cursor]) {
-        self.puzzleView.cursors = cursors.filter({ $0.key != self.userId })
+        self.puzzleView.cursors = cursors.filter({ $0.key != self.userId && $0.value.player.isActive })
     }
 
     func gameClient(_ client: GameClient, didReceivePing ping: PingEvent, from: Player) {

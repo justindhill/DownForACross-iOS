@@ -11,12 +11,16 @@ protocol GameEvent {
     var eventId: String { get }
     var gameId: String { get }
     var type: String { get }
+    var timestamp: TimeInterval { get }
     var paramsDictionary: [String: Any?] { get }
     func emitPayload() -> [String: Any]
 }
 
-protocol DedupableGameEvent: GameEvent {
+protocol UserEvent: GameEvent {
     var userId: String { get }
+}
+
+protocol DedupableGameEvent: UserEvent {
     var dedupKey: String { get }
 }
 

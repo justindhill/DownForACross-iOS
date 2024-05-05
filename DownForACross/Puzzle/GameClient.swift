@@ -106,10 +106,15 @@ class GameClient: NSObject, URLSessionDelegate {
         }
     }
     
-    @Published
+    var playerActivityTimer: (playerSnapshot: Player, timer: Timer)?
+
+    private let playersSubject: PassthroughSubject<[String: Player], Never> = PassthroughSubject()
+    lazy var playersPublisher: AnyPublisher<[String: Player], Never> = self.playersSubject.eraseToAnyPublisher()
+    private var needsToPublishPlayers: Bool = false
     var players: [String: Player] = [:] {
         didSet {
             var cursors = self.cursors
+
             players.forEach { (playerId, player) in
                 if var cursor = cursors[playerId] {
                     cursor.player = player
@@ -117,8 +122,21 @@ class GameClient: NSObject, URLSessionDelegate {
                 } else {
                     cursors[playerId] = Cursor(player: player, coordinates: CellCoordinates(row: 0, cell: 0))
                 }
+
+                if let playerActivityTimer,
+                    playerActivityTimer.playerSnapshot.userId == playerId &&
+                    playerActivityTimer.playerSnapshot.lastActivityTimeInterval < player.lastActivityTimeInterval {
+                    playerActivityTimer.timer.invalidate()
+
+                    // most inactive user performed an activity
+                    self.playerActivityTimer = nil
+                }
             }
-            
+
+            if self.playerActivityTimer == nil {
+                self.setPlayerActivityTimer()
+            }
+
             self.cursors = cursors
 
             if !self.isPerformingBulkEventSync {
@@ -131,7 +149,37 @@ class GameClient: NSObject, URLSessionDelegate {
                         self.delegate?.gameClient(self, newPlayerJoined: newPlayer)
                     }
                 }
+
+                if self.players != oldValue || self.needsToPublishPlayers {
+                    self.needsToPublishPlayers = false
+                    self.playersSubject.send(self.players)
+                }
             }
+        }
+    }
+
+    func setPlayerActivityTimer() {
+        let activePlayers = self.players.filter(\.value.isActive)
+        guard let firstPlayer = activePlayers.first?.value as? Player else { return }
+
+        let mostInactivePlayer = activePlayers.reduce(firstPlayer, { partialResult, element in
+            if element.value.lastActivityTimeInterval < partialResult.lastActivityTimeInterval {
+                return element.value
+            } else {
+                return partialResult
+            }
+        })
+
+        if mostInactivePlayer.isActive {
+            let timeout = Player.activityTimeoutInterval - (Date().timeIntervalSince1970 - mostInactivePlayer.lastActivityTimeInterval)
+            self.playerActivityTimer = (mostInactivePlayer, Timer.scheduledTimer(withTimeInterval: timeout, repeats: false, block: { [weak self] timer in
+                guard let self else { return }
+                self.needsToPublishPlayers = true
+                self.players = self.players // publishes the players
+
+                self.playerActivityTimer = nil
+                self.setPlayerActivityTimer()
+            }))
         }
     }
 
@@ -214,13 +262,11 @@ class GameClient: NSObject, URLSessionDelegate {
         socket.on(clientEvent: .reconnect) { [weak self] data, ack in
             guard let self else { return }
             self.connectionState = .connecting
-            print(data)
         }
         
         socket.on(clientEvent: .reconnectAttempt) { [weak self] data, ack in
             guard let self else { return }
             self.connectionState = .connecting
-            print(data)
         }
         
         socket.on("game_event") { [weak self] data, ack in
@@ -246,6 +292,7 @@ class GameClient: NSObject, URLSessionDelegate {
             let timeClock = TimeClock()
 
             self.handleGameEvents(events, timeClock: timeClock)
+            self.playersSubject.send(self.players)
             self.isPerformingBulkEventSync = false
             self.writeCurrentSolutionToFile()
             self.connectionState = .connected
@@ -257,6 +304,7 @@ class GameClient: NSObject, URLSessionDelegate {
                                       solutionDidChange: self.solution,
                                       isBulkUpdate: true,
                                       solutionState: self.solutionState)
+
         }
     }
 
@@ -282,11 +330,12 @@ class GameClient: NSObject, URLSessionDelegate {
             timeClock.accountFor(rawEvent: payload)
 
             do {
-                var dedupableEvent: DedupableGameEvent?
+                var genericEvent: GameEvent?
                 var applyClosure: (() -> Void)
                 if type == "updateCursor" {
                     guard self.solution.count > 0 else { continue }
                     let event = UpdateCursorEvent(payload: payload)
+                    genericEvent = event
                     applyClosure = {
                         if var cursor = self.cursors[event.userId] {
                             cursor.coordinates = event.cell
@@ -299,7 +348,7 @@ class GameClient: NSObject, URLSessionDelegate {
                     guard self.solution.count > 0 &&
                           (self.solutionState != .correct || self.isPerformingBulkEventSync) else { continue }
                     let event = try UpdateCellEvent(payload: payload)
-                    dedupableEvent = event
+                    genericEvent = event
                     applyClosure = {
                         if let value = event.value, value != "" {
                             var correctness: Correctness?
@@ -316,7 +365,7 @@ class GameClient: NSObject, URLSessionDelegate {
                     }
                 } else if type == "updateColor" {
                     let event = try UpdateColorEvent(payload: payload)
-                    dedupableEvent = event
+                    genericEvent = event
                     applyClosure = {
                         var player = self.players[event.userId] ?? Player(userId: event.userId)
                         player.color = event.color
@@ -324,6 +373,7 @@ class GameClient: NSObject, URLSessionDelegate {
                     }
                 } else if type == "check" {
                     let event = try CheckEvent(payload: payload)
+                    genericEvent = event
                     guard self.solution.count > 0, !event.cells.isEmpty else { continue }
                     applyClosure = {
                         var intermediateSolution = self.solution
@@ -340,6 +390,7 @@ class GameClient: NSObject, URLSessionDelegate {
                     }
                 } else if type == "reset" {
                     let event = try ResetEvent(payload: payload)
+                    genericEvent = event
                     guard self.solution.count > 0, !event.cells.isEmpty else { continue }
                     applyClosure = {
                         var intermediateSolution = self.solution
@@ -350,6 +401,7 @@ class GameClient: NSObject, URLSessionDelegate {
                     }
                 } else if type == "reveal" {
                     let event = try RevealEvent(payload: payload)
+                    genericEvent = event
                     guard self.solution.count > 0, !event.cells.isEmpty else { continue }
                     applyClosure = {
                         var intermediateSolution = self.solution
@@ -365,7 +417,7 @@ class GameClient: NSObject, URLSessionDelegate {
                     }
                 } else if type == "updateDisplayName" {
                     let event = try UpdateDisplayNameEvent(payload: payload)
-                    dedupableEvent = event
+                    genericEvent = event
                     applyClosure = {
                         var player = self.players[event.userId] ?? Player(userId: event.userId)
                         player.displayName = event.displayName
@@ -373,6 +425,7 @@ class GameClient: NSObject, URLSessionDelegate {
                     }
                 } else if type == "chat" {
                     let event = try ChatEvent(payload: payload)
+                    genericEvent = event
                     applyClosure = {
                         if let player = self.players[event.senderId] {
                             self.delegate?.gameClient(self, didReceiveNewChatMessage: event, from: player)
@@ -396,6 +449,7 @@ class GameClient: NSObject, URLSessionDelegate {
                 } else if type == "addPing" {
                     guard !self.isPerformingBulkEventSync else { continue }
                     let event = try PingEvent(payload: payload)
+                    genericEvent = event
                     applyClosure = {
                         if let player = self.players[event.userId] {
                             self.delegate?.gameClient(self, didReceivePing: event, from: player)
@@ -410,8 +464,12 @@ class GameClient: NSObject, URLSessionDelegate {
                     applyClosure = {}
                     print("unknown game_event type: \(type)")
                 }
-                
-                if let dedupableEvent,
+
+                if let userEvent = genericEvent as? UserEvent {
+                    self.players[userEvent.userId]?.lastActivityTimeInterval = userEvent.timestamp
+                }
+
+                if let dedupableEvent = genericEvent as? DedupableGameEvent,
                     dedupableEvent.userId == self.userId {
                     
                     if let mostRecent = self.mostRecentDedupableEvents[dedupableEvent.dedupKey] {

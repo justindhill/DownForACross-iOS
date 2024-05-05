@@ -13,7 +13,7 @@ protocol PuzzlePlayersViewControllerDelegate: AnyObject {
 }
 
 class PuzzlePlayersViewController: UIViewController {
-    
+
     static let playerCellReuseIdentifier: String = "PlayerCellReuseIdentifier"
     static let sendInviteCellReuseIdentifier: String = "SendInviteCellReuseIdentifier"
     static let sendInviteUserId: String = "SENDINVITE"
@@ -24,7 +24,7 @@ class PuzzlePlayersViewController: UIViewController {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.layoutMargins = PuzzleSideBarViewController.subviewLayoutMargins
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: PuzzlePlayersViewController.playerCellReuseIdentifier)
+        tableView.register(PlayerCell.self, forCellReuseIdentifier: PuzzlePlayersViewController.playerCellReuseIdentifier)
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: PuzzlePlayersViewController.sendInviteCellReuseIdentifier)
         tableView.backgroundColor = .clear
         tableView.delegate = self
@@ -43,7 +43,7 @@ class PuzzlePlayersViewController: UIViewController {
     
     var gameClient: GameClient {
         didSet {
-            self.playersSubscription = gameClient.$players
+            self.playersSubscription = gameClient.playersPublisher
                 .map({ Array($0.values) })
                 .assign(to: \.players, on: self)      
         }
@@ -54,14 +54,16 @@ class PuzzlePlayersViewController: UIViewController {
             self.updateContent()
         }
     }
-    
+
+    var refreshTimer: Timer?
+
     var playersSubscription: AnyCancellable!
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     init(gameClient: GameClient) {
         self.gameClient = gameClient
         self.players = Array(gameClient.players.values)
         super.init(nibName: nil, bundle: nil)
-        self.playersSubscription = gameClient.$players
+        self.playersSubscription = gameClient.playersPublisher
             .map(\.values)
             .sink(receiveValue: { [weak self] values in
                 guard let self else { return }
@@ -92,8 +94,20 @@ class PuzzlePlayersViewController: UIViewController {
             self.tableView.topAnchor.constraint(equalTo: self.view.topAnchor),
             self.tableView.bottomAnchor.constraint(lessThanOrEqualTo: self.view.bottomAnchor)
         ])
+
     }
-    
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.refreshContent()
+        self.refreshTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(refreshContent), userInfo: nil, repeats: true)
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        self.refreshTimer?.invalidate()
+        self.refreshTimer = nil
+    }
+
     func updateContent() {
         var snapshot = NSDiffableDataSourceSnapshot<Int, Player>()
         snapshot.appendSections([0])
@@ -102,7 +116,15 @@ class PuzzlePlayersViewController: UIViewController {
 
         self.dataSource.apply(snapshot)
     }
-    
+
+    @objc func refreshContent() {
+        self.tableView.visibleCells.forEach { cell in
+            if let cell = cell as? PlayerCell {
+                cell.updateLastSeenTimeLabel()
+            }
+        }
+    }
+
     func tableView(_ tableView: UITableView, cellForRow indexPath: IndexPath, item: Player) -> UITableViewCell {
         if item.userId == Self.sendInviteUserId {
             let cell = tableView.dequeueReusableCell(withIdentifier: Self.sendInviteCellReuseIdentifier, for: indexPath)
@@ -114,26 +136,8 @@ class PuzzlePlayersViewController: UIViewController {
             cell.contentConfiguration = config
             return cell
         } else {
-            let cell = tableView.dequeueReusableCell(withIdentifier: Self.playerCellReuseIdentifier, for: indexPath)
-            
-            var config = UIListContentConfiguration.cell()
-            config.text = item.displayName
-            if item.userId == self.gameClient.userId {
-                config.secondaryTextProperties.color = .secondaryLabel
-                config.secondaryText = "You"
-            }
-            let accessoryImageView: UIImageView
-            if let imageView = cell.accessoryView as? UIImageView {
-                accessoryImageView = imageView
-            } else {
-                let imageView = UIImageView(image: UIImage(systemName: "circle.fill")?.withRenderingMode(.alwaysTemplate))
-                cell.accessoryView = imageView
-                accessoryImageView = imageView
-            }
-            
-            accessoryImageView.tintColor = item.color
-            
-            cell.contentConfiguration = config
+            let cell = tableView.dequeueReusableCell(withIdentifier: Self.playerCellReuseIdentifier, for: indexPath) as! PlayerCell
+            cell.setPlayer(item, isCurrentUser: (item.userId == self.gameClient.userId))
             
             return cell
         }

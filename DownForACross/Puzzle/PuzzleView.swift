@@ -507,12 +507,19 @@ class PuzzleView: UIView {
     }
     
     func syncCursorLayerCount() {
+        var cursorsToRemove = Set(self.cursorIndicatorLayers.keys)
         for userId in self.cursors.keys {
+            cursorsToRemove.remove(userId)
             if self.cursorIndicatorLayers[userId] == nil {
                 let layer = self.createActionlessLayer()
                 self.cursorIndicatorLayers[userId] = layer
                 self.puzzleContainerView.layer.insertSublayer(layer, at: 0)
             }
+        }
+
+        cursorsToRemove.forEach { userId in
+            guard let cursorLayer = self.cursorIndicatorLayers.removeValue(forKey: userId) else { return }
+            cursorLayer.removeFromSuperlayer()
         }
     }
     

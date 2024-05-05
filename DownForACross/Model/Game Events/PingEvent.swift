@@ -9,6 +9,7 @@ import Foundation
 
 class PingEvent: DedupableGameEvent {
 
+    var timestamp: TimeInterval
     var type: String = "addPing"
     var eventId: String = UUID().uuidString
     var userId: String
@@ -20,6 +21,7 @@ class PingEvent: DedupableGameEvent {
     }
 
     init(userId: String, gameId: String, cell: CellCoordinates) {
+        self.timestamp = Date().timeIntervalSince1970
         self.userId = userId
         self.gameId = gameId
         self.cell = cell
@@ -29,6 +31,7 @@ class PingEvent: DedupableGameEvent {
         self.gameId = ""
 
         guard let params = payload["params"] as? [String: Any],
+              let timestamp = payload["timestamp"] as? TimeInterval,
               let userId = params["id"] as? String,
               let coords = params["cell"] as? [String: Any],
               let row = coords["r"] as? NSNumber,
@@ -36,6 +39,7 @@ class PingEvent: DedupableGameEvent {
             throw NSError(domain: "PingEvent", code: 0)
         }
 
+        self.timestamp = timestamp / 1000
         self.userId = userId
         self.cell = CellCoordinates(row: row.intValue, cell: cell.intValue)
     }

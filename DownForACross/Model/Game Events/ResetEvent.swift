@@ -9,6 +9,7 @@ import Foundation
 
 class ResetEvent: GameEvent {
 
+    var timestamp: TimeInterval
     var type: String = "reset"
     var eventId: String = UUID().uuidString
 
@@ -16,6 +17,7 @@ class ResetEvent: GameEvent {
     var cells: [CellCoordinates]
 
     init(gameId: String, cells: [CellCoordinates]) {
+        self.timestamp = Date().timeIntervalSince1970
         self.gameId = gameId
         self.cells = cells
     }
@@ -24,10 +26,12 @@ class ResetEvent: GameEvent {
         self.gameId = ""
 
         guard let params = payload["params"] as? [String: Any],
+              let timestamp = payload["timestamp"] as? TimeInterval,
               let scope = params["scope"] as? [[String: Any]] else {
             throw NSError(domain: "ResetEventDomain", code: 0)
         }
 
+        self.timestamp = timestamp / 1000
         self.cells = try scope.map({ item in
             guard let row = item["r"] as? Int,
                   let cell = item["c"] as? Int else { throw NSError(domain: "ResetEventDomain", code: 1) }

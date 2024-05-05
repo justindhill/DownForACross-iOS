@@ -7,20 +7,20 @@
 
 import Foundation
 
-struct UpdateCursorEvent: GameEvent {
+struct UpdateCursorEvent: UserEvent {
     
     var type: String { "updateCursor" }
     var eventId: String = UUID().uuidString
     
     let userId: String
     let gameId: String
-    let timestamp: NSNumber
+    let timestamp: TimeInterval
     let cell: CellCoordinates
     
     init(payload: [String: Any]) {
         guard let params = payload["params"] as? [String: Any],
               let id = params["id"] as? String,
-              let timestamp = params["timestamp"] as? NSNumber,
+              let timestamp = params["timestamp"] as? TimeInterval,
               let coords = params["cell"] as? [String: Any],
               let row = coords["r"] as? NSNumber,
               let cell = coords["c"] as? NSNumber else {
@@ -29,7 +29,7 @@ struct UpdateCursorEvent: GameEvent {
         
         self.userId = id
         self.gameId = ""
-        self.timestamp = timestamp
+        self.timestamp = timestamp / 1000
         self.cell = CellCoordinates(row: row.intValue, cell: cell.intValue)
     }
     
@@ -37,7 +37,7 @@ struct UpdateCursorEvent: GameEvent {
         self.userId = userId
         self.gameId = gameId
         self.cell = coordinates
-        self.timestamp = NSNumber(value: Date().timeIntervalSince1970)
+        self.timestamp = Date().timeIntervalSince1970
     }
     
     var paramsDictionary: [String : Any?] {[

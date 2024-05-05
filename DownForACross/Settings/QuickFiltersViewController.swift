@@ -57,7 +57,6 @@ class QuickFiltersViewController: UIViewController, UITableViewDelegate {
             guard let self, source != destination else { return }
             let finalDestination = source < destination ? destination + 1 : destination
             self.entries.move(fromOffsets: IndexSet(integer: source), toOffset: finalDestination)
-            print(self.entries)
         }
 
         dataSource.deleteBlock = { [weak self] removeAt in

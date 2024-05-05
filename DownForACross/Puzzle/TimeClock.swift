@@ -94,7 +94,6 @@ class TimeClock {
             return
         } else {
             self.recordedElapsedTime += min(secondsTimestamp - self.lastEventTimestamp, self.autoPauseInterval)
-            print(recordedElapsedTime)
             self.lastEventTimestamp = secondsTimestamp
         }
 

@@ -8,10 +8,12 @@
 import UIKit
 
 struct UpdateCellEvent: DedupableGameEvent {
+
     
     var type: String { "updateCell" }
     var eventId: String
     
+    var timestamp: TimeInterval
     let userId: String
     let gameId: String
     let cell: CellCoordinates
@@ -21,6 +23,7 @@ struct UpdateCellEvent: DedupableGameEvent {
     
     init(payload: [String: Any]) throws {
         guard let eventId = payload["id"] as? String,
+              let timestamp = payload["timestamp"] as? TimeInterval,
               let params = payload["params"] as? [String: Any],
               let id = params["id"] as? String,
               let coords = params["cell"] as? [String: Any],
@@ -28,6 +31,7 @@ struct UpdateCellEvent: DedupableGameEvent {
               let cell = coords["c"] as? NSNumber else {
             fatalError()
         }
+        self.timestamp = timestamp / 1000
         self.eventId = eventId
         self.userId = id
         self.cell = CellCoordinates(row: row.intValue, cell: cell.intValue)
@@ -39,6 +43,7 @@ struct UpdateCellEvent: DedupableGameEvent {
     
     init(userId: String, gameId: String, cell: CellCoordinates, value: String?, color: UIColor?, autocheck: Bool, pencil: Bool) {
         self.eventId = UUID().uuidString
+        self.timestamp = Date().timeIntervalSince1970
         self.userId = userId
         self.gameId = gameId
         self.cell = cell

@@ -7,22 +7,28 @@
 
 import Foundation
 
-class ChatEvent: GameEvent {
-    
+class ChatEvent: UserEvent {
+
     var type: String { "chat" }
     var eventId: String = UUID().uuidString
 
+    var timestamp: TimeInterval
     var messageId: String
     var gameId: String
     var senderId: String
     var senderName: String
     var message: String
     var clientSideMessageId: String?
-    
+
+    var userId: String {
+        return senderId
+    }
+
     init(payload: [String: Any]) throws {
         self.gameId = ""
         
         guard let params = payload["params"] as? [String: Any],
+              let timestamp = payload["timestamp"] as? TimeInterval,
               let senderId = params["senderId"] as? String,
               let senderName = params["sender"] as? String,
               let message = params["text"] as? String,
@@ -30,6 +36,7 @@ class ChatEvent: GameEvent {
             throw NSError(domain: "ChatEvent", code: 0)
         }
         
+        self.timestamp = timestamp / 1000
         self.senderId = senderId
         self.senderName = senderName
         self.message = message.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -38,6 +45,7 @@ class ChatEvent: GameEvent {
     }
     
     init(gameId: String, senderId: String, senderName: String, message: String) {
+        self.timestamp = Date().timeIntervalSince1970
         self.senderId = senderId
         self.senderName = senderName
         self.message = message.trimmingCharacters(in: .whitespacesAndNewlines)
