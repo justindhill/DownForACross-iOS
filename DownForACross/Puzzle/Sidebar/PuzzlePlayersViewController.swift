@@ -32,10 +32,10 @@ class PuzzlePlayersViewController: UIViewController {
         return tableView
     }()
     
-    lazy var dataSource: DataSource<Int, Player> = {
-        let dataSource = DataSource<Int, Player>(tableView: self.tableView) { [weak self] tableView, indexPath, itemIdentifier in
-            guard let self else { return nil }
-            return self.tableView(tableView, cellForRow: indexPath, item: itemIdentifier)
+    lazy var dataSource: DataSource<Int, String> = {
+        let dataSource = DataSource<Int, String>(tableView: self.tableView) { [weak self] tableView, indexPath, itemIdentifier in
+            guard let self else { return UITableViewCell() }
+            return self.tableView(tableView, cellForRow: indexPath, itemIdentifier: itemIdentifier)
         }
         dataSource.defaultRowAnimation = .fade
         return dataSource
@@ -44,14 +44,15 @@ class PuzzlePlayersViewController: UIViewController {
     var gameClient: GameClient {
         didSet {
             self.playersSubscription = gameClient.playersPublisher
-                .map({ Array($0.values) })
-                .assign(to: \.players, on: self)      
+                .assign(to: \.players, on: self)
         }
     }
 
-    var players: [Player] {
+    var players: [String: Player] {
         didSet {
-            self.updateContent()
+            print("players changed")
+            print(self.players.mapValues(\.isActive))
+            self.updateContent(oldPlayers: oldValue, newPlayers: self.players)
         }
     }
 
@@ -61,28 +62,10 @@ class PuzzlePlayersViewController: UIViewController {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     init(gameClient: GameClient) {
         self.gameClient = gameClient
-        self.players = Array(gameClient.players.values)
+        self.players = gameClient.players
         super.init(nibName: nil, bundle: nil)
         self.playersSubscription = gameClient.playersPublisher
-            .map(\.values)
-            .sink(receiveValue: { [weak self] values in
-                guard let self else { return }
-                self.players = Array(values)
-                    .filter({ $0.isComplete })
-                    .sorted(by: { first, second in
-                        if first.userId == self.gameClient.userId {
-                            true
-                        } else if second.userId == self.gameClient.userId {
-                            false
-                        } else {
-                            switch first.displayName.compare(second.displayName) {
-                                case .orderedAscending: true
-                                case .orderedDescending: false
-                                case .orderedSame: first.userId > second.userId
-                            }
-                        }
-                    })
-            })
+            .assign(to: \.players, on: self)
     }
     
     override func viewDidLoad() {
@@ -108,11 +91,40 @@ class PuzzlePlayersViewController: UIViewController {
         self.refreshTimer = nil
     }
 
-    func updateContent() {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, Player>()
+    func updateContent(oldPlayers: [String: Player], newPlayers: [String: Player]) {
+        let ids = Array(newPlayers.values)
+            .filter({ $0.isComplete })
+            .sorted(by: { first, second in
+                if first.userId == self.gameClient.userId {
+                    true
+                } else if second.userId == self.gameClient.userId {
+                    false
+                } else {
+                    switch first.displayName.compare(second.displayName) {
+                        case .orderedAscending: true
+                        case .orderedDescending: false
+                        case .orderedSame: first.userId > second.userId
+                    }
+                }
+            })
+            .map(\.id)
+
+        let oldSnap = self.dataSource.snapshot()
+
+        var snapshot = NSDiffableDataSourceSnapshot<Int, String>()
         snapshot.appendSections([0])
-        snapshot.appendItems(self.players, toSection: 0)
-        snapshot.appendItems([Player(userId: Self.sendInviteUserId)], toSection: 0)
+
+        ids.forEach { id in
+            snapshot.appendItems([id])
+            let oldItem = oldPlayers[id]
+            let newItem = newPlayers[id]
+
+            if let oldItem, let newItem, oldItem != newItem || oldItem.isActive != newItem.isActive {
+                snapshot.reloadItems([id])
+            }
+        }
+
+        snapshot.appendItems([Self.sendInviteUserId], toSection: 0)
 
         self.dataSource.apply(snapshot)
     }
@@ -125,8 +137,8 @@ class PuzzlePlayersViewController: UIViewController {
         }
     }
 
-    func tableView(_ tableView: UITableView, cellForRow indexPath: IndexPath, item: Player) -> UITableViewCell {
-        if item.userId == Self.sendInviteUserId {
+    func tableView(_ tableView: UITableView, cellForRow indexPath: IndexPath, itemIdentifier: String) -> UITableViewCell {
+        if itemIdentifier == Self.sendInviteUserId {
             let cell = tableView.dequeueReusableCell(withIdentifier: Self.sendInviteCellReuseIdentifier, for: indexPath)
 
             var config = UIListContentConfiguration.cell()
@@ -136,6 +148,7 @@ class PuzzlePlayersViewController: UIViewController {
             cell.contentConfiguration = config
             return cell
         } else {
+            guard let item = self.players[itemIdentifier] else { return UITableViewCell() }
             let cell = tableView.dequeueReusableCell(withIdentifier: Self.playerCellReuseIdentifier, for: indexPath) as! PlayerCell
             cell.setPlayer(item, isCurrentUser: (item.userId == self.gameClient.userId))
             
@@ -153,7 +166,7 @@ extension PuzzlePlayersViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
         guard let item = self.dataSource.itemIdentifier(for: indexPath) else { return false }
-        return item.userId == Self.sendInviteUserId
+        return item == Self.sendInviteUserId
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

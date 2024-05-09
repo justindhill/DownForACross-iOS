@@ -89,8 +89,7 @@ struct Player: Hashable, Identifiable {
         lhs.id == rhs.id &&
         lhs.userId == rhs.userId &&
         lhs.displayName == rhs.displayName &&
-        lhs.color == rhs.color &&
-        lhs.isActive == rhs.isActive
+        lhs.color == rhs.color
     }
 
     func hash(into hasher: inout Hasher) {
@@ -98,7 +97,6 @@ struct Player: Hashable, Identifiable {
         hasher.combine(self.userId)
         hasher.combine(self.displayName)
         hasher.combine(self.color)
-        hasher.combine(self.isActive)
     }
 }
 

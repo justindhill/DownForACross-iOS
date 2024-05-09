@@ -150,7 +150,8 @@ class GameClient: NSObject, URLSessionDelegate {
                     }
                 }
 
-                if self.players != oldValue || self.needsToPublishPlayers {
+                let activePlayersChanged = (oldValue.mapValues(\.isActive) != self.players.mapValues(\.isActive))
+                if self.players != oldValue || activePlayersChanged || self.needsToPublishPlayers {
                     self.needsToPublishPlayers = false
                     self.playersSubject.send(self.players)
                 }

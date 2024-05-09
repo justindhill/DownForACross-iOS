@@ -20,7 +20,7 @@ struct UpdateCursorEvent: UserEvent {
     init(payload: [String: Any]) {
         guard let params = payload["params"] as? [String: Any],
               let id = params["id"] as? String,
-              let timestamp = params["timestamp"] as? TimeInterval,
+              let timestamp = payload["timestamp"] as? TimeInterval,
               let coords = params["cell"] as? [String: Any],
               let row = coords["r"] as? NSNumber,
               let cell = coords["c"] as? NSNumber else {

@@ -10,10 +10,22 @@ import Foundation
 extension Array where Element == [String] {
 
     subscript(_ coordinates: CellCoordinates) -> String? {
-        assert(self.count > coordinates.row, "Subscripted coordinates where row is larger than the grid!")
-        let row = self[coordinates.row]
-        assert(row.count > coordinates.cell, "Subscripted coordinates where cell is larger than the grid!")
-        return row[coordinates.cell]
+        let validRowIndex = self.count > coordinates.row
+
+        if validRowIndex {
+            let row = self[coordinates.row]
+            let validColumnIndex = row.count > coordinates.cell
+            if validColumnIndex {
+                return self[coordinates.row][coordinates.cell]
+
+            } else {
+                assertionFailure("Subscripted coordinates where cell is larger than the grid!")
+                return nil
+            }
+        } else {
+            assertionFailure("Subscripted coordinates where row is larger than the grid!")
+            return nil
+        }
     }
 
     var rowCount: Int {
