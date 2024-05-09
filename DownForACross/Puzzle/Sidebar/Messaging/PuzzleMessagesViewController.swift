@@ -55,13 +55,7 @@ class PuzzleMessagesViewController: UIViewController {
 
     private let settingsStorage: SettingsStorage
     private var needsContentOffsetAdjustment = true
-    private var isFollowingBottom = true {
-        didSet {
-            if isFollowingBottom != oldValue {
-                print(isFollowingBottom)
-            }
-        }
-    }
+    private var isFollowingBottom = true
     private var isVisible: Bool = false
     private var messagesNeedingAnimation: [MessageAndPlayer] = []
     private var messageIds: Set<String> = Set()

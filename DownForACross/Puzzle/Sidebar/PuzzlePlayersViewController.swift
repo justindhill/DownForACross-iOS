@@ -50,8 +50,6 @@ class PuzzlePlayersViewController: UIViewController {
 
     var players: [String: Player] {
         didSet {
-            print("players changed")
-            print(self.players.mapValues(\.isActive))
             self.updateContent(oldPlayers: oldValue, newPlayers: self.players)
         }
     }
@@ -108,9 +106,7 @@ class PuzzlePlayersViewController: UIViewController {
                 }
             })
             .map(\.id)
-
-        let oldSnap = self.dataSource.snapshot()
-
+        
         var snapshot = NSDiffableDataSourceSnapshot<Int, String>()
         snapshot.appendSections([0])
 

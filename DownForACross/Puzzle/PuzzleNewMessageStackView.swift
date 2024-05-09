@@ -46,7 +46,15 @@ class PuzzleNewMessageStackView: UIView {
             self.heightConstraint
         ])
     }
-    
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        self.stackView.arrangedSubviews.forEach { view in
+            view.layer.borderColor = UIColor.ChatMessage.previewBorder.cgColor
+        }
+    }
+
     func addChatMessage(_ chatEvent: ChatEvent, from: Player) {
         if self.seenMessages.contains(chatEvent.messageId) {
             return
@@ -60,29 +68,8 @@ class PuzzleNewMessageStackView: UIView {
         
         self.seenMessages.insert(chatEvent.messageId)
         
-        let bubbleView = UIVisualEffectView(effect: UIBlurEffect(style: .regular))
-        bubbleView.translatesAutoresizingMaskIntoConstraints = false
-        bubbleView.layer.cornerRadius = 12
-        bubbleView.layer.cornerCurve = .continuous
-        bubbleView.layer.masksToBounds = true
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "\(from.displayName): \(chatEvent.message)"
-        label.font = UIFont.preferredFont(forTextStyle: .caption1)
-        label.numberOfLines = 0
-        label.isUserInteractionEnabled = false
-
-        bubbleView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(bubbleTapped)))
-
-        bubbleView.contentView.addSubview(label)
-        NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: bubbleView.contentView.layoutMarginsGuide.leadingAnchor),
-            label.trailingAnchor.constraint(equalTo: bubbleView.contentView.layoutMarginsGuide.trailingAnchor),
-            label.topAnchor.constraint(equalTo: bubbleView.contentView.layoutMarginsGuide.topAnchor),
-            label.bottomAnchor.constraint(equalTo: bubbleView.contentView.layoutMarginsGuide.bottomAnchor)
-        ])
-        
-        self.stackView.addArrangedSubview(bubbleView)
+        let messageView = self.createMessageView(player: from, message: chatEvent.message)
+        self.stackView.addArrangedSubview(messageView)
         self.layoutIfNeeded()
         self.heightConstraint.constant = self.stackView.frame.size.height
 
@@ -91,8 +78,8 @@ class PuzzleNewMessageStackView: UIView {
         }
 
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { _ in
-            if bubbleView.superview != nil {
-                self.remove(view: bubbleView, animated: true)
+            if messageView.superview != nil {
+                self.remove(view: messageView, animated: true)
             }
         }
     }
@@ -122,6 +109,67 @@ class PuzzleNewMessageStackView: UIView {
             self.layoutIfNeeded()
             self.heightConstraint.constant = self.stackView.frame.size.height
         }
+    }
+
+    func createMessageView(player: Player, message: String) -> UIView {
+        var icon: UIImage!
+        if player.userId == "SYSTEM" {
+            icon = UIImage(systemName: "lightbulb.circle")?.withRenderingMode(.alwaysTemplate)
+        } else {
+            icon = UIImage(systemName: "message.circle")?.withRenderingMode(.alwaysTemplate)
+        }
+
+        let bubbleView = UIView()
+        bubbleView.translatesAutoresizingMaskIntoConstraints = false
+        bubbleView.layer.cornerRadius = 12
+        bubbleView.layer.cornerCurve = .continuous
+        bubbleView.layer.masksToBounds = true
+        bubbleView.backgroundColor = UIColor.ChatMessage.previewBackground
+        bubbleView.layer.borderColor = UIColor.ChatMessage.previewBorder.cgColor
+        bubbleView.layer.borderWidth = 1
+
+        let messageLabel = UILabel()
+        messageLabel.translatesAutoresizingMaskIntoConstraints = false
+        messageLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+        messageLabel.numberOfLines = 2
+        messageLabel.isUserInteractionEnabled = false
+        messageLabel.text = message
+
+        let playerLabel = UILabel()
+        playerLabel.translatesAutoresizingMaskIntoConstraints = false
+        playerLabel.attributedText = self.titleString(icon: icon, color: player.color, text: player.displayName)
+        playerLabel.numberOfLines = 1
+        playerLabel.font = UIFont.boldSystemFont(ofSize: messageLabel.font.pointSize)
+        playerLabel.isUserInteractionEnabled = false
+
+        bubbleView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(bubbleTapped)))
+
+        bubbleView.addSubview(playerLabel)
+        bubbleView.addSubview(messageLabel)
+        NSLayoutConstraint.activate([
+            playerLabel.leadingAnchor.constraint(equalTo: bubbleView.layoutMarginsGuide.leadingAnchor),
+            playerLabel.trailingAnchor.constraint(equalTo: bubbleView.layoutMarginsGuide.trailingAnchor),
+            playerLabel.topAnchor.constraint(equalTo: bubbleView.layoutMarginsGuide.topAnchor),
+            messageLabel.topAnchor.constraint(equalTo: playerLabel.bottomAnchor, constant: 2),
+            messageLabel.leadingAnchor.constraint(equalTo: bubbleView.layoutMarginsGuide.leadingAnchor),
+            messageLabel.trailingAnchor.constraint(equalTo: bubbleView.layoutMarginsGuide.trailingAnchor),
+            messageLabel.bottomAnchor.constraint(equalTo: bubbleView.layoutMarginsGuide.bottomAnchor)
+        ])
+
+        return bubbleView
+    }
+
+    func titleString(icon: UIImage, color: UIColor, text: String) -> NSAttributedString {
+        let textAttachment = NSTextAttachment(image: icon)
+        var attributedString = NSMutableAttributedString(string: "\(UnicodeScalar(NSTextAttachment.character)!)", attributes: [
+            .attachment: textAttachment
+        ])
+        attributedString.append(NSAttributedString(string: " " + text))
+        attributedString.addAttributes([
+            .foregroundColor: color
+        ], range: NSRange(location: 0, length: attributedString.length))
+
+        return attributedString
     }
 
     @objc func bubbleTapped() {
