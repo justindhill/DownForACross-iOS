@@ -133,3 +133,10 @@ struct MessageAndPlayer: Hashable, Identifiable {
         return self.message.clientSideMessageId ?? self.message.messageId
     }
 }
+
+struct SaveState: Codable {
+
+    var solution: [[CellEntry?]]
+    var lastReadMessageTimestamp: TimeInterval
+
+}

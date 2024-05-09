@@ -161,7 +161,7 @@ class PuzzleNewMessageStackView: UIView {
 
     func titleString(icon: UIImage, color: UIColor, text: String) -> NSAttributedString {
         let textAttachment = NSTextAttachment(image: icon)
-        var attributedString = NSMutableAttributedString(string: "\(UnicodeScalar(NSTextAttachment.character)!)", attributes: [
+        let attributedString = NSMutableAttributedString(string: "\(UnicodeScalar(NSTextAttachment.character)!)", attributes: [
             .attachment: textAttachment
         ])
         attributedString.append(NSAttributedString(string: " " + text))

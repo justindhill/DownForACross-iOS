@@ -27,7 +27,13 @@ class PuzzleMessagesViewController: UIViewController {
     var selfUserId: String = ""
 
     @Published
-    var hasUnreadMessages = false
+    var hasUnreadMessages = false {
+        willSet {
+            if !newValue, let lastMessage = self.messages.last {
+                self.gameClient.lastReadMessageTimestamp = lastMessage.message.timestamp
+            }
+        }
+    }
 
     lazy var goToBottomButton: UIView = {
         let button = UIButton(configuration: .plain())
@@ -60,6 +66,7 @@ class PuzzleMessagesViewController: UIViewController {
     private var messagesNeedingAnimation: [MessageAndPlayer] = []
     private var messageIds: Set<String> = Set()
     private var playersSubscription: AnyCancellable?
+    private var gameClient: GameClient
     private var players: [String: Player] = [:] {
         didSet {
             self.tableView.reloadData()
@@ -92,6 +99,7 @@ class PuzzleMessagesViewController: UIViewController {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     init(gameClient: GameClient, settingsStorage: SettingsStorage) {
         self.settingsStorage = settingsStorage
+        self.gameClient = gameClient
         super.init(nibName: nil, bundle: nil)
         self.playersSubscription = gameClient.playersPublisher.sink(receiveValue: { [weak self] newValue in
             self?.players = newValue
@@ -184,7 +192,9 @@ class PuzzleMessagesViewController: UIViewController {
     func addMessage(_ message: MessageAndPlayer) {
         guard !self.messageIds.contains(message.id) else { return }
 
-        if !(self.isVisible && self.isFollowingBottom) && self.settingsStorage.showUnreadMessageBadges {
+        if !(self.isVisible && self.isFollowingBottom) && 
+            self.settingsStorage.showUnreadMessageBadges &&
+            message.message.timestamp > self.gameClient.lastReadMessageTimestamp {
             self.hasUnreadMessages = true
         }
 

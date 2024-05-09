@@ -76,6 +76,11 @@ class GameClient: NSObject, URLSessionDelegate {
     let settingsStorage: SettingsStorage
     let correctSolution: [[String?]]
     var mostRecentDedupableEvents: [String: String] = [:]
+    var lastReadMessageTimestamp: TimeInterval {
+        didSet {
+            self.writeCurrentStateToFile()
+        }
+    }
     var timeClock: TimeClock = TimeClock()
     var connectionState: ConnectionState = .disconnected {
         didSet {
@@ -89,7 +94,7 @@ class GameClient: NSObject, URLSessionDelegate {
     private(set) var solution: [[CellEntry?]] {
         didSet {
             if !self.isPerformingBulkEventSync && oldValue != solution {
-                self.writeCurrentSolutionToFile()
+                self.writeCurrentStateToFile()
                 self.solutionState = self.resolveSolutionState()
                 if self.solutionState == .correct {
                     self.timeClock.stop()
@@ -210,10 +215,12 @@ class GameClient: NSObject, URLSessionDelegate {
         self.puzzleId = puzzleId
         self.settingsStorage = settingsStorage
         
-        if let loadedSolution = Self.loadSolution(forGameId: self.gameId) {
-            self.solution = loadedSolution
+        if let loadedState = Self.loadState(forGameId: self.gameId) {
+            self.solution = loadedState.solution
+            self.lastReadMessageTimestamp = loadedState.lastReadMessageTimestamp
         } else {
             self.solution = Self.createEmptySolution(forPuzzle: puzzle)
+            self.lastReadMessageTimestamp = 0
         }
         
         self.correctSolution = self.puzzle.grid.map({ $0.map({ $0 == "." ? nil : $0 }) })
@@ -295,7 +302,7 @@ class GameClient: NSObject, URLSessionDelegate {
             self.handleGameEvents(events, timeClock: timeClock)
             self.playersSubject.send(self.players)
             self.isPerformingBulkEventSync = false
-            self.writeCurrentSolutionToFile()
+            self.writeCurrentStateToFile()
             self.connectionState = .connected
 
             self.timeClock = timeClock
@@ -588,37 +595,44 @@ class GameClient: NSObject, URLSessionDelegate {
         return solutionState
     }
     
-    func writeCurrentSolutionToFile() {
+    func writeCurrentStateToFile() {
         guard self.gameId != "" else { return }
         
         let filePath = Self.createFilePath(forGameId: self.gameId)
         let jsonEncoder = JSONEncoder()
-        guard let encodedSolution = try? jsonEncoder.encode(self.solution) else {
+
+        let saveState = SaveState(solution: self.solution, 
+                                  lastReadMessageTimestamp: self.lastReadMessageTimestamp)
+
+        guard let encodedSaveState = try? jsonEncoder.encode(saveState) else {
             print("Couldn't encode the solution")
             return
         }
         
         Self.createSolutionsPathIfNecessary()
         
-        let success = FileManager.default.createFile(atPath: filePath, contents: encodedSolution, attributes: nil)
+        let success = FileManager.default.createFile(atPath: filePath, contents: encodedSaveState, attributes: nil)
         if !success {
             print("Unable to write solution file for \(self.gameId)")
         }
     }
     
-    static func loadSolution(forGameId gameId: String) -> [[CellEntry?]]? {
+    static func loadState(forGameId gameId: String) -> SaveState? {
         guard gameId != "" else { return nil }
 
         let filePath = self.createFilePath(forGameId: gameId)
         let jsonDecoder = JSONDecoder()
         
         guard let data = FileManager.default.contents(atPath: filePath) else { return nil }
-        guard let decodedSolution = try? jsonDecoder.decode([[CellEntry?]].self, from: data) else {
+
+        if let decodedSolution = try? jsonDecoder.decode(SaveState.self, from: data) {
+            return decodedSolution
+        } else if let decodedSolution = try? jsonDecoder.decode([[CellEntry?]].self, from: data) {
+            return SaveState(solution: decodedSolution, lastReadMessageTimestamp: 0)
+        } else {
             print("Couldn't decode the solution")
             return nil
         }
-        
-        return decodedSolution
     }
     
     static func createSolutionsPathIfNecessary() {
