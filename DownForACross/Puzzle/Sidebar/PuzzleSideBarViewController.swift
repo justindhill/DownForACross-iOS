@@ -9,7 +9,7 @@ import UIKit
 import Combine
 
 protocol PuzzleSideBarViewControllerDelegate: AnyObject {
-    func sideBarViewController(_ sideBarViewController: PuzzleSideBarViewController, didSwitchToTab: PuzzleSideBarViewController.Tab)
+    func sideBarViewController(_ sideBarViewController: PuzzleSideBarViewController, didSwitchToTab: PuzzleSideBarViewController.Tab, forPresentation: Bool)
 }
 
 class PuzzleSideBarViewController: UIViewController {
@@ -174,13 +174,13 @@ class PuzzleSideBarViewController: UIViewController {
     }
     
     @objc func selectedSegmentDidChange(_ sender: UISegmentedControl) {
-        self.updateVisibleTab(animated: true)
+        self.updateVisibleTab(animated: true, forPresentation: false)
     }
 
-    func setCurrentTab(_ tab: Tab, animated: Bool) {
+    func setCurrentTab(_ tab: Tab, animated: Bool, forPresentation: Bool) {
         let work = {
             self.segmentedControl.selectedSegmentIndex = tab.rawValue
-            self.updateVisibleTab(animated: animated)
+            self.updateVisibleTab(animated: animated, forPresentation: forPresentation)
         }
 
         if animated {
@@ -193,23 +193,23 @@ class PuzzleSideBarViewController: UIViewController {
         }
     }
 
-    func updateVisibleTab(animated: Bool) {
+    func updateVisibleTab(animated: Bool, forPresentation: Bool) {
         switch self.currentTab {
             case .clues:
                 self.show(viewController: self.clueListViewController, animated: animated)
                 self.hide(viewController: self.messagesViewController, animated: animated)
                 self.hide(viewController: self.playersViewController, animated: animated)
-                self.delegate?.sideBarViewController(self, didSwitchToTab: .clues)
+                self.delegate?.sideBarViewController(self, didSwitchToTab: .clues, forPresentation: forPresentation)
             case .messages:
                 self.show(viewController: self.messagesViewController, animated: animated)
                 self.hide(viewController: self.clueListViewController, animated: animated)
                 self.hide(viewController: self.playersViewController, animated: animated)
-                self.delegate?.sideBarViewController(self, didSwitchToTab: .messages)
+                self.delegate?.sideBarViewController(self, didSwitchToTab: .messages, forPresentation: forPresentation)
             case .players:
                 self.hide(viewController: self.clueListViewController, animated: animated)
                 self.hide(viewController: self.messagesViewController, animated: animated)
                 self.show(viewController: self.playersViewController, animated: animated)
-                self.delegate?.sideBarViewController(self, didSwitchToTab: .players)
+                self.delegate?.sideBarViewController(self, didSwitchToTab: .players, forPresentation: forPresentation)
         }
     }
 

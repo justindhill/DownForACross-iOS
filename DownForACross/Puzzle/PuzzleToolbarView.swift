@@ -19,7 +19,11 @@ class PuzzleToolbarView: UIVisualEffectView {
     }
     
     var mode: Mode = .clues {
-        didSet { self.updateVisibleViews() }
+        didSet {
+            if mode != oldValue {
+                self.updateVisibleViews()
+            }
+        }
     }
     
     weak var delegate: PuzzleToolbarViewDelegate?
@@ -180,9 +184,7 @@ class PuzzleToolbarView: UIVisualEffectView {
         self.messageModeContainer.isHidden = self.mode != .messages
         
         self.contentView.layer.add(transition, forKey: nil)
-        
-        CATransaction.commit()
-        
+
         if self.mode == .messages {
             NSLayoutConstraint.deactivate(self.clueModeConstraints)
             NSLayoutConstraint.activate(self.messageModeConstraints)
@@ -191,6 +193,13 @@ class PuzzleToolbarView: UIVisualEffectView {
             NSLayoutConstraint.activate(self.clueModeConstraints)
             NSLayoutConstraint.deactivate(self.messageModeConstraints)
         }
+
+        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut, animations: {
+            self.superview?.layoutIfNeeded()
+        }, completion: nil)
+
+
+        CATransaction.commit()
     }
     
     func createDirectionButton(isLeft: Bool) -> UIButton {

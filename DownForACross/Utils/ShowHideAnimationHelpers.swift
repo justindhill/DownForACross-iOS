@@ -9,7 +9,7 @@ import UIKit
 
 class ShowHideAnimationHelpers {
 
-    static let DefaultAnimationDuration: TimeInterval = 0.1
+    static let DefaultAnimationDuration: TimeInterval = 0.2
 
     static func hide(view: UIView,
                      duration: TimeInterval = ShowHideAnimationHelpers.DefaultAnimationDuration,

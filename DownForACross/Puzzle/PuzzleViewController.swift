@@ -438,21 +438,21 @@ class PuzzleViewController: UIViewController {
         var menuElements: [UIMenuElement] = [
             UIAction(title: "Clues", image: PuzzleSideBarViewController.Tab.clues.image, handler: { [weak self] _ in
                 guard let self else { return }
-                self.sideBarViewController.setCurrentTab(.clues, animated: self.isSidebarVisible)
+                self.sideBarViewController.setCurrentTab(.clues, animated: self.isSidebarVisible, forPresentation: true)
                 if !self.isSidebarVisible {
                     self.toggleSidebar()
                 }
             }),
             UIAction(title: "Players", image: PuzzleSideBarViewController.Tab.players.image, handler: { [weak self] _ in
                 guard let self else { return }
-                self.sideBarViewController.setCurrentTab(.players, animated: self.isSidebarVisible)
+                self.sideBarViewController.setCurrentTab(.players, animated: self.isSidebarVisible, forPresentation: true)
                 if !self.isSidebarVisible {
                     self.toggleSidebar()
                 }
             }),
             UIAction(title: "Messages", image: messagesIcon, handler: { [weak self] _ in
                 guard let self else { return }
-                self.sideBarViewController.setCurrentTab(.messages, animated: self.isSidebarVisible)
+                self.sideBarViewController.setCurrentTab(.messages, animated: self.isSidebarVisible, forPresentation: true)
                 if !self.isSidebarVisible {
                     self.toggleSidebar()
                 }
@@ -782,13 +782,17 @@ extension PuzzleViewController: PuzzleClueListViewControllerDelegate {
 
 extension PuzzleViewController: PuzzleSideBarViewControllerDelegate {
     
-    func sideBarViewController(_ sideBarViewController: PuzzleSideBarViewController, didSwitchToTab tab: PuzzleSideBarViewController.Tab) {
+    func sideBarViewController(_ sideBarViewController: PuzzleSideBarViewController, didSwitchToTab tab: PuzzleSideBarViewController.Tab, forPresentation: Bool) {
         switch tab {
             case .clues, .players:
-                self.keyboardToolbar.mode = .clues
+                if !forPresentation {
+                    self.keyboardToolbar.mode = .clues
+                }
                 self.puzzleView.becomeFirstResponder()
             case .messages:
-                self.keyboardToolbar.mode = .messages
+                if !forPresentation {
+                    self.keyboardToolbar.mode = .messages
+                }
         }
     }
     
@@ -823,7 +827,7 @@ extension PuzzleViewController: PuzzleToolbarViewDelegate {
 extension PuzzleViewController: PuzzleNewMessageStackViewDelegate {
     
     func messageStackViewDidSelectMessage(_ view: PuzzleNewMessageStackView) {
-        self.sideBarViewController.setCurrentTab(.messages, animated: false)
+        self.sideBarViewController.setCurrentTab(.messages, animated: false, forPresentation: true)
         self.toggleSidebar()
     }
 

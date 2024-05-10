@@ -781,7 +781,9 @@ class PuzzleView: UIView {
         }
                 
         if self.solutionState != .correct && self.currentWordIsFullAndPotentiallyCorrect(forDeletion: forDeletion) {
-            self.retreatUserCursorToPreviousWord(trailingEdge: trailingEdge, forDeletion: forDeletion, freeMovement: freeMovement)
+            if self.solutionState == .incomplete {
+                self.retreatUserCursorToPreviousWord(trailingEdge: trailingEdge, forDeletion: forDeletion, freeMovement: freeMovement)
+            }
         } else if trailingEdge {
             let newWordExtent = self.findCurrentWordCellCoordinates()
             if let lastNonCorrectCell = newWordExtent.reversed().first(where: { !self.shouldSkip(cell: $0, forDeletion: forDeletion, freeMovement: freeMovement)} ) {
