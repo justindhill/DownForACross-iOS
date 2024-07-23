@@ -207,14 +207,16 @@ class GameClient: NSObject, URLSessionDelegate {
             ]
         )
     }()
-    
+
+    var backgroundTaskIdentifier: UIBackgroundTaskIdentifier?
+
     init(puzzle: Puzzle, puzzleId: String, userId: String, gameId: String, settingsStorage: SettingsStorage) {
         self.puzzle = puzzle
         self.userId = userId
         self.gameId = gameId
         self.puzzleId = puzzleId
         self.settingsStorage = settingsStorage
-        
+
         if let loadedState = Self.loadState(forGameId: self.gameId) {
             self.solution = loadedState.solution
             self.lastReadMessageTimestamp = loadedState.lastReadMessageTimestamp
@@ -226,6 +228,9 @@ class GameClient: NSObject, URLSessionDelegate {
         self.correctSolution = self.puzzle.grid.map({ $0.map({ $0 == "." ? nil : $0 }) })
         
         super.init()
+
+        self.setupBackgroundBehavior()
+
         self.timeClock.delegate = self
         self.solutionState = self.resolveSolutionState()
 
@@ -237,7 +242,23 @@ class GameClient: NSObject, URLSessionDelegate {
             print("Couldn't start the reachability notifier")
         }
     }
-    
+
+    func setupBackgroundBehavior() {
+        NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            guard let self else { return }
+            self.backgroundTaskIdentifier = UIApplication.shared.beginBackgroundTask { [weak self] in
+                guard let self, let backgroundTaskIdentifier else { return }
+                UIApplication.shared.endBackgroundTask(backgroundTaskIdentifier)
+                self.backgroundTaskIdentifier = nil
+            }
+        }
+
+        NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) { [weak self] _ in
+            guard let self, let backgroundTaskIdentifier else { return }
+            UIApplication.shared.endBackgroundTask(backgroundTaskIdentifier)
+        }
+    }
+
     @objc func reachabilityDidChange() {
         self.socketManager.reconnect()
     }
