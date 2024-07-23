@@ -44,7 +44,9 @@ class PuzzlePlayersViewController: UIViewController {
     var gameClient: GameClient {
         didSet {
             self.playersSubscription = gameClient.playersPublisher
-                .assign(to: \.players, on: self)
+                .sink(receiveValue: { [weak self] players in
+                    self?.players = players
+                })
         }
     }
 
@@ -63,7 +65,9 @@ class PuzzlePlayersViewController: UIViewController {
         self.players = gameClient.players
         super.init(nibName: nil, bundle: nil)
         self.playersSubscription = gameClient.playersPublisher
-            .assign(to: \.players, on: self)
+            .sink(receiveValue: { [weak self] players in
+                self?.players = players
+            })
     }
     
     override func viewDidLoad() {

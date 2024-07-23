@@ -585,7 +585,7 @@ class PuzzleView: UIView {
         return layer
     }
     
-    func advanceUserCursorToNextLetter(freeMovement: Bool = false) {
+    func advanceUserCursorToNextLetter(freeMovement: Bool = false, forInsertion: Bool = false) {
         let current = self.userCursor.coordinates
         func nextCandidate(after lastCandidate: CellCoordinates) -> CellCoordinates {
             switch self.userCursor.direction {
@@ -619,7 +619,7 @@ class PuzzleView: UIView {
             return
         }
 
-        while self.shouldSkip(cell: candidate, freeMovement: freeMovement) {
+        while self.shouldSkip(cell: candidate, forInsertionOrDeletion: forInsertion, freeMovement: freeMovement) {
             candidate = nextCandidate(after: candidate)
             if candidate == current {
                 return
@@ -669,7 +669,7 @@ class PuzzleView: UIView {
             return
         }
 
-        while self.shouldSkip(cell: candidate, forDeletion: forDeletion, freeMovement: freeMovement) {
+        while self.shouldSkip(cell: candidate, forInsertionOrDeletion: forDeletion, freeMovement: freeMovement) {
             candidate = nextCandidate(after: candidate)
             if candidate == current {
                 return
@@ -679,12 +679,12 @@ class PuzzleView: UIView {
         self.userCursor = UserCursor(coordinates: candidate, direction: self.userCursor.direction)
     }
 
-    func shouldSkip(cell: CellCoordinates, forDeletion: Bool = false, freeMovement: Bool = false) -> Bool {
+    func shouldSkip(cell: CellCoordinates, forInsertionOrDeletion: Bool = false, freeMovement: Bool = false) -> Bool {
         return
             self.grid[cell] == Constant.wordBoundary ||
             (!freeMovement && (
                 self.solution[cell]?.isWritable == false ||
-                (self.solution[cell] != nil && self.solution[cell]?.correctness != .incorrect && self.skipFilledCells && !forDeletion)))
+                (self.solution[cell] != nil && self.solution[cell]?.correctness != .incorrect && self.skipFilledCells && !forInsertionOrDeletion)))
     }
 
     @objc func advanceUserCursorToNextWord(freeMovement: Bool = false) {
@@ -740,7 +740,7 @@ class PuzzleView: UIView {
     
     func currentWordIsFullAndPotentiallyCorrect(forDeletion: Bool = false) -> Bool {
         return self.findCurrentWordCellCoordinates().reduce(into: true) { partialResult, coords in
-            partialResult = partialResult && self.shouldSkip(cell: coords, forDeletion: forDeletion)
+            partialResult = partialResult && self.shouldSkip(cell: coords, forInsertionOrDeletion: forDeletion)
         }
     }
     
@@ -786,15 +786,15 @@ class PuzzleView: UIView {
             }
         } else if trailingEdge {
             let newWordExtent = self.findCurrentWordCellCoordinates()
-            if let lastNonCorrectCell = newWordExtent.reversed().first(where: { !self.shouldSkip(cell: $0, forDeletion: forDeletion, freeMovement: freeMovement)} ) {
+            if let lastNonCorrectCell = newWordExtent.reversed().first(where: { !self.shouldSkip(cell: $0, forInsertionOrDeletion: forDeletion, freeMovement: freeMovement)} ) {
                 self.userCursor.coordinates = lastNonCorrectCell
             }
-        } else if self.shouldSkip(cell: self.userCursor.coordinates, forDeletion: forDeletion, freeMovement: freeMovement) {
+        } else if self.shouldSkip(cell: self.userCursor.coordinates, forInsertionOrDeletion: forDeletion, freeMovement: freeMovement) {
             self.advanceUserCursorToNextLetter()
         }
     }
     
-    func isUserCursorAtTrailingWordBoundary() -> Bool {
+    func isUserCursorAtTrailingWordBoundary(freeMovement: Bool = false) -> Bool {
         let coordinates = self.userCursor.coordinates
         switch self.userCursor.direction {
             case .across:
@@ -807,7 +807,7 @@ class PuzzleView: UIView {
                     // at the end of the word
                     self.grid[coordinates.next(.across)] == Constant.wordBoundary ||
                     // remainder of the word should be skipped
-                    wordExtent.reduce(into: true, { $0 = $0 && self.shouldSkip(cell: $1) })
+                    (wordExtent.reduce(into: true, { $0 = ($0 && self.shouldSkip(cell: $1, forInsertionOrDeletion: freeMovement)) }))
 
             case .down:
                 // cells in the word after the current cell
@@ -819,7 +819,7 @@ class PuzzleView: UIView {
                     // at the end of the word
                     self.grid[coordinates.next(.down)] == Constant.wordBoundary ||
                     // remainder of the word should be skipped
-                    wordExtent.reduce(into: true, { $0 = $0 && self.shouldSkip(cell: $1) })
+                (wordExtent.reduce(into: true, { $0 = ($0 && self.shouldSkip(cell: $1, forInsertionOrDeletion: freeMovement)) }))
         }
     }
     
@@ -1140,13 +1140,14 @@ extension PuzzleView: UIKeyInput {
     }
     
     func insertText(_ text: String) {
-        
+        let freeMovement = (self.solution[self.userCursor.coordinates] != nil)
+
         func advance() {
             if self.solutionState == .incomplete {
-                if self.isUserCursorAtTrailingWordBoundary() {
+                if self.isUserCursorAtTrailingWordBoundary(freeMovement: freeMovement) {
                     self.advanceUserCursorToNextWord()
                 } else {
-                    self.advanceUserCursorToNextLetter()
+                    self.advanceUserCursorToNextLetter(freeMovement: freeMovement)
                 }
             }
         }
