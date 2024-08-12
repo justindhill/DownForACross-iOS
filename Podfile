@@ -1,31 +1,31 @@
 
-@binary_cache_installed = Gem::Specification.find_all_by_name("cocoapods-binary-cache").length == 1
+# @binary_cache_installed = Gem::Specification.find_all_by_name("cocoapods-binary-cache").length == 1
 
-if @binary_cache_installed
-    plugin 'cocoapods-binary-cache'
+# if @binary_cache_installed
+#     plugin 'cocoapods-binary-cache'
 
-    config_cocoapods_binary_cache(
-      cache_repo: {
-        "default" => {
-          "local" => "~/.cocoapods-binary-cache/prebuilt-frameworks"
-        }
-      },
-      device_build_enabled: true,
-      build_args: {
-        :simulator => [
-          "ARCHS='x86_64 arm64'"
-        ]
-      },
-      xcframework: true
-    )
-end
+#     config_cocoapods_binary_cache(
+#       cache_repo: {
+#         "default" => {
+#           "local" => "~/.cocoapods-binary-cache/prebuilt-frameworks"
+#         }
+#       },
+#       device_build_enabled: true,
+#       build_args: {
+#         :simulator => [
+#           "ARCHS='x86_64 arm64'"
+#         ]
+#       },
+#       xcframework: true
+#     )
+# end
 
 def binary_pod(pod_name)
-  if @binary_cache_installed
-      pod pod_name, :binary => true
-  else
+  # if @binary_cache_installed
+  #     pod pod_name, :binary => true
+  # else
       pod pod_name
-  end
+  # end
 end
 
 use_frameworks!

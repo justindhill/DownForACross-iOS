@@ -86,10 +86,12 @@
 		3BC761B62BA0C422003ACF81 /* RevealEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC761B52BA0C422003ACF81 /* RevealEvent.swift */; };
 		3BF367302B313374005BB41E /* PuzzleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF3672F2B313374005BB41E /* PuzzleViewController.swift */; };
 		3BF367322B313675005BB41E /* PuzzleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF367312B313675005BB41E /* PuzzleView.swift */; };
-		EF23304844C1FB2DEAD86AA5 /* Pods_DownForACross.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C2FEB8A3959D6441EDA5549 /* Pods_DownForACross.framework */; };
+		50D0C56171EB2E53FECB1729 /* Pods_DownForACross.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3053B31048C2B557B5DCAC17 /* Pods_DownForACross.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		053920DD5E1EA9A47919A5C7 /* Pods-DownForACross.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownForACross.debug.xcconfig"; path = "Target Support Files/Pods-DownForACross/Pods-DownForACross.debug.xcconfig"; sourceTree = "<group>"; };
+		3053B31048C2B557B5DCAC17 /* Pods_DownForACross.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownForACross.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B011DE22B30BED400BDB732 /* DownForACross.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DownForACross.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B011DE52B30BED400BDB732 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3B011DE72B30BED400BDB732 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -172,10 +174,8 @@
 		3BC761B52BA0C422003ACF81 /* RevealEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevealEvent.swift; sourceTree = "<group>"; };
 		3BF3672F2B313374005BB41E /* PuzzleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleViewController.swift; sourceTree = "<group>"; };
 		3BF367312B313675005BB41E /* PuzzleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleView.swift; sourceTree = "<group>"; };
-		41960B06F1669C2955ACA2F9 /* Pods-DownForACross.debug (local).xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownForACross.debug (local).xcconfig"; path = "Target Support Files/Pods-DownForACross/Pods-DownForACross.debug (local).xcconfig"; sourceTree = "<group>"; };
-		5C2FEB8A3959D6441EDA5549 /* Pods_DownForACross.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownForACross.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		EE59087A7DCD323BCBA44451 /* Pods-DownForACross.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownForACross.release.xcconfig"; path = "Target Support Files/Pods-DownForACross/Pods-DownForACross.release.xcconfig"; sourceTree = "<group>"; };
-		FF805C3B2326B93C18A44CEA /* Pods-DownForACross.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownForACross.debug.xcconfig"; path = "Target Support Files/Pods-DownForACross/Pods-DownForACross.debug.xcconfig"; sourceTree = "<group>"; };
+		737FF297FA7F51F3B38C5293 /* Pods-DownForACross.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownForACross.release.xcconfig"; path = "Target Support Files/Pods-DownForACross/Pods-DownForACross.release.xcconfig"; sourceTree = "<group>"; };
+		B6145EC963A8A387FB341769 /* Pods-DownForACross.debug (local).xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownForACross.debug (local).xcconfig"; path = "Target Support Files/Pods-DownForACross/Pods-DownForACross.debug (local).xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -183,7 +183,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EF23304844C1FB2DEAD86AA5 /* Pods_DownForACross.framework in Frameworks */,
+				50D0C56171EB2E53FECB1729 /* Pods_DownForACross.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -196,7 +196,7 @@
 				3B011DE42B30BED400BDB732 /* DownForACross */,
 				3B011DE32B30BED400BDB732 /* Products */,
 				53F62DDFE970C11E954F1973 /* Pods */,
-				F8D6332713711A97FC9F7DFA /* Frameworks */,
+				7AC0529D67751174AF181AC4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -427,17 +427,17 @@
 		53F62DDFE970C11E954F1973 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				FF805C3B2326B93C18A44CEA /* Pods-DownForACross.debug.xcconfig */,
-				41960B06F1669C2955ACA2F9 /* Pods-DownForACross.debug (local).xcconfig */,
-				EE59087A7DCD323BCBA44451 /* Pods-DownForACross.release.xcconfig */,
+				053920DD5E1EA9A47919A5C7 /* Pods-DownForACross.debug.xcconfig */,
+				B6145EC963A8A387FB341769 /* Pods-DownForACross.debug (local).xcconfig */,
+				737FF297FA7F51F3B38C5293 /* Pods-DownForACross.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
 		};
-		F8D6332713711A97FC9F7DFA /* Frameworks */ = {
+		7AC0529D67751174AF181AC4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				5C2FEB8A3959D6441EDA5549 /* Pods_DownForACross.framework */,
+				3053B31048C2B557B5DCAC17 /* Pods_DownForACross.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -449,12 +449,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3B011DF62B30BED500BDB732 /* Build configuration list for PBXNativeTarget "DownForACross" */;
 			buildPhases = (
-				04A43C71A2173876EF13D4A5 /* [CP] Check Pods Manifest.lock */,
+				A4EAEB040C18E13BF65E7762 /* [CP] Check Pods Manifest.lock */,
 				3B011DDE2B30BED400BDB732 /* Sources */,
 				3B011DDF2B30BED400BDB732 /* Frameworks */,
 				3B011DE02B30BED400BDB732 /* Resources */,
-				0389D96378D09D41DC6ECB45 /* [CP] Embed Pods Frameworks */,
-				65AEADF008A4FCE95A334821 /* [CP] Copy Pods Resources */,
+				3986D03EB6B733A7C3D9A6A9 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -512,7 +511,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0389D96378D09D41DC6ECB45 /* [CP] Embed Pods Frameworks */ = {
+		3986D03EB6B733A7C3D9A6A9 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -529,7 +528,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DownForACross/Pods-DownForACross-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		04A43C71A2173876EF13D4A5 /* [CP] Check Pods Manifest.lock */ = {
+		A4EAEB040C18E13BF65E7762 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -549,23 +548,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		65AEADF008A4FCE95A334821 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DownForACross/Pods-DownForACross-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DownForACross/Pods-DownForACross-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DownForACross/Pods-DownForACross-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -781,7 +763,7 @@
 		};
 		3B011DF72B30BED500BDB732 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FF805C3B2326B93C18A44CEA /* Pods-DownForACross.debug.xcconfig */;
+			baseConfigurationReference = 053920DD5E1EA9A47919A5C7 /* Pods-DownForACross.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -789,6 +771,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development: Justin Hill (2C45PT62RN)";
 				CURRENT_PROJECT_VERSION = 3;
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6ET9AKX465;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = 6ET9AKX465;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DownForACross/Supporting/Info.plist;
@@ -805,6 +788,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "DFAC Development";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "DFAC Development";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "DFAC Development macOS";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -813,7 +800,7 @@
 		};
 		3B011DF82B30BED500BDB732 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EE59087A7DCD323BCBA44451 /* Pods-DownForACross.release.xcconfig */;
+			baseConfigurationReference = 737FF297FA7F51F3B38C5293 /* Pods-DownForACross.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -837,6 +824,9 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "DFAC Distribution";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "DFAC Distribution";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -910,7 +900,7 @@
 		};
 		3BB0FCE42B765BC900CD907C /* Debug (local) */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 41960B06F1669C2955ACA2F9 /* Pods-DownForACross.debug (local).xcconfig */;
+			baseConfigurationReference = B6145EC963A8A387FB341769 /* Pods-DownForACross.debug (local).xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -918,6 +908,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development: Justin Hill (2C45PT62RN)";
 				CURRENT_PROJECT_VERSION = 3;
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6ET9AKX465;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = 6ET9AKX465;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DownForACross/Supporting/Info.plist;
@@ -935,6 +926,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "DFAC Development";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "DFAC Development";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "DFAC Development macOS";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

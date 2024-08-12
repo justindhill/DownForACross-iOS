@@ -37,8 +37,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         self.window = UIWindow(windowScene: scene)
         self.window?.rootViewController = UIViewController()
-        self.window?.isHidden = false
-        
+        self.window?.isHidden = false        
+        self.window?.tintColor = .accent
+
         self.window?.overrideUserInterfaceStyle = self.settingsStorage.appearanceStyle.userInterfaceStyle
         self.resolveLaunchRequirementsAndLaunch()
     }
@@ -100,6 +101,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         viewController.willMove(toParent: container)
         container.view.addSubview(viewController.view)
+
+        viewController.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            viewController.view.leadingAnchor.constraint(equalTo: container.view.leadingAnchor),
+            viewController.view.trailingAnchor.constraint(equalTo: container.view.trailingAnchor),
+            viewController.view.topAnchor.constraint(equalTo: container.view.topAnchor),
+            viewController.view.bottomAnchor.constraint(equalTo: container.view.bottomAnchor)
+        ])
+
         container.addChild(viewController)
         viewController.didMove(toParent: container)
     }
