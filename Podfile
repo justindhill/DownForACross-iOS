@@ -37,6 +37,7 @@ target 'DownForACross' do
     binary_pod 'Socket.IO-Client-Swift'
     binary_pod 'lottie-ios'
     binary_pod 'ReachabilitySwift'
+    binary_pod 'Sentry'
     pod 'SwiftLint'
 end
 

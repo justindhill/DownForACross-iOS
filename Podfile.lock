@@ -1,6 +1,9 @@
 PODS:
   - lottie-ios (4.4.0)
   - ReachabilitySwift (5.0.0)
+  - Sentry (8.38.0):
+    - Sentry/Core (= 8.38.0)
+  - Sentry/Core (8.38.0)
   - Socket.IO-Client-Swift (16.1.0):
     - Starscream (~> 4.0.6)
   - Starscream (4.0.6)
@@ -9,6 +12,7 @@ PODS:
 DEPENDENCIES:
   - lottie-ios
   - ReachabilitySwift
+  - Sentry
   - Socket.IO-Client-Swift
   - SwiftLint
 
@@ -16,6 +20,7 @@ SPEC REPOS:
   trunk:
     - lottie-ios
     - ReachabilitySwift
+    - Sentry
     - Socket.IO-Client-Swift
     - Starscream
     - SwiftLint
@@ -23,10 +28,11 @@ SPEC REPOS:
 SPEC CHECKSUMS:
   lottie-ios: ef1be1f90d54255f08e09d767950e43714661178
   ReachabilitySwift: 985039c6f7b23a1da463388634119492ff86c825
+  Sentry: 205813e7e758b53df157cedb8c55b31a14300645
   Socket.IO-Client-Swift: ee4b8f80a3db18dd7f32b266ddf273310609443c
   Starscream: fb2c4510bebf908c62bd383bcf05e673720e91fd
   SwiftLint: c1de071d9d08c8aba837545f6254315bc900e211
 
-PODFILE CHECKSUM: f70edd2eb33729617bcf961be694b88a63d92da6
+PODFILE CHECKSUM: d046481993b8e1e1f238408b5b4f47f4b408998c
 
 COCOAPODS: 1.15.2
