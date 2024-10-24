@@ -15,24 +15,21 @@ struct Puzzle: Codable, Hashable {
     let shades: [Int]
 
     let circles: [Int]
-    let `private`: Bool
-    
+
     static func empty() -> Puzzle {
         return Puzzle(grid: [],
                       info: PuzzleInfo(type: nil, title: "", author: "", description: ""),
                       clues: PuzzleClues(across: [], down: []),
                       shades: [],
-                      circles: [],
-                      private: false)
+                      circles: [])
     }
 
-    init(grid: [[String]], info: PuzzleInfo, clues: PuzzleClues, shades: [Int], circles: [Int], `private`: Bool) {
+    init(grid: [[String]], info: PuzzleInfo, clues: PuzzleClues, shades: [Int], circles: [Int]) {
         self.grid = grid
         self.info = info
         self.clues = clues
         self.shades = shades
         self.circles = circles
-        self.private = `private`
     }
 
     init(createEventPayload: [String: Any]) throws {
@@ -50,7 +47,6 @@ struct Puzzle: Codable, Hashable {
         self.clues = PuzzleClues(across: acrossClues, down: downClues)
         self.shades = []
         self.circles = circles
-        self.private = false
     }
 }
 
