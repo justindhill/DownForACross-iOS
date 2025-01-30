@@ -28,7 +28,7 @@ class PuzzleViewController: UIViewController {
     let puzzleId: String
     let puzzle: Puzzle
     let userId: String
-    let siteInteractor: SiteInteractor
+    let siteInteractor: SiteInteractorProtocol
     let settingsStorage: SettingsStorage
     let api: API
     weak var delegate: PuzzleViewControllerDelegate?
@@ -99,7 +99,7 @@ class PuzzleViewController: UIViewController {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     // assumes that GameClient is connected and has done a bulk sync to get all of the necessary info from the create event
-    init(gameClient: GameClient, siteInteractor: SiteInteractor, api: API, settingsStorage: SettingsStorage) {
+    init(gameClient: GameClient, siteInteractor: SiteInteractorProtocol, api: API, settingsStorage: SettingsStorage) {
         self.gameClient = gameClient
         self.puzzle = gameClient.puzzle
         self.puzzleId = gameClient.puzzleId
@@ -116,7 +116,7 @@ class PuzzleViewController: UIViewController {
         self.hidesBottomBarWhenPushed = true
     }
 
-    init(puzzle: Puzzle, puzzleId: String, userId: String, gameId: String?, siteInteractor: SiteInteractor, api: API, settingsStorage: SettingsStorage) {
+    init(puzzle: Puzzle, puzzleId: String, userId: String, gameId: String?, siteInteractor: SiteInteractorProtocol, api: API, settingsStorage: SettingsStorage) {
         self.puzzle = puzzle
         self.puzzleId = puzzleId
         self.userId = userId
@@ -424,11 +424,11 @@ class PuzzleViewController: UIViewController {
         if self.sideBarViewController.messagesViewController.hasUnreadMessages {
             messagesIcon = PuzzleSideBarViewController.Tab.messages.badgedImage
             newBarItemIcon = UIImage.contextualmenuBadge
-                                    .applyingSymbolConfiguration(.init(paletteColors: [.systemRed, .systemBlue]))
+                                .applyingSymbolConfiguration(.init(paletteColors: [.systemBlue, .systemRed]))
         } else {
             messagesIcon = PuzzleSideBarViewController.Tab.messages.image
             newBarItemIcon = UIImage.contextualmenu
-                                    .applyingSymbolConfiguration(.init(paletteColors: [.systemRed, .systemBlue]))
+                                .applyingSymbolConfiguration(.init(paletteColors: [.systemBlue, .systemRed]))
         }
 
         if let newBarItemIcon {

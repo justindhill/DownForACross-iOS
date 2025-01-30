@@ -99,6 +99,7 @@ class PuzzleListQuickFilterBarView: UIView {
         
         self.filterStackView = UIStackView(arrangedSubviews: self.wordFilterButtons)
         self.filterStackView.distribution = .fill
+        self.scrollView.preservesSuperviewLayoutMargins = true
 
         self.quickFilterSubscription = self.settingsStorage.quickFilterTermsPublisher
             .sink(receiveValue: { value in
@@ -128,7 +129,8 @@ class PuzzleListQuickFilterBarView: UIView {
         self.sizeSelectorButton.translatesAutoresizingMaskIntoConstraints = false
         self.scrollView.translatesAutoresizingMaskIntoConstraints = false
         self.filterStackView.axis = .horizontal
-        
+        self.scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 8)
+
         NSLayoutConstraint.activate([
             self.sizeSelectorButton.leadingAnchor.constraint(equalTo: self.layoutMarginsGuide.leadingAnchor),
             self.sizeSelectorButton.topAnchor.constraint(equalTo: self.layoutMarginsGuide.topAnchor),
@@ -136,7 +138,7 @@ class PuzzleListQuickFilterBarView: UIView {
             self.scrollView.leadingAnchor.constraint(equalTo: self.sizeSelectorButton.trailingAnchor, constant: 8),
             self.scrollView.topAnchor.constraint(equalTo: self.layoutMarginsGuide.topAnchor),
             self.scrollView.bottomAnchor.constraint(equalTo: self.layoutMarginsGuide.bottomAnchor),
-            self.scrollView.trailingAnchor.constraint(equalTo: self.layoutMarginsGuide.trailingAnchor),
+            self.scrollView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             self.filterStackView.leadingAnchor.constraint(equalTo: self.scrollView.contentLayoutGuide.leadingAnchor),
             self.filterStackView.trailingAnchor.constraint(equalTo: self.scrollView.contentLayoutGuide.trailingAnchor),
             self.filterStackView.topAnchor.constraint(equalTo: self.scrollView.contentLayoutGuide.topAnchor),

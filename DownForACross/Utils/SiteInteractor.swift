@@ -8,8 +8,27 @@
 import Foundation
 import WebKit
 
-class SiteInteractor: NSObject {
-    
+typealias GetUserCompletion = ((String?) -> Void)
+
+protocol SiteInteractorProtocol: AnyObject {
+    func getUserId(completion: @escaping GetUserCompletion) -> Void
+    func createGame(puzzleId: String, completion: @escaping (String?) -> Void)
+}
+
+class OfflineSiteInteractor: NSObject, SiteInteractorProtocol {
+
+    func getUserId(completion: @escaping GetUserCompletion) {
+        completion(nil)
+    }
+
+    func createGame(puzzleId: String, completion: @escaping (String?) -> Void) {
+        completion(OfflineGameClient.offlineGameId)
+    }
+
+}
+
+class SiteInteractor: NSObject, SiteInteractorProtocol {
+
     let timeout: TimeInterval = 10
     
     var session: URLSession = .shared
@@ -17,7 +36,6 @@ class SiteInteractor: NSObject {
     var completionBlocks: [WKWebView: (WKWebView) -> Void] = [:]
     var timeoutTimers: [WKWebView: Timer] = [:]
     
-    typealias GetUserCompletion = ((String?) -> Void)
     func getUserId(completion: @escaping GetUserCompletion) -> Void {
         var baseUrlComponents = Config.siteBaseURLComponents
         #if DFAC_LOCAL_SERVER

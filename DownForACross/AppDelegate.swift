@@ -16,7 +16,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         SentrySDK.start { options in
             options.dsn = "https://e48e51470de5786f1591ef2b19b53a09@o4508149985378304.ingest.us.sentry.io/4508149988261888"
-            options.debug = true
             options.tracesSampleRate = 1.0
             options.profilesSampleRate = 1.0
 

@@ -8,6 +8,7 @@
 import UIKit
 import WebKit
 import Combine
+import Reachability
 
 class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableViewDataSourcePrefetching {
     
@@ -19,19 +20,59 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
     enum RefreshType {
         case pullToRefresh
         case loadMore
+        case offline
         case other
     }
     
     let listItemReuseIdentifier: String = "ItemReuseIdentifier"
     let loadingSpinnerReuseIdentifier: String = "LoadingSpinnerReuseIdentifier"
     let reachedEndReuseIdentifier: String = "ReachedEndReuseIdentifier"
-    
+
+    var isOffline: Bool = false {
+        didSet {
+            self.offlineBar.isHidden = !isOffline
+            self.quickFilterBar.isHidden = isOffline
+        }
+    }
+
     let emptyStateView: EmptyStateView = {
         let view = EmptyStateView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-    
+
+    lazy var offlineBar: UIView = {
+        let label = UILabel()
+        label.text = "You're in offline mode."
+
+        let goOnlineButton = UIButton(configuration: .plain())
+        goOnlineButton.configuration?.title = "Go online"
+        goOnlineButton.configuration?.contentInsets = .zero
+        goOnlineButton.addAction(UIAction { [weak self] _ in
+            self?.goOnlineButtonTapped()
+        }, for: .primaryActionTriggered)
+
+        let stackView = UIStackView(arrangedSubviews: [label, goOnlineButton])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
+        stackView.spacing = 4
+        stackView.preservesSuperviewLayoutMargins = true
+
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(stackView)
+        container.backgroundColor = UIColor.offlineBarBackground
+        container.preservesSuperviewLayoutMargins = true
+
+        NSLayoutConstraint.activate([
+            stackView.topAnchor.constraint(equalTo: container.topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            stackView.leadingAnchor.constraint(equalTo: container.layoutMarginsGuide.leadingAnchor)
+        ])
+
+        return container
+    }()
+
     lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.delegate = self
@@ -159,7 +200,8 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
         self.view.addSubview(self.emptyStateView)
         self.view.addSubview(self.tableView)
         self.view.addSubview(self.quickFilterBar)
-        
+        self.view.addSubview(self.offlineBar)
+
         self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: self.listItemReuseIdentifier)
         self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: self.loadingSpinnerReuseIdentifier)
         self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: self.reachedEndReuseIdentifier)
@@ -171,13 +213,21 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
             self.quickFilterBar.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             self.quickFilterBar.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             self.quickFilterBar.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            self.offlineBar.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            self.offlineBar.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            self.offlineBar.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            self.offlineBar.bottomAnchor.constraint(equalTo: self.quickFilterBar.bottomAnchor),
             self.tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             self.tableView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
             self.tableView.topAnchor.constraint(equalTo: self.quickFilterBar.bottomAnchor),
             self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
         ])
-        
-        self.updatePuzzleList(refreshType: .other)
+
+//        let r = try! Reachability()
+        self.isOffline = true //(r.connection != .unavailable)
+
+        let refreshType: RefreshType = self.isOffline ? .offline : .other
+        self.updatePuzzleList(refreshType: refreshType)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -206,19 +256,30 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func show(puzzleListEntry: PuzzleListEntry, gameId: String? = nil) {
-        let vc = PuzzleViewController(puzzle: puzzleListEntry.content,
-                                      puzzleId: puzzleListEntry.pid,
-                                      userId: self.userId,
-                                      gameId: gameId,
-                                      siteInteractor: self.siteInteractor,
-                                      api: self.api,
-                                      settingsStorage: self.settingsStorage)
+        if self.isOffline {
+            let vc = PuzzleViewController(gameClient: OfflineGameClient(puzzle: puzzleListEntry.content,
+                                                                        puzzleId: puzzleListEntry.pid,
+                                                                        userId: self.userId,
+                                                                        settingsStorage: self.settingsStorage),
+                                          siteInteractor: OfflineSiteInteractor(),
+                                          api: self.api,
+                                          settingsStorage: self.settingsStorage)
+            self.navigationController?.pushViewController(vc, animated: true)
+        } else {
+            let vc = PuzzleViewController(puzzle: puzzleListEntry.content,
+                                          puzzleId: puzzleListEntry.pid,
+                                          userId: self.userId,
+                                          gameId: gameId,
+                                          siteInteractor: self.siteInteractor,
+                                          api: self.api,
+                                          settingsStorage: self.settingsStorage)
 
-        if let gameId {
-            self.settingsStorage.gameIdToCompletion[gameId] = vc.gameClient.solutionState
+            if let gameId {
+                self.settingsStorage.gameIdToCompletion[gameId] = vc.gameClient.solutionState
+            }
+
+            self.navigationController?.pushViewController(vc, animated: true)
         }
-
-        self.navigationController?.pushViewController(vc, animated: true)
     }
     
     func updatePuzzleList(refreshType: RefreshType) {
@@ -239,61 +300,91 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
                     case .loadMore:
                         self.page += 1
                         break
+                    case .offline:
+                        self.page = 0
                 }
-                
-                let puzzleList = try await api.getPuzzleList(
-                    page: self.page,
-                    wordFilter: self.quickFilterBar.selectedWordFilter ?? "",
-                    includeMinis: self.quickFilterBar.selectedPuzzleSize.includeMinis,
-                    includeStandards: self.quickFilterBar.selectedPuzzleSize.includeStandards,
-                    limit: self.pageLimit)
-                
-                self.hasReachedLastPage = puzzleList.puzzles.count < self.pageLimit
-                
-                var snapshot: NSDiffableDataSourceSnapshot<Int, PuzzleListEntry>
-                if refreshType == .loadMore {
-                    snapshot = self.dataSource.snapshot()
-                    snapshot.appendItems(puzzleList.puzzles, toSection: Section.puzzles.rawValue)
-                    
-                    if self.hasReachedLastPage {
-                        snapshot.reloadSections([Section.loadMore.rawValue])
-                    }
-                } else {
-                    snapshot = NSDiffableDataSourceSnapshot<Int, PuzzleListEntry>()
-                    snapshot.appendSections([Section.puzzles.rawValue])
-                    snapshot.appendItems(puzzleList.puzzles, toSection: Section.puzzles.rawValue)
-                    
-                    if puzzleList.puzzles.count == self.pageLimit {
-                        snapshot.appendSections([Section.loadMore.rawValue])
-                        snapshot.appendItems([PuzzleListEntry(pid: "LOADMORE", content: Puzzle.empty(), stats: PuzzleStats(numSolves: 0))])
-                    }
-                }
-                await self.dataSource.apply(snapshot, animatingDifferences: false)
 
-                self.removePulsingAnimation(from: self.tableView)
-                self.emptyStateView.activityIndicator.stopAnimating()
-                self.emptyStateView.activityIndicator.isHidden = true
-                self.refreshControl.endRefreshing()
+                if refreshType == .offline {
+                    let puzzleList = await self.loadOfflinePuzzles()
+                    self.hasReachedLastPage = true
 
-                if refreshType == .other {
-                    tableView.contentOffset = .zero
-                }
-                
-                if puzzleList.puzzles.count == 0 {
-                    self.emptyStateView.label.text = "No puzzles found"
-                    self.emptyStateView.isHidden = false
+                    var snapshot = NSDiffableDataSourceSnapshot<Int, PuzzleListEntry>()
+                    snapshot.appendSections([0])
+                    snapshot.appendItems(puzzleList)
+                    await self.dataSource.apply(snapshot, animatingDifferences: false)
                 } else {
-                    self.emptyStateView.isHidden = true
+                    let puzzleList = try await api.getPuzzleList(
+                        page: self.page,
+                        wordFilter: self.quickFilterBar.selectedWordFilter,
+                        includeMinis: self.quickFilterBar.selectedPuzzleSize.includeMinis,
+                        includeStandards: self.quickFilterBar.selectedPuzzleSize.includeStandards,
+                        limit: self.pageLimit)
+
+                    self.hasReachedLastPage = puzzleList.puzzles.count < self.pageLimit
+
+                    var snapshot: NSDiffableDataSourceSnapshot<Int, PuzzleListEntry>
+                    if refreshType == .loadMore {
+                        snapshot = self.dataSource.snapshot()
+                        snapshot.appendItems(puzzleList.puzzles, toSection: Section.puzzles.rawValue)
+
+                        if self.hasReachedLastPage {
+                            snapshot.reloadSections([Section.loadMore.rawValue])
+                        }
+                    } else {
+                        snapshot = NSDiffableDataSourceSnapshot<Int, PuzzleListEntry>()
+                        snapshot.appendSections([Section.puzzles.rawValue])
+                        snapshot.appendItems(puzzleList.puzzles, toSection: Section.puzzles.rawValue)
+
+                        if puzzleList.puzzles.count == self.pageLimit {
+                            snapshot.appendSections([Section.loadMore.rawValue])
+                            snapshot.appendItems([PuzzleListEntry(pid: "LOADMORE", content: Puzzle.empty(), stats: PuzzleStats(numSolves: 0))])
+                        }
+                    }
+                    await self.dataSource.apply(snapshot, animatingDifferences: false)
+
+                    self.removePulsingAnimation(from: self.tableView)
+                    self.emptyStateView.activityIndicator.stopAnimating()
+                    self.emptyStateView.activityIndicator.isHidden = true
+                    self.refreshControl.endRefreshing()
+
+                    if refreshType == .other {
+                        tableView.contentOffset = .zero
+                    }
+
+                    if puzzleList.puzzles.count == 0 {
+                        self.emptyStateView.label.text = "No puzzles found"
+                        self.emptyStateView.isHidden = false
+                    } else {
+                        self.emptyStateView.isHidden = true
+                    }
                 }
-                
             } catch {
                 self.emptyStateView.label.text = "Couldn't load the puzzle list"
                 self.quickFilterBar.isUserInteractionEnabled = true
                 self.emptyStateView.activityIndicator.stopAnimating()
+                self.refreshControl.endRefreshing()
                 self.removePulsingAnimation(from: self.tableView)
+
+                await self.clearPuzzleList()
+                self.emptyStateView.isHidden = false
                 print(error)
             }
         }.cancel)
+    }
+
+    func clearPuzzleList() async {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, PuzzleListEntry>()
+        snapshot.appendSections([Section.puzzles.rawValue])
+        snapshot.appendItems([], toSection: Section.puzzles.rawValue)
+        await self.dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
+    func goOnlineButtonTapped() {
+        self.isOffline = false
+        Task {
+            await self.clearPuzzleList()
+            self.updatePuzzleList(refreshType: .other)
+        }
     }
 
     func addPulsingAnimation(on view: UIView) {
@@ -311,9 +402,84 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
     }
 
     @objc func refreshControlDidBeginRefreshing() {
-        self.updatePuzzleList(refreshType: .pullToRefresh)
+        let refreshType: RefreshType = self.isOffline ? .offline : .pullToRefresh
+        self.updatePuzzleList(refreshType: refreshType)
     }
-    
+
+    func loadOfflinePuzzles() async -> [PuzzleListEntry] {
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: Self.savePath, isDirectory: &isDirectory),
+                isDirectory.boolValue,
+                let savedPuzzles = try? FileManager.default.contentsOfDirectory(atPath: Self.savePath) else {
+            return []
+        }
+
+        let decoder = JSONDecoder()
+        var puzzleEntries: [PuzzleListEntryOfflineSave] = []
+        savedPuzzles.forEach { puzzleFile in
+            let path = (Self.savePath as NSString).appendingPathComponent(puzzleFile)
+            if let fileContents = FileManager.default.contents(atPath: path as String),
+                let listEntry = try? decoder.decode(PuzzleListEntryOfflineSave.self, from: fileContents) {
+                puzzleEntries.append(listEntry)
+            }
+        }
+
+        puzzleEntries.sort(using: KeyPathComparator(\.saveDate))
+        return puzzleEntries.map { $0.entry }
+    }
+
+    static var savePath: String {
+        let documentsDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+        let filePath: String = (documentsDirectory as NSString).appendingPathComponent("offlineSaves")
+        return filePath
+    }
+
+    static func createSavePathIfNecessary() {
+        var isDirectory: ObjCBool = false
+        if !(FileManager.default.fileExists(atPath: self.savePath, isDirectory: &isDirectory) && isDirectory.boolValue) {
+            var components = URLComponents(string: self.savePath)!
+            components.scheme = "file"
+            try? FileManager.default.createDirectory(at: components.url!, withIntermediateDirectories: true)
+        }
+    }
+
+    static func createFilePath(forListEntry listEntry: PuzzleListEntry) -> String {
+        let documentsDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+        var filePath: String = (documentsDirectory as NSString).appendingPathComponent("offlineSaves")
+        filePath = (filePath as NSString).appendingPathComponent("\(listEntry.pid).json")
+
+        return filePath
+    }
+
+    static func isPuzzleSavedForOfflinePlay(puzzleListEntry: PuzzleListEntry) -> Bool {
+        let path = self.createFilePath(forListEntry: puzzleListEntry)
+        return FileManager.default.fileExists(atPath: path)
+    }
+
+    func savePuzzleForOfflinePlay(puzzleListEntry: PuzzleListEntry) {
+        let filePath = Self.createFilePath(forListEntry: puzzleListEntry)
+        let jsonEncoder = JSONEncoder()
+
+        let saveState = PuzzleListEntryOfflineSave(entry: puzzleListEntry)
+
+        guard let encodedSaveState = try? jsonEncoder.encode(saveState) else {
+            print("Couldn't encode the solution")
+            return
+        }
+
+        Self.createSavePathIfNecessary()
+
+        let success = FileManager.default.createFile(atPath: filePath, contents: encodedSaveState, attributes: nil)
+        if !success {
+            print("Unable to write solution file for \(puzzleListEntry.pid)")
+        }
+    }
+
+    func removePuzzleOfflineCopy(puzzleListEntry: PuzzleListEntry) {
+        let filePath = Self.createFilePath(forListEntry: puzzleListEntry)
+        try? FileManager.default.removeItem(atPath: filePath)
+    }
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         guard let section = Section(rawValue: indexPath.section) else { fatalError() }
         switch section {
@@ -329,6 +495,37 @@ class PuzzleListViewController: UIViewController, UITableViewDelegate, UITableVi
         if shouldLoadMore {
             self.updatePuzzleList(refreshType: .loadMore)
         }
+    }
+
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        guard let entry = self.dataSource.itemIdentifier(for: indexPath) else { return nil }
+
+        if indexPath.section == Section.puzzles.rawValue {
+            if Self.isPuzzleSavedForOfflinePlay(puzzleListEntry: entry) {
+                return UISwipeActionsConfiguration(actions: [
+                    UIContextualAction(style: .destructive, title: "Delete offline copy", handler: { _, _, completion in
+                        self.removePuzzleOfflineCopy(puzzleListEntry: entry)
+
+                        if self.isOffline {
+                            var snapshot = self.dataSource.snapshot()
+                            snapshot.deleteItems([entry])
+                            self.dataSource.apply(snapshot)
+                        }
+
+                        completion(true)
+                    })
+                ])
+            } else {
+                return UISwipeActionsConfiguration(actions: [
+                    UIContextualAction(style: .normal, title: "Make available offline", handler: { _, _, completion in
+                        self.savePuzzleForOfflinePlay(puzzleListEntry: entry)
+                        completion(true)
+                    })
+                ])
+            }
+        }
+
+        return nil
     }
 
 }

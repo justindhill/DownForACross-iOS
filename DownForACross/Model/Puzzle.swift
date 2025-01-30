@@ -54,6 +54,22 @@ struct PuzzleList: Codable, Hashable {
     let puzzles: [PuzzleListEntry]
 }
 
+struct PuzzleListEntryOfflineSave: Codable, Identifiable {
+
+    var id: String {
+        return self.entry.pid
+    }
+
+    let entry: PuzzleListEntry
+    let saveDate: Date
+
+    init(entry: PuzzleListEntry, saveDate: Date = Date()) {
+        self.entry = entry
+        self.saveDate = saveDate
+    }
+    
+}
+
 struct PuzzleListEntry: Codable, Hashable, Identifiable {
     var id: String {
         return self.pid

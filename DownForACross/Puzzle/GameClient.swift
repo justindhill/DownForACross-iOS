@@ -91,7 +91,7 @@ class GameClient: NSObject, URLSessionDelegate {
     private(set) var isPerformingBulkEventSync: Bool = false
     private(set) var gameId: String
     
-    private(set) var solution: [[CellEntry?]] {
+    var solution: [[CellEntry?]] {
         didSet {
             if !self.isPerformingBulkEventSync && oldValue != solution {
                 self.writeCurrentStateToFile()
@@ -313,7 +313,7 @@ class GameClient: NSObject, URLSessionDelegate {
     func performBulkSync() {
         self.connectionState = .syncing
 
-        self.emitWithAck("sync_all_game_events", self.gameId).timingOut(after: 5) { [weak self] data in
+        self.emitWithAck("sync_all_game_events", self.gameId)?.timingOut(after: 5) { [weak self] data in
             guard let self, let events = data.first as? [[String: Any]] else { return }
             self.isPerformingBulkEventSync = true
             self.solution = Self.createEmptySolution(forPuzzle: self.puzzle)
@@ -656,7 +656,7 @@ class GameClient: NSObject, URLSessionDelegate {
         }
     }
     
-    static func createSolutionsPathIfNecessary() {
+    private static func createSolutionsPathIfNecessary() {
         let documentsDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
         let filePath: String = (documentsDirectory as NSString).appendingPathComponent("solutions")
         var isDirectory: ObjCBool = false
@@ -709,38 +709,36 @@ class GameClient: NSObject, URLSessionDelegate {
         self.handleGameEvents([event.eventPayload()], timeClock: self.timeClock)
     }
 
+    func emitWithAck(_ gameEvent: GameEvent) -> OnAckCallback? {
+        return self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.emitPayload())
+    }
+
+    func emitWithAckNoOp(_ gameEvent: GameEvent) {
+        self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.emitPayload()).timingOut(after: 5, callback: { _ in })
+    }
+
+    func emitWithAck(_ gameEvent: DedupableGameEvent) -> OnAckCallback? {
+        self.mostRecentDedupableEvents[gameEvent.dedupKey] = gameEvent.eventId
+        return self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.emitPayload())
+    }
+
+    func emitWithAckNoOp(_ gameEvent: DedupableGameEvent) {
+        self.mostRecentDedupableEvents[gameEvent.dedupKey] = gameEvent.eventId
+        self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.emitPayload()).timingOut(after: 5, callback: { _ in })
+    }
+
+    func emitWithAckNoOp(eventName: String = "game_event", _ items: SocketData...) {
+        self.socketManager.defaultSocket.emitWithAck(eventName, items).timingOut(after: 5, callback: { _ in })
+    }
+
+    func emitWithAck(_ event: String, _ items: SocketData...) -> OnAckCallback? {
+        self.socketManager.defaultSocket.emitWithAck(event, with: items)
+    }
+
 }
 
 extension GameClient: TimeClockDelegate {
     func timeClock(_ timeClock: TimeClock, stateDidChange state: TimeClock.ClockState) {
         self.delegate?.gameClient(self, timeClockStateDidChange: state)
-    }
-}
-
-extension GameClient {
-    func emitWithAck(_ gameEvent: GameEvent) -> OnAckCallback {
-        return self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.emitPayload())
-    }
-    
-    func emitWithAckNoOp(_ gameEvent: GameEvent) {
-        self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.emitPayload()).timingOut(after: 5, callback: { _ in })
-    }
-    
-    func emitWithAck(_ gameEvent: DedupableGameEvent) -> OnAckCallback {
-        self.mostRecentDedupableEvents[gameEvent.dedupKey] = gameEvent.eventId
-        return self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.emitPayload())
-    }
-    
-    func emitWithAckNoOp(_ gameEvent: DedupableGameEvent) {
-        self.mostRecentDedupableEvents[gameEvent.dedupKey] = gameEvent.eventId
-        self.socketManager.defaultSocket.emitWithAck("game_event", gameEvent.emitPayload()).timingOut(after: 5, callback: { _ in })
-    }
-    
-    func emitWithAckNoOp(eventName: String = "game_event", _ items: SocketData...) {
-        self.socketManager.defaultSocket.emitWithAck(eventName, items).timingOut(after: 5, callback: { _ in })
-    }
-    
-    func emitWithAck(_ event: String, _ items: SocketData...) -> OnAckCallback {
-        self.socketManager.defaultSocket.emitWithAck(event, with: items)
     }
 }

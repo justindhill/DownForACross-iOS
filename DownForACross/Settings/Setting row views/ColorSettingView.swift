@@ -40,10 +40,9 @@ class ColorSettingView: BaseSettingView {
     }
 
     func textAttachmentString(systemImageName: String, color: UIColor) -> AttributedString {
-        let image = UIImage(systemName: systemImageName,
-                            withConfiguration: UIImage.SymbolConfiguration(paletteColors: [color]))!
+        let image = UIImage(systemName: systemImageName)!
         let textAttachment = NSTextAttachment(image: image)
-        let attachmentString = AttributedString("\(UnicodeScalar(NSTextAttachment.character)!)", attributes: AttributeContainer().attachment(textAttachment))
+        let attachmentString = AttributedString("\(UnicodeScalar(NSTextAttachment.character)!)", attributes: AttributeContainer().attachment(textAttachment).foregroundColor(color))
 
         return attachmentString
     }

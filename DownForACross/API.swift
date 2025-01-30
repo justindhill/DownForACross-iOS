@@ -16,7 +16,7 @@ class API {
     let baseURLComponents = Config.apiBaseURLComponents
     let session = URLSession.shared
     
-    func getPuzzleList(page: Int = 0, wordFilter: String, includeMinis: Bool, includeStandards: Bool, limit: Int = 50) async throws -> PuzzleList {
+    func getPuzzleList(page: Int = 0, wordFilter: String?, includeMinis: Bool, includeStandards: Bool, limit: Int = 50) async throws -> PuzzleList {
         var urlComponents = self.baseURLComponents
         urlComponents.path = "/api/puzzle_list"
         urlComponents.queryItems = []

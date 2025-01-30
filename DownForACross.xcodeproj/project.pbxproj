@@ -84,6 +84,7 @@
 		3BC12A3E2B613B730060C29F /* PuzzleToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */; };
 		3BC12A402B62A9380060C29F /* UIColor+HSL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC12A3F2B62A9380060C29F /* UIColor+HSL.swift */; };
 		3BC761B62BA0C422003ACF81 /* RevealEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC761B52BA0C422003ACF81 /* RevealEvent.swift */; };
+		3BC815BF2CCB1AF300124EB3 /* OfflineGameClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC815BE2CCB1AF000124EB3 /* OfflineGameClient.swift */; };
 		3BF367302B313374005BB41E /* PuzzleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF3672F2B313374005BB41E /* PuzzleViewController.swift */; };
 		3BF367322B313675005BB41E /* PuzzleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF367312B313675005BB41E /* PuzzleView.swift */; };
 		50D0C56171EB2E53FECB1729 /* Pods_DownForACross.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3053B31048C2B557B5DCAC17 /* Pods_DownForACross.framework */; };
@@ -172,6 +173,7 @@
 		3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleToolbarView.swift; sourceTree = "<group>"; };
 		3BC12A3F2B62A9380060C29F /* UIColor+HSL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+HSL.swift"; sourceTree = "<group>"; };
 		3BC761B52BA0C422003ACF81 /* RevealEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevealEvent.swift; sourceTree = "<group>"; };
+		3BC815BE2CCB1AF000124EB3 /* OfflineGameClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineGameClient.swift; sourceTree = "<group>"; };
 		3BF3672F2B313374005BB41E /* PuzzleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleViewController.swift; sourceTree = "<group>"; };
 		3BF367312B313675005BB41E /* PuzzleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleView.swift; sourceTree = "<group>"; };
 		737FF297FA7F51F3B38C5293 /* Pods-DownForACross.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownForACross.release.xcconfig"; path = "Target Support Files/Pods-DownForACross/Pods-DownForACross.release.xcconfig"; sourceTree = "<group>"; };
@@ -360,6 +362,7 @@
 			children = (
 				3B5BD0D72BAA7984006DB214 /* Sidebar */,
 				3B9003372B34CDA20088729C /* GameClient.swift */,
+				3BC815BE2CCB1AF000124EB3 /* OfflineGameClient.swift */,
 				3BF3672F2B313374005BB41E /* PuzzleViewController.swift */,
 				3BF367312B313675005BB41E /* PuzzleView.swift */,
 				3BC12A3D2B613B730060C29F /* PuzzleToolbarView.swift */,
@@ -571,6 +574,7 @@
 				3B9003412B3627CC0088729C /* SiteInteractor.swift in Sources */,
 				3BB0FCEF2B7E5B6A00CD907C /* SettingsStorage.swift in Sources */,
 				3B581B152B7E6B380084EC9B /* UserDefaultsOptionalEntryPropertyWrapper.swift in Sources */,
+				3BC815BF2CCB1AF300124EB3 /* OfflineGameClient.swift in Sources */,
 				3B76C8D42B9F3F2C00E60AFD /* UIView+PartialSnapshot.swift in Sources */,
 				3B1848212BC5873900B294D4 /* GameEvent.swift in Sources */,
 				3B73AD812B928FF5005DB5F8 /* ColorPickerView.swift in Sources */,
